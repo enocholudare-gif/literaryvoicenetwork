@@ -12,18 +12,30 @@ declare global {
 }
 
 function resolveDbPath(): string {
-  const configured = process.env.LVN_SQLITE_PATH || "./data/lvn.sqlite";
+  const configured = process.env.LVN_SQLITE_PATH;
   if (configured === ":memory:") {
     return ":memory:";
   }
-  const absPath = path.isAbsolute(configured)
-    ? configured
-    : path.join(process.cwd(), configured);
-  const dir = path.dirname(absPath);
+  if (configured) {
+    const absPath = path.isAbsolute(configured)
+      ? configured
+      : path.join(process.cwd(), configured);
+    const dir = path.dirname(absPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return absPath;
+  }
+  // On Vercel serverless environments, only /tmp is writable
+  if (process.env.VERCEL) {
+    return path.join("/tmp", "lvn.sqlite");
+  }
+  const defaultPath = path.join(process.cwd(), "data", "lvn.sqlite");
+  const dir = path.dirname(defaultPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-  return absPath;
+  return defaultPath;
 }
 
 export function initializeSchema(db: DatabaseSync): void {
