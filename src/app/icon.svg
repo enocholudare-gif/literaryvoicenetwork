@@ -1,0 +1,22 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="45%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#9A6F0B"/>
+    </linearGradient>
+    <linearGradient id="d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#171717"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#d)" stroke="url(#g)" stroke-width="2.2"/>
+  <path d="M21 22C17.5 25.5 17.5 31.5 21 35" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M16.5 18.5C11 24 11 33 16.5 38.5" stroke="url(#g)" stroke-opacity="0.6" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M43 22C46.5 25.5 46.5 31.5 43 35" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M47.5 18.5C53 24 53 33 47.5 38.5" stroke="url(#g)" stroke-opacity="0.6" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="28" y="17" width="8" height="14" rx="4" fill="url(#g)"/>
+  <path d="M25 27C25 30.866 28.134 34 32 34C35.866 34 39 30.866 39 27" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="32" y1="34" x2="32" y2="43" stroke="url(#g)" stroke-width="2"/>
+  <path d="M15 47C21 44.5 27 45.5 32 48.5C37 45.5 43 44.5 49 47V41C43 38.5 37 39.5 32 42.5C27 39.5 21 38.5 15 41V47Z" fill="url(#g)"/>
+</svg>

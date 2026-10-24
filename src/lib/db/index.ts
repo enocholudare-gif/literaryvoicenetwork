@@ -1,0 +1,82 @@
+import { DatabaseSync } from "node:sqlite";
+import fs from "node:fs";
+import path from "node:path";
+import { INITIAL_MIGRATION_VERSION, INITIAL_SCHEMA_SQL } from "./schema-sql";
+import { seedDatabase } from "./seed";
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __lvnDbInstance: DatabaseSync | undefined;
+  // eslint-disable-next-line no-var
+  var __lvnDbPath: string | undefined;
+}
+
+function resolveDbPath(): string {
+  const configured = process.env.LVN_SQLITE_PATH || "./data/lvn.sqlite";
+  if (configured === ":memory:") {
+    return ":memory:";
+  }
+  const absPath = path.isAbsolute(configured)
+    ? configured
+    : path.join(process.cwd(), configured);
+  const dir = path.dirname(absPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return absPath;
+}
+
+export function initializeSchema(db: DatabaseSync): void {
+  db.exec("PRAGMA foreign_keys = ON;");
+  try {
+    db.exec("PRAGMA journal_mode = WAL;");
+    db.exec("PRAGMA busy_timeout = 5000;");
+  } catch {
+    // In-memory databases ignore WAL pragma safely
+  }
+
+  db.exec(INITIAL_SCHEMA_SQL);
+
+  const existingMigration = db
+    .prepare("SELECT version FROM schema_migrations WHERE version = ?")
+    .get(INITIAL_MIGRATION_VERSION) as { version: string } | undefined;
+
+  if (!existingMigration) {
+    db.prepare(
+      "INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)"
+    ).run(INITIAL_MIGRATION_VERSION, new Date().toISOString());
+  }
+}
+
+export function getDb(): DatabaseSync {
+  const targetPath = resolveDbPath();
+  if (globalThis.__lvnDbInstance && globalThis.__lvnDbPath === targetPath) {
+    return globalThis.__lvnDbInstance;
+  }
+
+  const db = new DatabaseSync(targetPath);
+  initializeSchema(db);
+
+  if (process.env.LVN_SKIP_AUTO_SEED !== "true") {
+    seedDatabase(db);
+  }
+
+  globalThis.__lvnDbInstance = db;
+  globalThis.__lvnDbPath = targetPath;
+  return db;
+}
+
+export function resetDatabaseForTesting(seed = true): DatabaseSync {
+  if (globalThis.__lvnDbInstance) {
+    try {
+      globalThis.__lvnDbInstance.close();
+    } catch {
+      // ignore close error
+    }
+    globalThis.__lvnDbInstance = undefined;
+  }
+  process.env.LVN_SQLITE_PATH = ":memory:";
+  process.env.LVN_SKIP_AUTO_SEED = seed ? "false" : "true";
+  return getDb();
+}
+

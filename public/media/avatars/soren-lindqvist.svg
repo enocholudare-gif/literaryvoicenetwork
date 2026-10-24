@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" fill="#1F1916"/>
+  <circle cx="200" cy="200" r="176" fill="none" stroke="#C89D54" stroke-width="2" stroke-opacity="0.5"/>
+  <circle cx="200" cy="200" r="160" fill="#C89D54" fill-opacity="0.08"/>
+  <text x="200" y="222" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="bold" letter-spacing="4">SL</text>
+  <text x="200" y="330" text-anchor="middle" fill="#C89D54" font-family="Georgia, serif" font-size="13" letter-spacing="3">SØREN LINDQVIST</text>
+</svg>
