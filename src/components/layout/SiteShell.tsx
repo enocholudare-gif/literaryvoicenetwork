@@ -1260,9 +1260,6 @@ export function SiteShell({
               <Link href="/press-releases" className="hover:text-[#F7DF8B]">
                 Press
               </Link>
-              <Link href="/sitemap.xml" className="hover:text-[#F7DF8B]">
-                Sitemap
-              </Link>
             </div>
           </div>
         </div>

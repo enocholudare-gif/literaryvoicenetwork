@@ -298,7 +298,7 @@ const HOSTS_DATA = [
     slug: "marcus-sterling",
     photo: "/media/team/director-events.jpg",
     avatar: "/media/avatars/marcus-sterling.svg",
-    delay: "350ms",
+    delay: "250ms",
     bio: "Architects international literary salons, publisher alliances, and live author tours across eight broadcast hubs.",
   },
   {
@@ -309,20 +309,8 @@ const HOSTS_DATA = [
     slug: "amara-osei",
     photo: "/media/team/literary-coordinator.jpg",
     avatar: "/media/avatars/amara-osei.svg",
-    delay: "700ms",
+    delay: "500ms",
     bio: "Curates weekly author interviews, reading room serializations, and emerging voice spotlights across the network.",
-  },
-  {
-    id: "host-4",
-    name: "Julian Thorne",
-    role: "Speculative Historian & Senior Host",
-    show: "The Reading Room",
-    slug: "julian-thorne",
-    photo:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
-    avatar: "/media/avatars/julian-thorne.svg",
-    delay: "1050ms",
-    bio: "Chicago archivist and novelist bridging speculative cartography, philosophy of science, and late-night close readings.",
   },
 ];
 
@@ -561,7 +549,7 @@ export function MeetOurHostsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
           {HOSTS_DATA.map((host) => (
             <Link
               key={host.id}
