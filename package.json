@@ -4,7 +4,7 @@
   "private": true,
   "description": "Literary Voices Network (LVN) — Full-Stack Literary Publishing Platform, Digital Magazine, and Broadcast Network",
   "engines": {
-    "node": ">=22.5.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",

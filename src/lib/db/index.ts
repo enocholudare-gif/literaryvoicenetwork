@@ -61,12 +61,20 @@ export function initializeSchema(db: DatabaseSync): void {
 }
 
 export function getDb(): DatabaseSync {
-  const targetPath = resolveDbPath();
+  let targetPath = resolveDbPath();
   if (globalThis.__lvnDbInstance && globalThis.__lvnDbPath === targetPath) {
     return globalThis.__lvnDbInstance;
   }
 
-  const db = new DatabaseSync(targetPath);
+  let db: DatabaseSync;
+  try {
+    db = new DatabaseSync(targetPath);
+  } catch (err) {
+    console.warn("Failed to open database at", targetPath, "falling back to :memory:", err);
+    targetPath = ":memory:";
+    db = new DatabaseSync(":memory:");
+  }
+
   initializeSchema(db);
 
   if (process.env.LVN_SKIP_AUTO_SEED !== "true") {

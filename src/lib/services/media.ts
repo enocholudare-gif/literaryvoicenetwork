@@ -78,7 +78,9 @@ export function uploadMediaAsset(
 
   const isPublic = input.isPublic !== undefined ? input.isPublic : true;
   const subFolder = isPublic ? "uploads" : "private-uploads";
-  const targetDir = isPublic
+  const targetDir = process.env.VERCEL
+    ? path.join("/tmp", subFolder)
+    : isPublic
     ? path.join(process.cwd(), "public", subFolder)
     : path.join(process.cwd(), "data", subFolder);
 
