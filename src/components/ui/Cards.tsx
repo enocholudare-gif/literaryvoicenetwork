@@ -24,7 +24,7 @@ import type {
   Profile,
 } from "@/lib/db/types";
 
-const FALLBACK_BOOK_COVER = "/media/covers/the-glass-meridian.svg";
+const FALLBACK_BOOK_COVER = "/media/covers/the-glass-meridian.jpg";
 const FALLBACK_AVATAR = "/media/avatars/default-portrait.svg";
 
 export function StatusBadge({ status }: { status: string }) {

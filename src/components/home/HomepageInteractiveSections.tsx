@@ -1019,9 +1019,35 @@ export function LiveVideoStageSection() {
 /* -------------------------------------------------------------------------- */
 /* 7. TRENDING BOOKS ON THE NETWORK — 3D FLIP CARDS                           */
 /* -------------------------------------------------------------------------- */
-export function TrendingBooksSection() {
+export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
+  const mergedPool: TrendingNetworkBook[] = [
+    ...dbBooks.map((b, idx) => ({
+      id: b.id,
+      rank: idx + 1,
+      title: b.title,
+      author: b.author_name || "LVN Author",
+      slug: b.slug,
+      coverUrl: b.cover_url && !b.cover_url.endsWith(".svg") ? b.cover_url : "/media/covers/the-glass-meridian.jpg",
+      fallbackCover: "/media/covers/the-glass-meridian.jpg",
+      rating: 4.9,
+      publisher: b.publisher || "LVN Edition",
+      year: b.publication_date ? Number(b.publication_date.slice(0, 4)) || 2026 : 2026,
+      pages: b.page_count || 320,
+      genres: [b.genre, ...(b.secondary_genres || [])],
+      description: b.description || "",
+      links: {
+        amazon: b.retailer_links?.amazon || ("https://www.amazon.com/s?k=" + encodeURIComponent(b.title)),
+        goodreads: b.retailer_links?.goodreads || ("https://www.goodreads.com/search?q=" + encodeURIComponent(b.title)),
+        spotify: SPOTIFY_URL,
+        audible: b.retailer_links?.audible || ("https://www.audible.com/search?keywords=" + encodeURIComponent(b.title)),
+        bookshop: b.retailer_links?.bookshop || ("https://bookshop.org/search?keywords=" + encodeURIComponent(b.title)),
+      },
+    })),
+    ...TRENDING_BOOKS_POOL,
+  ].filter((v, i, a) => a.findIndex((t) => t.title === v.title) === i).map((b, i) => ({ ...b, rank: i + 1 }));
+
   const [books, setBooks] = useState<TrendingNetworkBook[]>(
-    TRENDING_BOOKS_POOL.slice(0, 6)
+    mergedPool.slice(0, 6)
   );
   const [fallbackMap, setFallbackMap] = useState<Record<string, boolean>>({});
   const [flippedMap, setFlippedMap] = useState<Record<string, boolean>>({});
@@ -1553,8 +1579,23 @@ export function DigitalMagazineShowcaseSection({
     "all" | "essay" | "interview" | "review"
   >("all");
 
-  // Curated fallback + DB editorial pieces with high-res photography so it always looks rich
-  const magazineItems = [
+  // Map all published DB articles + curated fallbacks so newly published articles show immediately
+  const dbMappedArticles = articles.map((a) => ({
+    id: a.id,
+    slug: a.slug,
+    type: a.article_type,
+    badge: a.article_type.replace(/_/g, " ").toUpperCase(),
+    issue: a.issue_title || "LVN Digital Dispatch",
+    title: a.title,
+    subtitle: a.subtitle || "",
+    excerpt: a.excerpt || "",
+    author: a.author_name || "LVN Contributor",
+    authorSlug: a.author_slug || "eleanor-vance",
+    readTime: String(a.reading_time_minutes || 5) + " min read",
+    date: a.published_at ? new Date(a.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recent",
+    image: a.cover_url && !a.cover_url.endsWith(".svg") ? a.cover_url : "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1000&q=80",
+  }));
+  const fallbackItems = [
     {
       id: "mag-1",
       slug:
@@ -1619,10 +1660,11 @@ export function DigitalMagazineShowcaseSection({
     },
   ];
 
+  const allMagItems = dbMappedArticles.length > 0 ? dbMappedArticles : fallbackItems;
   const visibleItems =
     activeTab === "all"
-      ? magazineItems
-      : magazineItems.filter((item) => item.type === activeTab);
+      ? allMagItems.slice(0, 6)
+      : allMagItems.filter((item) => item.type === activeTab).slice(0, 6);
 
   return (
     <section id="lvn-digital-magazine" className="bg-[#FAF8F3] border-b border-[#D4AF37]/30 py-20">

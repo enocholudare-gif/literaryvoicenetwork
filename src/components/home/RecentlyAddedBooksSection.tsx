@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import type { Book } from "@/lib/db/types";
 
-const FALLBACK_COVER = "/media/covers/the-glass-meridian.svg";
+const FALLBACK_COVER = "/media/covers/the-glass-meridian.jpg";
 
 /**
  * Recently Added Books — cards rise in one after another when the section

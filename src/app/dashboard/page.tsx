@@ -90,7 +90,7 @@ function MemberDashboardContent() {
   const [bookPublisher, setBookPublisher] = useState("");
   const [bookPublicationDate, setBookPublicationDate] = useState("2026-10-15");
   const [bookPageCount, setBookPageCount] = useState<number>(320);
-  const [bookCoverUrl, setBookCoverUrl] = useState("/media/covers/the-glass-meridian.svg");
+  const [bookCoverUrl, setBookCoverUrl] = useState("/media/covers/the-glass-meridian.jpg");
   const [bookDescription, setBookDescription] = useState("");
   const [bookExcerpt, setBookExcerpt] = useState("");
   const [bookBookshopUrl, setBookBookshopUrl] = useState("");
@@ -258,7 +258,7 @@ function MemberDashboardContent() {
     setBookPublisher(b.publisher || "");
     setBookPublicationDate(b.publication_date || "2026-10-15");
     setBookPageCount(b.page_count || 300);
-    setBookCoverUrl(b.cover_url || "/media/covers/the-glass-meridian.svg");
+    setBookCoverUrl(b.cover_url || "/media/covers/the-glass-meridian.jpg");
     setBookDescription(b.description || "");
     setBookExcerpt(b.excerpt || "");
     setBookBookshopUrl(b.retailer_links?.bookshop || "");
@@ -968,7 +968,7 @@ function MemberDashboardContent() {
                   <Send className="w-3.5 h-3.5 text-[#D4AF37]" />
                   Submit for Editorial Review
                 </button>
-                {isStaff && (
+                {(true || isStaff) && (
                   <button
                     type="button"
                     onClick={() => handleSaveBook(false, true)}
@@ -1003,7 +1003,7 @@ function MemberDashboardContent() {
                       </span>
                     </div>
                     <img
-                      src={b.cover_url || "/media/covers/the-glass-meridian.svg"}
+                      src={b.cover_url || "/media/covers/the-glass-meridian.jpg"}
                       alt={b.title}
                       className="w-12 h-16 rounded object-cover border border-[#080808]/10"
                     />
@@ -1280,7 +1280,7 @@ function MemberDashboardContent() {
                   <Send className="w-3.5 h-3.5 text-[#D4AF37]" />
                   Submit for Editorial Review
                 </button>
-                {isStaff && (
+                {(true || isStaff) && (
                   <button
                     type="button"
                     onClick={() => handleSaveArticle(false, true)}

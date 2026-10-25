@@ -51,7 +51,7 @@ export default function HomePage() {
       <LiveVideoStageSection />
 
       {/* 8. Trending books — 3D flip cards */}
-      <TrendingBooksSection />
+      <TrendingBooksSection dbBooks={allBooks} />
 
       {/* 9. Recently added books — animated */}
       <RecentlyAddedBooksSection books={allBooks.slice(0, 4)} />
