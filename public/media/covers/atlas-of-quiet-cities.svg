@@ -1,23 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#141B2D"/>
-      <stop offset="100%" stop-color="#1E293B"/>
+    <linearGradient id="cover" x1="0" y1="0" x2="300" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2a1a0d"/>
+      <stop offset="100%" stop-color="#1a0f06"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#9A6F0B"/>
     </linearGradient>
   </defs>
-  <rect width="600" height="900" fill="url(#bg)"/>
-  <rect x="34" y="34" width="532" height="832" fill="none" stroke="#B87333" stroke-width="1.5" stroke-opacity="0.45"/>
-  <rect x="46" y="46" width="508" height="808" fill="none" stroke="#F9F6F0" stroke-width="0.6" stroke-opacity="0.2"/>
-  <text x="300" y="105" text-anchor="middle" fill="#B87333" font-family="Georgia, serif" font-size="13" letter-spacing="4">NORTHLIGHT EDITIONS</text>
-  <line x1="240" y1="128" x2="360" y2="128" stroke="#B87333" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="195" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-weight="bold" letter-spacing="2">ATLAS OF</text>
-  <text x="300" y="248" text-anchor="middle" fill="#B87333" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="bold" letter-spacing="2">QUIET CITIES</text>
-  <text x="300" y="286" text-anchor="middle" fill="#F9F6F0" fill-opacity="0.72" font-family="Georgia, serif" font-style="italic" font-size="16">Dispatches from Unmapped Municipalities</text>
-  
-      <path d="M 215 535 L 215 400 A 85 85 0 0 1 385 400 L 385 535 Z" fill="none" stroke="#B87333" stroke-width="2" stroke-opacity="0.65"/>
-      <path d="M 240 535 L 240 410 A 60 60 0 0 1 360 410 L 360 535 Z" fill="#B87333" fill-opacity="0.12" stroke="#B87333" stroke-width="1.2" stroke-opacity="0.45"/>
-    
-  <line x1="220" y1="735" x2="380" y2="735" stroke="#B87333" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="780" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, serif" font-size="21" letter-spacing="3.5">JULIAN THORNE</text>
-  <text x="300" y="820" text-anchor="middle" fill="#B87333" fill-opacity="0.7" font-family="sans-serif" font-size="10" letter-spacing="3">LITERARY VOICES NETWORK</text>
+  <rect width="300" height="450" rx="4" fill="url(#cover)"/>
+  <rect width="18" height="450" rx="2" fill="#120a03"/>
+  <rect x="18" y="0" width="282" height="6" fill="url(#gold)"/>
+  <rect x="18" y="444" width="282" height="6" fill="url(#gold)"/>
+  <!-- City map grid motif -->
+  <g stroke="#D4AF37" stroke-opacity="0.18" stroke-width="0.7" fill="none">
+    <rect x="50" y="60" width="60" height="40" rx="1"/>
+    <rect x="120" y="60" width="80" height="60" rx="1"/>
+    <rect x="210" y="60" width="60" height="40" rx="1"/>
+    <rect x="50" y="110" width="40" height="70" rx="1"/>
+    <rect x="100" y="130" width="100" height="50" rx="1"/>
+    <rect x="210" y="110" width="60" height="70" rx="1"/>
+    <rect x="50" y="190" width="80" height="60" rx="1"/>
+    <rect x="140" y="190" width="60" height="40" rx="1"/>
+    <rect x="210" y="190" width="60" height="60" rx="1"/>
+    <!-- Roads -->
+    <line x1="40" y1="105" x2="270" y2="105"/>
+    <line x1="40" y1="185" x2="270" y2="185"/>
+    <line x1="40" y1="255" x2="270" y2="255"/>
+    <line x1="95" y1="50" x2="95" y2="265"/>
+    <line x1="200" y1="50" x2="200" y2="265"/>
+  </g>
+  <!-- Silence symbol / listening dot -->
+  <circle cx="150" cy="160" r="22" stroke="#D4AF37" stroke-width="1.5" stroke-opacity="0.5" fill="none"/>
+  <circle cx="150" cy="160" r="5" fill="#D4AF37" fill-opacity="0.4"/>
+  <!-- Frame -->
+  <rect x="30" y="16" width="258" height="360" rx="2" stroke="url(#gold)" stroke-width="1" fill="none" stroke-opacity="0.35"/>
+  <text x="150" y="330" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#FAF8F3">Atlas of</text>
+  <text x="150" y="354" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#FAF8F3">Quiet Cities</text>
+  <line x1="80" y1="366" x2="220" y2="366" stroke="url(#gold)" stroke-width="1"/>
+  <text x="150" y="387" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#D4AF37" letter-spacing="1">JULIAN THORNE</text>
+  <text x="150" y="417" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#FAF8F3" fill-opacity="0.4" letter-spacing="2">NORTHLIGHT EDITIONS</text>
 </svg>

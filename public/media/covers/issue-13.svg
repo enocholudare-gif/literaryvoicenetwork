@@ -1,26 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0B132B"/>
-      <stop offset="100%" stop-color="#1C2541"/>
+    <linearGradient id="cover" x1="0" y1="0" x2="300" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#080808"/>
+      <stop offset="100%" stop-color="#1a1200"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#9A6F0B"/>
     </linearGradient>
   </defs>
-  <rect width="600" height="900" fill="url(#bg)"/>
-  <rect x="34" y="34" width="532" height="832" fill="none" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.45"/>
-  <rect x="46" y="46" width="508" height="808" fill="none" stroke="#F9F6F0" stroke-width="0.6" stroke-opacity="0.2"/>
-  <text x="300" y="105" text-anchor="middle" fill="#C89D54" font-family="Georgia, serif" font-size="13" letter-spacing="4">LVN DIGITAL MAGAZINE · ISSUE NO. 13</text>
-  <line x1="240" y1="128" x2="360" y2="128" stroke="#C89D54" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="195" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-weight="bold" letter-spacing="2">CARTOGRAPHIES</text>
-  <text x="300" y="248" text-anchor="middle" fill="#C89D54" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="bold" letter-spacing="2">OF VOICE</text>
-  <text x="300" y="286" text-anchor="middle" fill="#F9F6F0" fill-opacity="0.72" font-family="Georgia, serif" font-style="italic" font-size="16">Place, Polyphony &amp; the Contemporary Novel</text>
-  
-      <circle cx="300" cy="430" r="115" fill="none" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.55"/>
-      <circle cx="300" cy="430" r="85" fill="none" stroke="#C89D54" stroke-width="1" stroke-dasharray="4 6" stroke-opacity="0.45"/>
-      <line x1="300" y1="290" x2="300" y2="570" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.6"/>
-      <line x1="160" y1="430" x2="440" y2="430" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.6"/>
-      <polygon points="300,335 314,430 300,525 286,430" fill="#C89D54" fill-opacity="0.22" stroke="#C89D54" stroke-width="1.5"/>
-    
-  <line x1="220" y1="735" x2="380" y2="735" stroke="#C89D54" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="780" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, serif" font-size="21" letter-spacing="3.5">AUTUMN 2026 EDITION</text>
-  <text x="300" y="820" text-anchor="middle" fill="#C89D54" fill-opacity="0.7" font-family="sans-serif" font-size="10" letter-spacing="3">LITERARY VOICES NETWORK</text>
+  <rect width="300" height="450" rx="4" fill="url(#cover)"/>
+  <rect width="18" height="450" rx="2" fill="#040400"/>
+  <!-- Gold full-bleed top band (magazine masthead) -->
+  <rect x="18" y="0" width="282" height="52" fill="url(#gold)"/>
+  <text x="159" y="34" text-anchor="middle" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="#080808" letter-spacing="2">LVN QUARTERLY</text>
+  <!-- Abstract cover art — layered circles -->
+  <circle cx="150" cy="220" r="130" stroke="#D4AF37" stroke-width="0.8" stroke-opacity="0.2" fill="none"/>
+  <circle cx="150" cy="220" r="100" stroke="#D4AF37" stroke-width="1.2" stroke-opacity="0.3" fill="none"/>
+  <circle cx="150" cy="220" r="65" stroke="#D4AF37" stroke-width="1.5" stroke-opacity="0.4" fill="none"/>
+  <circle cx="150" cy="220" r="35" fill="#D4AF37" fill-opacity="0.1"/>
+  <!-- Feather / quill icon inside circle -->
+  <path d="M138 235 Q150 195 162 235 Q155 225 150 240 Q145 225 138 235Z" fill="#D4AF37" fill-opacity="0.5"/>
+  <line x1="150" y1="240" x2="150" y2="260" stroke="#D4AF37" stroke-width="1" stroke-opacity="0.4"/>
+  <!-- Issue info -->
+  <rect x="18" y="340" width="282" height="110" fill="#080808"/>
+  <line x1="30" y1="346" x2="270" y2="346" stroke="url(#gold)" stroke-width="1"/>
+  <text x="159" y="370" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#D4AF37" letter-spacing="2">ISSUE No. 13</text>
+  <text x="159" y="392" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#FAF8F3">Cartographies of Voice</text>
+  <text x="159" y="412" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#FAF8F3" fill-opacity="0.5">AUTUMN 2025 · LITERARY VOICES NETWORK</text>
 </svg>

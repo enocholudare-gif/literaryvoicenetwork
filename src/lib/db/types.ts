@@ -22,7 +22,8 @@ export type ArticleType =
   | "culture"
   | "spotlight"
   | "announcement"
-  | "press_release";
+  | "press_release"
+  | "lifestyle";
 
 export type BookFormat =
   | "Hardcover"
@@ -138,6 +139,18 @@ export interface EditorialIssue {
   updated_at: string;
 }
 
+export interface BookReview {
+  id: string;
+  book_id: string;
+  user_id: string;
+  user_name: string;
+  user_avatar?: string;
+  rating: number;
+  headline: string;
+  content: string;
+  created_at: string;
+}
+
 export interface RetailerLinks {
   amazon?: string;
   bookshop?: string;
@@ -181,6 +194,7 @@ export interface Book {
   seo_description: string;
   created_at: string;
   updated_at: string;
+  view_count?: number;
   // Joined author fields
   author_name?: string;
   author_slug?: string;

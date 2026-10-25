@@ -1,26 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1F1916"/>
-      <stop offset="100%" stop-color="#0B132B"/>
+    <linearGradient id="cover" x1="0" y1="0" x2="300" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2a1a0a"/>
+      <stop offset="100%" stop-color="#1a0f04"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#9A6F0B"/>
     </linearGradient>
   </defs>
-  <rect width="600" height="900" fill="url(#bg)"/>
-  <rect x="34" y="34" width="532" height="832" fill="none" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.45"/>
-  <rect x="46" y="46" width="508" height="808" fill="none" stroke="#F9F6F0" stroke-width="0.6" stroke-opacity="0.2"/>
-  <text x="300" y="105" text-anchor="middle" fill="#C89D54" font-family="Georgia, serif" font-size="13" letter-spacing="4">FJORD &amp; FOLIO PRESS</text>
-  <line x1="240" y1="128" x2="360" y2="128" stroke="#C89D54" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="195" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-weight="bold" letter-spacing="2">THE REPUBLIC OF</text>
-  <text x="300" y="248" text-anchor="middle" fill="#C89D54" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="bold" letter-spacing="2">TYPESETTERS</text>
-  <text x="300" y="286" text-anchor="middle" fill="#F9F6F0" fill-opacity="0.72" font-family="Georgia, serif" font-style="italic" font-size="16">Independent Pamphleteers &amp; Nordic Letters</text>
-  
-      <rect x="200" y="340" width="200" height="180" fill="none" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.55"/>
-      <line x1="225" y1="380" x2="375" y2="380" stroke="#C89D54" stroke-width="2" stroke-opacity="0.6"/>
-      <line x1="225" y1="415" x2="355" y2="415" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.45"/>
-      <line x1="225" y1="450" x2="375" y2="450" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.45"/>
-      <line x1="225" y1="485" x2="330" y2="485" stroke="#C89D54" stroke-width="1.5" stroke-opacity="0.45"/>
-    
-  <line x1="220" y1="735" x2="380" y2="735" stroke="#C89D54" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="780" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, serif" font-size="21" letter-spacing="3.5">SØREN LINDQVIST</text>
-  <text x="300" y="820" text-anchor="middle" fill="#C89D54" fill-opacity="0.7" font-family="sans-serif" font-size="10" letter-spacing="3">LITERARY VOICES NETWORK</text>
+  <rect width="300" height="450" rx="4" fill="url(#cover)"/>
+  <rect width="18" height="450" rx="2" fill="#110a02"/>
+  <rect x="18" y="0" width="282" height="6" fill="url(#gold)"/>
+  <rect x="18" y="444" width="282" height="6" fill="url(#gold)"/>
+  <!-- Letterpress / type blocks motif -->
+  <g fill="#D4AF37" fill-opacity="0.12">
+    <rect x="45" y="70" width="30" height="20" rx="2"/>
+    <rect x="80" y="70" width="20" height="20" rx="2"/>
+    <rect x="105" y="70" width="40" height="20" rx="2"/>
+    <rect x="150" y="70" width="25" height="20" rx="2"/>
+    <rect x="180" y="70" width="35" height="20" rx="2"/>
+    <rect x="45" y="100" width="50" height="20" rx="2"/>
+    <rect x="100" y="100" width="30" height="20" rx="2"/>
+    <rect x="135" y="100" width="45" height="20" rx="2"/>
+    <rect x="185" y="100" width="30" height="20" rx="2"/>
+    <rect x="45" y="130" width="25" height="20" rx="2"/>
+    <rect x="75" y="130" width="55" height="20" rx="2"/>
+    <rect x="135" y="130" width="30" height="20" rx="2"/>
+    <rect x="170" y="130" width="45" height="20" rx="2"/>
+    <rect x="45" y="160" width="40" height="20" rx="2"/>
+    <rect x="90" y="160" width="20" height="20" rx="2"/>
+    <rect x="115" y="160" width="50" height="20" rx="2"/>
+    <rect x="170" y="160" width="45" height="20" rx="2"/>
+    <rect x="45" y="190" width="60" height="20" rx="2"/>
+    <rect x="110" y="190" width="35" height="20" rx="2"/>
+    <rect x="150" y="190" width="65" height="20" rx="2"/>
+    <rect x="45" y="220" width="30" height="20" rx="2"/>
+    <rect x="80" y="220" width="50" height="20" rx="2"/>
+    <rect x="135" y="220" width="40" height="20" rx="2"/>
+    <rect x="180" y="220" width="35" height="20" rx="2"/>
+  </g>
+  <!-- Press stamp circle -->
+  <circle cx="150" cy="155" r="55" stroke="url(#gold)" stroke-width="1.5" stroke-opacity="0.4" fill="none"/>
+  <text x="150" y="152" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#D4AF37" fill-opacity="0.5" letter-spacing="2">FJORD &amp; FOLIO</text>
+  <text x="150" y="165" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#D4AF37" fill-opacity="0.5" letter-spacing="2">PRESS · EST. 1884</text>
+  <rect x="30" y="16" width="258" height="360" rx="2" stroke="url(#gold)" stroke-width="1" fill="none" stroke-opacity="0.35"/>
+  <text x="150" y="322" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#FAF8F3">The Republic</text>
+  <text x="150" y="343" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#FAF8F3">of Typesetters</text>
+  <line x1="70" y1="356" x2="230" y2="356" stroke="url(#gold)" stroke-width="1"/>
+  <text x="150" y="376" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#D4AF37" letter-spacing="1">SØREN LINDQVIST</text>
+  <text x="150" y="406" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#FAF8F3" fill-opacity="0.4" letter-spacing="2">FJORD &amp; FOLIO PRESS</text>
 </svg>

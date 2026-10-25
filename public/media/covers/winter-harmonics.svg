@@ -1,26 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1A2238"/>
-      <stop offset="100%" stop-color="#0F172A"/>
+    <linearGradient id="cover" x1="0" y1="0" x2="300" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a2a3a"/>
+      <stop offset="100%" stop-color="#0d1520"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#9A6F0B"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="0" y1="80" x2="0" y2="270" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c8e0f0" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#4a90b0" stop-opacity="0.1"/>
     </linearGradient>
   </defs>
-  <rect width="600" height="900" fill="url(#bg)"/>
-  <rect x="34" y="34" width="532" height="832" fill="none" stroke="#E2C07D" stroke-width="1.5" stroke-opacity="0.45"/>
-  <rect x="46" y="46" width="508" height="808" fill="none" stroke="#F9F6F0" stroke-width="0.6" stroke-opacity="0.2"/>
-  <text x="300" y="105" text-anchor="middle" fill="#E2C07D" font-family="Georgia, serif" font-size="13" letter-spacing="4">ATELIER BORÉAL</text>
-  <line x1="240" y1="128" x2="360" y2="128" stroke="#E2C07D" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="195" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-weight="bold" letter-spacing="2">WINTER</text>
-  <text x="300" y="248" text-anchor="middle" fill="#E2C07D" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="bold" letter-spacing="2">HARMONICS</text>
-  <text x="300" y="286" text-anchor="middle" fill="#F9F6F0" fill-opacity="0.72" font-family="Georgia, serif" font-style="italic" font-size="16">Poems &amp; Lyric Sequences in Two Languages</text>
-  
-      <rect x="200" y="340" width="200" height="180" fill="none" stroke="#E2C07D" stroke-width="1.5" stroke-opacity="0.55"/>
-      <line x1="225" y1="380" x2="375" y2="380" stroke="#E2C07D" stroke-width="2" stroke-opacity="0.6"/>
-      <line x1="225" y1="415" x2="355" y2="415" stroke="#E2C07D" stroke-width="1.5" stroke-opacity="0.45"/>
-      <line x1="225" y1="450" x2="375" y2="450" stroke="#E2C07D" stroke-width="1.5" stroke-opacity="0.45"/>
-      <line x1="225" y1="485" x2="330" y2="485" stroke="#E2C07D" stroke-width="1.5" stroke-opacity="0.45"/>
-    
-  <line x1="220" y1="735" x2="380" y2="735" stroke="#E2C07D" stroke-width="1" stroke-opacity="0.5"/>
-  <text x="300" y="780" text-anchor="middle" fill="#F9F6F0" font-family="Georgia, serif" font-size="21" letter-spacing="3.5">CLAIRE MOREAU</text>
-  <text x="300" y="820" text-anchor="middle" fill="#E2C07D" fill-opacity="0.7" font-family="sans-serif" font-size="10" letter-spacing="3">LITERARY VOICES NETWORK</text>
+  <rect width="300" height="450" rx="4" fill="url(#cover)"/>
+  <rect width="18" height="450" rx="2" fill="#080e14"/>
+  <rect x="18" y="0" width="282" height="6" fill="url(#gold)"/>
+  <rect x="18" y="444" width="282" height="6" fill="url(#gold)"/>
+  <!-- Mountain / glacier silhouette -->
+  <path d="M30 280 L90 130 L130 190 L160 100 L200 170 L240 120 L270 280 Z" fill="url(#ice)"/>
+  <path d="M90 130 L130 190 L160 100 L200 170 L240 120" stroke="#c8e0f0" stroke-width="0.8" stroke-opacity="0.3" fill="none"/>
+  <!-- Musical staff lines -->
+  <g stroke="#D4AF37" stroke-opacity="0.2" stroke-width="0.6">
+    <line x1="40" y1="295" x2="260" y2="295"/>
+    <line x1="40" y1="303" x2="260" y2="303"/>
+    <line x1="40" y1="311" x2="260" y2="311"/>
+    <line x1="40" y1="319" x2="260" y2="319"/>
+    <line x1="40" y1="327" x2="260" y2="327"/>
+  </g>
+  <rect x="30" y="16" width="258" height="360" rx="2" stroke="url(#gold)" stroke-width="1" fill="none" stroke-opacity="0.35"/>
+  <text x="150" y="362" text-anchor="middle" font-family="Georgia, serif" font-size="21" font-weight="bold" fill="#FAF8F3">Winter</text>
+  <text x="150" y="386" text-anchor="middle" font-family="Georgia, serif" font-size="21" font-weight="bold" fill="#FAF8F3">Harmonics</text>
+  <line x1="80" y1="398" x2="220" y2="398" stroke="url(#gold)" stroke-width="1"/>
+  <text x="150" y="418" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#D4AF37" letter-spacing="1">CLAIRE MOREAU</text>
+  <text x="150" y="438" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#FAF8F3" fill-opacity="0.4" letter-spacing="2">ATELIER BORÉAL</text>
 </svg>

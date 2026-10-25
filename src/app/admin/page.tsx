@@ -950,6 +950,7 @@ export default function AdminDashboardPage() {
                       <option value="interview">Author Interview</option>
                       <option value="review">Book Review</option>
                       <option value="spotlight">Author Spotlight</option>
+                      <option value="lifestyle">Lifestyle & Culture</option>
                       <option value="press_release">Official Press Release</option>
                     </select>
                   </div>

@@ -38,6 +38,7 @@ import type {
 const SPOTIFY_URL =
   "https://open.spotify.com/user/31lygcpwpx6g66kako3vx25pa4fu?si=2rDuJW9YSeWLWsdYnLVJ_w&utm_source=copy-link";
 const ORBITTECH_URL = "https://orbittechportfolio.vercel.app/";
+const CONTACT_WHATSAPP = "https://wa.me/13678481372";
 const CONTACT_PHONE = "+1 (367) 848-1372";
 
 interface SiteShellProps {
@@ -286,6 +287,21 @@ export function SiteShell({
       badge: true,
     },
     {
+      id: "podcast",
+      label: "Podcast",
+      href: "/broadcasts",
+    },
+    {
+      id: "audiobooks",
+      label: "Audiobooks",
+      href: "/books?format=audiobook",
+    },
+    {
+      id: "magazine-link",
+      label: "Magazine",
+      href: "/#lvn-digital-magazine",
+    },
+    {
       id: "programming",
       label: "Programming",
       href: "/shows",
@@ -364,6 +380,12 @@ export function SiteShell({
           label: "World News",
           desc: "Global literary & cultural headlines",
           icon: Newspaper,
+        },
+        {
+          href: "/awards",
+          label: "Awards & Recognition",
+          desc: "Celebrating authors honoured on our network",
+          icon: Sparkles,
         },
       ],
     },
@@ -445,7 +467,7 @@ export function SiteShell({
         ref={navRef}
         className="sticky top-0 z-50 w-full bg-[#060606]/95 backdrop-blur-xl text-[#FAF8F3] border-b border-[#D4AF37]/30 shadow-[0_10px_30px_rgba(0,0,0,0.65)]"
       >
-        <div className="w-full px-3 sm:px-5 lg:px-6 h-16 flex items-center justify-between gap-2">
+        <div className="w-full px-3 sm:px-5 lg:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
           {/* Left-Shifted Custom Gold Crest Logo + Animated Brand Title */}
           <Link
             href="/"
@@ -767,7 +789,7 @@ export function SiteShell({
             <Link
               href="/live"
               prefetch={true}
-              className="animate-nav-stagger-3 inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3.5 py-1.5 text-[11px] font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.35)] hover:brightness-110 transition-all whitespace-nowrap"
+              className="animate-nav-stagger-3 hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3.5 py-1.5 text-[11px] font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.35)] hover:brightness-110 transition-all whitespace-nowrap"
             >
               <span className="relative flex size-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#050505] opacity-75" />
@@ -969,11 +991,13 @@ export function SiteShell({
               {/* Direct Phone & Spotify Quick Links */}
               <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
                 <a
-                  href="tel:+13678481372"
+                  href={CONTACT_WHATSAPP}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#141414] border border-[#D4AF37]/35 px-3.5 py-1.5 text-[#F7DF8B] hover:border-[#F7DF8B] transition-colors"
                 >
                   <Phone className="size-3.5 text-[#D4AF37]" />
-                  <span>{CONTACT_PHONE}</span>
+                  <span>WhatsApp Us</span>
                 </a>
                 <a
                   href={SPOTIFY_URL}
@@ -1228,7 +1252,7 @@ export function SiteShell({
                     href="/contact"
                     className="hover:text-[#F7DF8B] transition-colors"
                   >
-                    Contact ({CONTACT_PHONE})
+                    Contact Us
                   </Link>
                 </li>
               </ul>

@@ -13,7 +13,10 @@ import {
   ShieldCheck,
   Sparkles,
   User,
+  Eye,
 } from "lucide-react";
+import { BookReviewSection } from "@/components/books/BookReviewSection";
+import { incrementBookView, listBookReviews } from "@/lib/services/publishing";
 import { ArticleCard, BookCard, StatusBadge } from "@/components/ui/Cards";
 import { getCurrentSession } from "@/lib/auth/session";
 import {
@@ -32,6 +35,10 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
   const { slug } = await params;
   const viewer = await getCurrentSession();
   const book = getBookBySlugForViewer(slug, viewer);
+  if (book) {
+    incrementBookView(slug);
+  }
+  const reviews = book ? listBookReviews(book.id) : [];
 
   if (!book) {
     notFound();
@@ -206,7 +213,11 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
               </div>
 
               {/* Bibliographic Specs Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="p-3.5 rounded-xl bg-[#141414]/80 border border-white/10">
+                  <span className="text-[11px] text-[#FAF8F3]/55 block flex items-center gap-1"><Eye className="w-3 h-3 text-[#D4AF37]" /> Reader Views</span>
+                  <span className="text-sm font-semibold text-[#F7DF8B]">{(book.view_count || 0) + 1} views</span>
+                </div>
                 <div className="p-3.5 rounded-xl bg-[#141414]/80 border border-white/10">
                   <span className="text-[11px] text-[#FAF8F3]/55 block">Format</span>
                   <span className="text-sm font-semibold text-white">{book.format}</span>
@@ -267,6 +278,8 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
           </div>
         </div>
       </section>
+
+      <BookReviewSection bookId={book.id} bookTitle={book.title} initialReviews={reviews} currentUserId={viewer?.user.id} />
 
       {/* Excerpt Section */}
       {book.excerpt && (

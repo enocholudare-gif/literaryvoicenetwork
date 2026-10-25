@@ -135,8 +135,23 @@ CREATE TABLE IF NOT EXISTS books (
   seo_title TEXT NOT NULL DEFAULT '',
   seo_description TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  view_count INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS book_reviews (
+  id TEXT PRIMARY KEY,
+  book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_name TEXT NOT NULL,
+  user_avatar TEXT NOT NULL DEFAULT '/media/avatars/default-portrait.svg',
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  headline TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_book_reviews_book ON book_reviews(book_id);
 
 CREATE INDEX IF NOT EXISTS idx_books_slug ON books(slug);
 CREATE INDEX IF NOT EXISTS idx_books_status ON books(status, published_at);

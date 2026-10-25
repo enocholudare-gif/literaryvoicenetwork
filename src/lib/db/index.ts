@@ -48,6 +48,8 @@ export function initializeSchema(db: DatabaseSync): void {
   }
 
   db.exec(INITIAL_SCHEMA_SQL);
+  try { db.exec("ALTER TABLE books ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0;"); } catch {}
+  db.exec("CREATE TABLE IF NOT EXISTS book_reviews (id TEXT PRIMARY KEY, book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, user_name TEXT NOT NULL, user_avatar TEXT NOT NULL DEFAULT '/media/avatars/default-portrait.svg', rating INTEGER NOT NULL, headline TEXT NOT NULL DEFAULT '', content TEXT NOT NULL, created_at TEXT NOT NULL);");
 
   const existingMigration = db
     .prepare("SELECT version FROM schema_migrations WHERE version = ?")

@@ -312,6 +312,17 @@ const HOSTS_DATA = [
     delay: "500ms",
     bio: "Curates weekly author interviews, reading room serializations, and emerging voice spotlights across the network.",
   },
+  {
+    id: "host-4",
+    name: "Director of Digital Media & Technology",
+    role: "Digital Platform, Streaming & Innovation Lead",
+    show: "LVN Digital & Podcast Studio",
+    slug: "",
+    photo: "/media/team/digital.jpg",
+    avatar: "/media/team/digital.jpg",
+    delay: "750ms",
+    bio: "Leads the LVN digital infrastructure — streaming platforms, audiobook distribution, digital magazine, and emerging technology integrations.",
+  },
 ];
 
 const UPCOMING_BROADCASTS = [
@@ -1614,7 +1625,7 @@ export function DigitalMagazineShowcaseSection({
       : magazineItems.filter((item) => item.type === activeTab);
 
   return (
-    <section className="bg-[#FAF8F3] border-b border-[#D4AF37]/30 py-20">
+    <section id="lvn-digital-magazine" className="bg-[#FAF8F3] border-b border-[#D4AF37]/30 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>

@@ -32,6 +32,12 @@ const LEADERSHIP = [
     focus: "Author Interviews & Weekly Programming",
     bio: "Curates the weekly broadcast lineup, books author interviews and readings, and spotlights emerging voices across every show on the network.",
   },
+  {
+    photo: "/media/team/digital.jpg",
+    title: "Director of Digital Media & Technology",
+    focus: "Digital Platform, Streaming & Innovation",
+    bio: "Leads the LVN digital infrastructure — from the streaming broadcast platform and audiobook distribution to the digital magazine, website, and emerging technology integrations.",
+  },
 ];
 
 const PILLARS = [
@@ -151,10 +157,12 @@ export default function AboutPage() {
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <a
-              href="tel:+13678481372"
+              href="https://wa.me/13678481372"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 text-xs font-bold text-[#050505] hover:brightness-110"
             >
-              <Phone className="size-4" /> +1 (367) 848-1372
+              <Phone className="size-4" /> WhatsApp Us
             </a>
             <a
               href={SPOTIFY_URL}

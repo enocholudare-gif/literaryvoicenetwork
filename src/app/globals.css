@@ -338,3 +338,68 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ─── Mobile Responsiveness Improvements ─── */
+@media (max-width: 640px) {
+  /* Hero section typography */
+  .hero-headline-mobile {
+    font-size: clamp(2rem, 10vw, 3.5rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Prevent horizontal scroll */
+  section, .max-w-7xl, .max-w-6xl, .max-w-5xl {
+    overflow-x: hidden;
+  }
+
+  /* Grid stack on mobile */
+  .mobile-stack {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Book cover aspect ratio on mobile */
+  .book-cover-mobile {
+    aspect-ratio: 2/3;
+    width: 100%;
+  }
+
+  /* Auth page carousel caption */
+  .carousel-caption-mobile {
+    font-size: 0.75rem;
+  }
+
+  /* Ensure mobile menu doesn't overflow */
+  .mobile-menu-panel {
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Table overflow on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dashboard tabs — scrollable row */
+  .dashboard-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+
+  .dashboard-tabs::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ─── Touch target sizes ─── */
+@media (max-width: 768px) {
+  button, a[role="button"], input[type="submit"] {
+    min-height: 40px;
+  }
+}
+

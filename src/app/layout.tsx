@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AudioPlayerProvider } from "@/components/layout/AudioPlayerContext";
-import { SiteShell } from "@/components/layout/SiteShell";
+import { SiteShellConditional } from "@/components/layout/SiteShellConditional";
 import { getSiteSettings } from "@/lib/services/platform";
 
 const playfair = Playfair_Display({
@@ -54,10 +54,11 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${jakarta.variable}`}>
       <body className="min-h-screen bg-[#FAF8F3] text-[#080808] antialiased selection:bg-[#D4AF37]/30 selection:text-[#080808]">
         <AudioPlayerProvider>
-          <SiteShell settings={settings}>{children}</SiteShell>
+          <SiteShellConditional settings={settings}>
+            {children}
+          </SiteShellConditional>
         </AudioPlayerProvider>
       </body>
     </html>
   );
 }
-

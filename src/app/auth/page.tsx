@@ -1,29 +1,109 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
   Feather,
-  KeyRound,
   Lock,
   Mail,
-  ShieldCheck,
-  Sparkles,
   User,
 } from "lucide-react";
 
+/* ──────────────────────────────────────────────────────────
+   Carousel background images — literary / broadcast themed
+   (using publicly accessible placeholder images for now)
+────────────────────────────────────────────────────────── */
+const BG_SLIDES = [
+  {
+    url: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1600&q=80",
+    caption: "Where every voice finds its stage",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1600&q=80",
+    caption: "Connecting authors, readers & literary culture",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1600&q=80",
+    caption: "Stories that echo around the world",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1600&q=80",
+    caption: "Broadcast 24 / 7 across our global network",
+  },
+];
+
+function CarouselBackground() {
+  const [idx, setIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setIdx((prev) => (prev + 1) % BG_SLIDES.length);
+        setFading(false);
+      }, 600);
+    }, 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <>
+      {/* Slide image */}
+      <div
+        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${fading ? "opacity-0" : "opacity-100"}`}
+        style={{ backgroundImage: `url(${BG_SLIDES[idx].url})` }}
+        aria-hidden="true"
+      />
+      {/* Dark scrim */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(120deg, rgba(4,4,4,0.88) 0%, rgba(8,8,8,0.70) 60%, rgba(4,4,4,0.82) 100%)",
+        }}
+      />
+      {/* Gold accent glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(212,175,55,0.18),transparent_60%)]" />
+
+      {/* Caption */}
+      <div className="absolute bottom-6 left-8 right-8 text-center pointer-events-none z-10">
+        <p
+          className={`font-serif-display text-sm italic text-[#F7DF8B]/80 transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"}`}
+        >
+          &ldquo;{BG_SLIDES[idx].caption}&rdquo;
+        </p>
+        <div className="flex justify-center gap-1.5 mt-3">
+          {BG_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Go to slide ${i + 1}`}
+              onClick={() => setIdx(i)}
+              className={`size-1.5 rounded-full transition-all ${i === idx ? "bg-[#D4AF37] w-4" : "bg-white/35"}`}
+            />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+   Main auth form
+────────────────────────────────────────────────────────── */
 function AuthFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") || "login";
 
-  const [mode, setMode] = useState<"login" | "register" | "verify" | "reset">(
+  const [mode, setMode] = useState<"login" | "register" | "forgot" | "reset">(
     initialMode === "register"
       ? "register"
-      : initialMode === "verify"
-      ? "verify"
+      : initialMode === "forgot"
+      ? "forgot"
       : initialMode === "reset"
       ? "reset"
       : "login"
@@ -31,21 +111,25 @@ function AuthFormContent() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [roleChoice, setRoleChoice] = useState<"member" | "author">("author");
-  const [token, setToken] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [devTokenPreview, setDevTokenPreview] = useState("");
 
+  const clearMessages = () => {
+    setError("");
+    setSuccessMsg("");
+  };
+
+  /* ── Sign In ── */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccessMsg("");
-
+    clearMessages();
     try {
       const res = await fetch("/api/auth", {
         method: "POST",
@@ -54,61 +138,31 @@ function AuthFormContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Sign-in failed.");
+        setError(data.error || "Sign-in failed. Please check your credentials.");
       } else {
-        setSuccessMsg("Signed in! Redirecting...");
+        setSuccessMsg("Signed in! Redirecting…");
+        const role = data.user?.role;
         const target =
-          data.user?.role === "admin" || data.user?.role === "editor"
-            ? "/admin"
-            : "/dashboard";
+          role === "admin" || role === "editor" ? "/admin" : "/dashboard";
         router.push(target);
         router.refresh();
       }
     } catch {
-      setError("Network error while signing in.");
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuickDemoLogin = async (demoEmail: string) => {
-    setLoading(true);
-    setError("");
-    setSuccessMsg("");
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "login",
-          email: demoEmail,
-          password: "LvnPass2026!",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Demo sign-in failed.");
-      } else {
-        const target =
-          data.user?.role === "admin" || data.user?.role === "editor"
-            ? "/admin"
-            : "/dashboard";
-        router.push(target);
-        router.refresh();
-      }
-    } catch {
-      setError("Network error during demo login.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  /* ── Register ── */
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     setLoading(true);
-    setError("");
-    setSuccessMsg("");
-
+    clearMessages();
     try {
       const res = await fetch("/api/auth", {
         method: "POST",
@@ -126,11 +180,8 @@ function AuthFormContent() {
         setError(data.error || "Registration failed.");
       } else {
         setSuccessMsg(
-          "Account created! We also generated a verification token below for local testing before redirecting to your studio."
+          "Account created! Redirecting to your studio…"
         );
-        if (data.verificationToken) {
-          setDevTokenPreview(data.verificationToken);
-        }
         setTimeout(() => {
           router.push("/dashboard");
           router.refresh();
@@ -143,23 +194,29 @@ function AuthFormContent() {
     }
   };
 
-  const handleVerifyEmail = async (e: React.FormEvent) => {
+  /* ── Forgot Password ── */
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccessMsg("");
+    clearMessages();
     try {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify-email", token }),
+        body: JSON.stringify({ action: "request-reset", email }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Verification failed.");
+        setError(data.error || "Failed to send reset email.");
       } else {
-        setSuccessMsg("Email verified! You can now sign in.");
-        setMode("login");
+        setSuccessMsg(
+          "If an account exists for that email, a password reset link has been sent. Please check your inbox."
+        );
+        // In dev mode, pre-fill the token field and switch to reset mode
+        if (data.devResetToken) {
+          setResetToken(data.devResetToken);
+          setTimeout(() => setMode("reset"), 1500);
+        }
       }
     } catch {
       setError("Network error.");
@@ -168,49 +225,22 @@ function AuthFormContent() {
     }
   };
 
-  const handleRequestReset = async () => {
-    if (!email) {
-      setError("Enter your email address first to request a reset token.");
+  /* ── Reset Password ── */
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
     setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "request-reset", email }),
-      });
-      const data = await res.json();
-      if (data.devResetToken) {
-        setToken(data.devResetToken);
-        setDevTokenPreview(data.devResetToken);
-        setSuccessMsg(
-          "Password reset token generated! In development mode it has been pre-filled below."
-        );
-      } else {
-        setSuccessMsg(
-          "If an account exists for that email, a reset token has been dispatched."
-        );
-      }
-    } catch {
-      setError("Failed to request reset token.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    clearMessages();
     try {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "reset-password",
-          token,
+          token: resetToken,
           newPassword,
         }),
       });
@@ -218,8 +248,8 @@ function AuthFormContent() {
       if (!res.ok) {
         setError(data.error || "Password reset failed.");
       } else {
-        setSuccessMsg("Password updated! Please sign in with your new password.");
-        setMode("login");
+        setSuccessMsg("Password updated! You can now sign in with your new password.");
+        setTimeout(() => setMode("login"), 1800);
       }
     } catch {
       setError("Network error.");
@@ -229,138 +259,119 @@ function AuthFormContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F3] py-14 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Auth Form */}
-        <div className="lg:col-span-7 rounded-3xl bg-white border border-[#080808]/12 p-8 sm:p-10 shadow-sm space-y-6">
-          <div className="flex items-center justify-between gap-4 border-b border-[#080808]/10 pb-5">
-            <div>
-              <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#AA7C11]">
-                Literary Voices Network
-              </span>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#080808] mt-1">
-                {mode === "login" && "Sign In to Your Account"}
-                {mode === "register" && "Create Member or Author Account"}
-                {mode === "verify" && "Verify Your Email Address"}
-                {mode === "reset" && "Password Recovery & Reset"}
-              </h1>
-            </div>
-            <Feather className="w-7 h-7 text-[#D4AF37]" />
+    <div className="min-h-screen relative flex items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Carousel background */}
+      <CarouselBackground />
+
+      {/* Auth card */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* LVN brand mark */}
+        <div className="text-center mb-6">
+          <Link href="/" className="inline-flex flex-col items-center gap-1 group">
+            <Feather className="size-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+            <span className="font-serif-display text-lg font-bold text-white">
+              Literary Voices Network
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.22em] text-[#D4AF37]">
+              Authors · Readers · Editors
+            </span>
+          </Link>
+        </div>
+
+        {/* Card */}
+        <div className="rounded-3xl bg-[#080808]/90 backdrop-blur-xl border border-[#D4AF37]/40 shadow-[0_24px_64px_rgba(0,0,0,0.85)] p-8 space-y-6">
+          {/* Mode tabs */}
+          <div className="flex gap-1 bg-[#111111] p-1 rounded-xl text-[11px] font-semibold">
+            {(["login", "register", "forgot"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => { setMode(m); clearMessages(); }}
+                className={`flex-1 py-2 px-2 rounded-lg transition-colors capitalize ${
+                  mode === m || (m === "forgot" && mode === "reset")
+                    ? "bg-gold-gradient text-[#050505] font-bold"
+                    : "text-[#FAF8F3]/70 hover:text-[#FAF8F3]"
+                }`}
+              >
+                {m === "forgot" ? "Forgot Password" : m === "login" ? "Sign In" : "Sign Up"}
+              </button>
+            ))}
           </div>
 
-          {/* Mode Tabs */}
-          <div className="flex flex-wrap gap-2 bg-[#F3EFE4] p-1.5 rounded-xl text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("login");
-                setError("");
-                setSuccessMsg("");
-              }}
-              className={`flex-1 py-2 px-3 rounded-lg transition-colors ${
-                mode === "login"
-                  ? "bg-[#080808] text-white"
-                  : "text-[#080808]/70 hover:text-[#080808]"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("register");
-                setError("");
-                setSuccessMsg("");
-              }}
-              className={`flex-1 py-2 px-3 rounded-lg transition-colors ${
-                mode === "register"
-                  ? "bg-[#080808] text-white"
-                  : "text-[#080808]/70 hover:text-[#080808]"
-              }`}
-            >
-              Register
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("reset");
-                setError("");
-                setSuccessMsg("");
-              }}
-              className={`flex-1 py-2 px-3 rounded-lg transition-colors ${
-                mode === "reset"
-                  ? "bg-[#080808] text-white"
-                  : "text-[#080808]/70 hover:text-[#080808]"
-              }`}
-            >
-              Reset Password
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("verify");
-                setError("");
-                setSuccessMsg("");
-              }}
-              className={`flex-1 py-2 px-3 rounded-lg transition-colors ${
-                mode === "verify"
-                  ? "bg-[#080808] text-white"
-                  : "text-[#080808]/70 hover:text-[#080808]"
-              }`}
-            >
-              Verify Token
-            </button>
+          {/* Title */}
+          <div className="text-center">
+            <h1 className="font-serif-display text-2xl font-bold text-white">
+              {mode === "login" && "Welcome Back"}
+              {mode === "register" && "Create Your Account"}
+              {mode === "forgot" && "Reset Your Password"}
+              {mode === "reset" && "Enter New Password"}
+            </h1>
+            <p className="text-xs text-[#FAF8F3]/60 mt-1">
+              {mode === "login" && "Sign in to access your dashboard"}
+              {mode === "register" && "Join LVN as an author or reader member"}
+              {mode === "forgot" && "We'll send a reset link to your email"}
+              {mode === "reset" && "Enter the token from your email and your new password"}
+            </p>
           </div>
 
+          {/* Error */}
           {error && (
-            <div className="p-4 rounded-xl bg-rose-950/90 text-rose-100 text-xs font-medium border border-rose-500/40">
-              {error}
+            <div className="p-3.5 rounded-xl bg-rose-950/90 text-rose-200 text-xs font-medium border border-rose-500/40 flex items-start gap-2">
+              <span>⚠</span>
+              <span>{error}</span>
             </div>
           )}
 
+          {/* Success */}
           {successMsg && (
-            <div className="p-4 rounded-xl bg-amber-950/90 text-emerald-100 text-xs font-medium border border-amber-500/40">
-              {successMsg}
-              {devTokenPreview && (
-                <div className="mt-2 font-mono text-[11px] bg-black/30 p-2 rounded">
-                  Dev Token: {devTokenPreview}
-                </div>
-              )}
+            <div className="p-3.5 rounded-xl bg-emerald-950/90 text-emerald-200 text-xs font-medium border border-emerald-500/40 flex items-start gap-2">
+              <CheckCircle2 className="size-4 shrink-0 mt-0.5" />
+              <span>{successMsg}</span>
             </div>
           )}
 
+          {/* ── Login Form ── */}
           {mode === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-[#080808]/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { setMode("forgot"); clearMessages(); }}
+                    className="text-[11px] text-[#D4AF37] hover:text-[#F7DF8B] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-[#080808]/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
               </div>
@@ -368,64 +379,101 @@ function AuthFormContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-[#080808] text-white font-bold text-sm hover:bg-[#141414] transition-colors disabled:opacity-50"
+                className="w-full py-3 rounded-xl bg-gold-gradient text-[#050505] font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50"
               >
-                {loading ? "Signing In..." : "Sign In to Literary Voices Network"}
+                {loading ? "Signing In…" : "Sign In"}
               </button>
+
+              <p className="text-center text-[11px] text-[#FAF8F3]/50">
+                Don&apos;t have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setMode("register"); clearMessages(); }}
+                  className="text-[#D4AF37] hover:underline font-semibold"
+                >
+                  Create one free
+                </button>
+              </p>
             </form>
           )}
 
+          {/* ── Register Form ── */}
           {mode === "register" && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  Public Display Name / Pen Name
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
+                  Display Name / Pen Name
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-[#080808]/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="e.g. Clara Vance"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
                   Email Address
                 </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="author@example.com"
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm focus:outline-none focus:border-[#D4AF37]"
-                />
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="author@example.com"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  Password (Minimum 8 characters)
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
+                  Password (min 8 characters)
                 </label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a strong password"
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm focus:outline-none focus:border-[#D4AF37]"
-                />
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a strong password"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  Account Profile Type
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter your password"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+              </div>
+
+              {/* Account type */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-2">
+                  Account Type
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -433,13 +481,13 @@ function AuthFormContent() {
                     onClick={() => setRoleChoice("author")}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       roleChoice === "author"
-                        ? "border-[#080808] bg-[#080808] text-white"
-                        : "border-[#080808]/20 text-[#080808]"
+                        ? "border-[#D4AF37] bg-[#D4AF37]/15 text-[#F7DF8B]"
+                        : "border-white/15 text-[#FAF8F3]/70 hover:border-[#D4AF37]/50"
                     }`}
                   >
-                    <span className="font-bold text-xs block">Author & Contributor</span>
+                    <span className="font-bold text-xs block">Author &amp; Contributor</span>
                     <span className="text-[11px] opacity-75">
-                      Public author profile, submit books, essays, and pitches
+                      Public profile, books &amp; submissions
                     </span>
                   </button>
                   <button
@@ -447,13 +495,13 @@ function AuthFormContent() {
                     onClick={() => setRoleChoice("member")}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       roleChoice === "member"
-                        ? "border-[#080808] bg-[#080808] text-white"
-                        : "border-[#080808]/20 text-[#080808]"
+                        ? "border-[#D4AF37] bg-[#D4AF37]/15 text-[#F7DF8B]"
+                        : "border-white/15 text-[#FAF8F3]/70 hover:border-[#D4AF37]/50"
                     }`}
                   >
-                    <span className="font-bold text-xs block">Reader & Member</span>
+                    <span className="font-bold text-xs block">Reader &amp; Member</span>
                     <span className="text-[11px] opacity-75">
-                      Save favourite books, follow authors, and submit essays
+                      Save books, follow authors
                     </span>
                   </button>
                 </div>
@@ -462,213 +510,117 @@ function AuthFormContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-sm hover:bg-[#F7DF8B] transition-colors disabled:opacity-50"
+                className="w-full py-3 rounded-xl bg-gold-gradient text-[#050505] font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50"
               >
-                {loading ? "Creating Account..." : "Create LVN Account"}
+                {loading ? "Creating Account…" : "Create Free Account"}
               </button>
+
+              <p className="text-center text-[11px] text-[#FAF8F3]/50">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setMode("login"); clearMessages(); }}
+                  className="text-[#D4AF37] hover:underline font-semibold"
+                >
+                  Sign in
+                </button>
+              </p>
             </form>
           )}
 
-          {mode === "reset" && (
-            <form onSubmit={handleConfirmReset} className="space-y-4">
+          {/* ── Forgot Password Form ── */}
+          {mode === "forgot" && (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  1. Enter Account Email & Request Token
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
+                  Your Account Email
                 </label>
-                <div className="flex gap-2">
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
+                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
                   />
-                  <button
-                    type="button"
-                    onClick={handleRequestReset}
-                    className="px-4 py-2.5 rounded-xl bg-[#080808] text-white text-xs font-bold shrink-0"
-                  >
-                    Generate Token
-                  </button>
                 </div>
               </div>
 
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-gold-gradient text-[#050505] font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50"
+              >
+                {loading ? "Sending…" : "Send Reset Link"}
+              </button>
+
+              <p className="text-center text-[11px] text-[#FAF8F3]/50">
+                Remember your password?{" "}
+                <button
+                  type="button"
+                  onClick={() => { setMode("login"); clearMessages(); }}
+                  className="text-[#D4AF37] hover:underline font-semibold"
+                >
+                  Sign in
+                </button>
+              </p>
+            </form>
+          )}
+
+          {/* ── Reset Password Form ── */}
+          {mode === "reset" && (
+            <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  2. Reset Token
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
+                  Reset Token (from your email)
                 </label>
                 <input
                   type="text"
                   required
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
+                  value={resetToken}
+                  onChange={(e) => setResetToken(e.target.value)}
                   placeholder="Paste reset token"
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] font-mono placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  3. New Password
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80 mb-1.5">
+                  New Password (min 8 characters)
                 </label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
-                />
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#111111] border border-white/15 text-sm text-[#FAF8F3] placeholder:text-white/35 focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-sm hover:bg-[#F7DF8B] transition-colors"
+                className="w-full py-3 rounded-xl bg-gold-gradient text-[#050505] font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50"
               >
-                Confirm New Password
-              </button>
-            </form>
-          )}
-
-          {mode === "verify" && (
-            <form onSubmit={handleVerifyEmail} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1.5">
-                  Email Verification Token
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Enter verification token"
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-[#080808] text-white font-bold text-sm"
-              >
-                Verify Email
+                {loading ? "Updating…" : "Set New Password"}
               </button>
             </form>
           )}
         </div>
 
-        {/* Right Column: One-Click Demo Role Access for QA & Evaluation */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="rounded-3xl bg-[#080808] text-[#FAF8F3] p-7 border border-[#D4AF37]/35 shadow-xl space-y-5">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#D4AF37]" />
-              <h2 className="font-serif text-xl font-bold text-white">
-                Instant Role Switcher (Demo & QA)
-              </h2>
-            </div>
-            <p className="text-xs text-[#FAF8F3]/80 leading-relaxed">
-              Test every role-based workflow immediately with our seeded accounts (all using password{" "}
-              <code className="text-[#F7DF8B] font-mono">LvnPass2026!</code>):
-            </p>
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() =>
-                  handleQuickDemoLogin("admin@literaryvoicesnetwork.org")
-                }
-                className="w-full p-4 rounded-2xl bg-[#141414] hover:bg-[#1D2540] border border-[#D4AF37]/40 text-left transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4" />
-                    Administrator + Public Author
-                  </span>
-                  <span className="text-[11px] text-white/60 group-hover:text-white">
-                    Sign In →
-                  </span>
-                </div>
-                <div className="font-serif font-bold text-base text-white mt-1">
-                  Eleanor Vance (admin@literaryvoicesnetwork.org)
-                </div>
-                <p className="text-[11px] text-[#FAF8F3]/70 mt-1">
-                  Full platform administration + personal public author profile at{" "}
-                  <code>/authors/eleanor-vance</code> with direct publishing.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleQuickDemoLogin("editor@literaryvoicesnetwork.org")
-                }
-                className="w-full p-4 rounded-2xl bg-[#141414] hover:bg-[#1D2540] border border-white/10 hover:border-[#D4AF37]/40 text-left transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#F7DF8B]">
-                    Senior Commissioning Editor
-                  </span>
-                  <span className="text-[11px] text-white/60 group-hover:text-white">
-                    Sign In →
-                  </span>
-                </div>
-                <div className="font-serif font-bold text-base text-white mt-1">
-                  Marcus Sterling (editor@literaryvoicesnetwork.org)
-                </div>
-                <p className="text-[11px] text-[#FAF8F3]/70 mt-1">
-                  Review member book & article submissions, request revisions, approve/schedule publications.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleQuickDemoLogin("amara.osei@literaryvoicesnetwork.org")
-                }
-                className="w-full p-4 rounded-2xl bg-[#141414] hover:bg-[#1D2540] border border-white/10 hover:border-[#D4AF37]/40 text-left transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
-                    Verified Author
-                  </span>
-                  <span className="text-[11px] text-white/60 group-hover:text-white">
-                    Sign In →
-                  </span>
-                </div>
-                <div className="font-serif font-bold text-base text-white mt-1">
-                  Amara Osei (amara.osei@literaryvoicesnetwork.org)
-                </div>
-                <p className="text-[11px] text-[#FAF8F3]/70 mt-1">
-                  Manage books, draft essays in the rich-text studio, pitch interviews, and edit public author profile.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleQuickDemoLogin("member@literaryvoicesnetwork.org")
-                }
-                className="w-full p-4 rounded-2xl bg-[#141414] hover:bg-[#1D2540] border border-white/10 hover:border-[#D4AF37]/40 text-left transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
-                    Registered Member / Reader
-                  </span>
-                  <span className="text-[11px] text-white/60 group-hover:text-white">
-                    Sign In →
-                  </span>
-                </div>
-                <div className="font-serif font-bold text-base text-white mt-1">
-                  Nadia Khoury (member@literaryvoicesnetwork.org)
-                </div>
-                <p className="text-[11px] text-[#FAF8F3]/70 mt-1">
-                  Submit community essays, track review feedback, manage saved books, followed authors, and event RSVPs.
-                </p>
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Back to site */}
+        <p className="text-center mt-4 text-[11px] text-white/50">
+          <Link href="/" className="hover:text-[#D4AF37] transition-colors">
+            ← Return to Literary Voices Network
+          </Link>
+        </p>
       </div>
     </div>
   );
@@ -678,8 +630,8 @@ export default function AuthPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center p-12 text-sm text-[#080808]">
-          Loading authentication studio...
+        <div className="min-h-screen bg-[#040404] flex items-center justify-center p-12 text-sm text-[#FAF8F3]">
+          Loading…
         </div>
       }
     >

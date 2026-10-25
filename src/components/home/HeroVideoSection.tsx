@@ -245,7 +245,7 @@ export function HeroVideoSection({
             <div className="animate-hero-5 pt-8 border-t border-white/15 grid grid-cols-3 gap-6 sm:gap-12 max-w-2xl">
               <div>
                 <p className="font-serif-display text-2xl sm:text-4xl font-bold text-[#F7DF8B]">
-                  <AnimatedCounter target={42} />
+                  <AnimatedCounter target={10} />
                 </p>
                 <p className="text-xs sm:text-sm text-[#FAF8F3]/70 mt-1">
                   Programs weekly
@@ -253,7 +253,7 @@ export function HeroVideoSection({
               </div>
               <div>
                 <p className="font-serif-display text-2xl sm:text-4xl font-bold text-[#F7DF8B]">
-                  <AnimatedCounter target={1280} suffix="+" />
+                  <AnimatedCounter target={500} suffix="+" />
                 </p>
                 <p className="text-xs sm:text-sm text-[#FAF8F3]/70 mt-1">
                   Authors featured
@@ -261,7 +261,7 @@ export function HeroVideoSection({
               </div>
               <div>
                 <p className="font-serif-display text-2xl sm:text-4xl font-bold text-[#F7DF8B]">
-                  <AnimatedCounter target={3400} suffix="+" />
+                  <AnimatedCounter target={900} suffix="+" />
                 </p>
                 <p className="text-xs sm:text-sm text-[#FAF8F3]/70 mt-1">
                   Hours on demand

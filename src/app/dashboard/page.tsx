@@ -997,6 +997,7 @@ function MemberDashboardContent() {
                       <h4 className="font-serif text-lg font-bold text-[#080808] mt-1">
                         {b.title}
                       </h4>
+                      <div className="flex items-center gap-2 mt-1"><span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#AA7C11] bg-[#F7DF8B]/30 px-2 py-0.5 rounded-md"><Eye className="w-3 h-3" /> {b.view_count || 0} views</span></div>
                       <span className="text-xs text-[#080808]/60">
                         {b.genre} · {b.format} · ISBN: {b.isbn || "N/A"}
                       </span>
@@ -1122,6 +1123,7 @@ function MemberDashboardContent() {
                         <option value="review">Book Review</option>
                         <option value="interview">Author Interview</option>
                         <option value="spotlight">Author Spotlight</option>
+                        <option value="lifestyle">Lifestyle & Culture</option>
                         <option value="cover_story">Cover Story</option>
                         <option value="commentary">Cultural Commentary</option>
                         <option value="resource">Publishing Resource</option>

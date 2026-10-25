@@ -225,6 +225,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, ...res });
     }
 
+    if (action === "add-book-review") {
+      if (!session) return NextResponse.json({ ok: false, error: "UNAUTHORIZED: Must be signed in to review" }, { status: 401 });
+      const { createBookReview } = await import('@/lib/services/publishing');
+      const review = createBookReview({
+        bookId: String(body.bookId),
+        userId: session.user.id,
+        userName: session.profile?.display_name || session.user.email,
+        userAvatar: session.profile?.avatar_url,
+        rating: Number(body.rating) || 5,
+        headline: String(body.headline || ''),
+        content: String(body.content || '')
+      });
+      return NextResponse.json({ ok: true, review });
+    }
+
     if (action === "authorize-manuscript") {
       const book = authorizeManuscriptDistribution(
         session,

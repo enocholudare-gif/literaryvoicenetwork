@@ -216,6 +216,7 @@ export function mapBookRow(row: Record<string, unknown>): Book {
     seo_description: String(row.seo_description || ""),
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
+    view_count: Number(row.view_count || 0),
     author_name: row.author_name ? String(row.author_name) : undefined,
     author_slug: row.author_slug ? String(row.author_slug) : undefined,
     author_avatar: row.author_avatar ? String(row.author_avatar) : undefined,
@@ -1919,3 +1920,58 @@ function getEntityTagNames(entityType: "book" | "article", entityId: string): st
   return rows.map((r) => r.name);
 }
 
+
+export function incrementBookView(slug: string): void {
+  const db = getDb();
+  try {
+    db.prepare("UPDATE books SET view_count = COALESCE(view_count, 0) + 1 WHERE slug = ?").run(slug);
+  } catch {}
+}
+
+export function listBookReviews(bookId: string): import('@/lib/db/types').BookReview[] {
+  const db = getDb();
+  try {
+    return db.prepare("SELECT * FROM book_reviews WHERE book_id = ? ORDER BY created_at DESC").all(bookId) as any;
+  } catch {
+    return [];
+  }
+}
+
+export function createBookReview(input: {
+  bookId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  headline: string;
+  content: string;
+}): import('@/lib/db/types').BookReview {
+  const db = getDb();
+  const id = 'rev-' + Math.random().toString(36).slice(2, 10);
+  const createdAt = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO book_reviews (id, book_id, user_id, user_name, user_avatar, rating, headline, content, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    input.bookId,
+    input.userId,
+    input.userName,
+    input.userAvatar || '/media/avatars/default-portrait.svg',
+    input.rating,
+    input.headline,
+    input.content,
+    createdAt
+  );
+  return {
+    id,
+    book_id: input.bookId,
+    user_id: input.userId,
+    user_name: input.userName,
+    user_avatar: input.userAvatar || '/media/avatars/default-portrait.svg',
+    rating: input.rating,
+    headline: input.headline,
+    content: input.content,
+    created_at: createdAt,
+  };
+}

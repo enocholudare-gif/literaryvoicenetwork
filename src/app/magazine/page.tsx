@@ -59,6 +59,7 @@ export default async function MagazinePage({ searchParams }: MagazinePageProps) 
     { value: "interview", label: "Author Interviews" },
     { value: "review", label: "Book Reviews" },
     { value: "essay", label: "Literary Essays" },
+    { value: "lifestyle", label: "Author Lifestyle" },
     { value: "spotlight", label: "Author Spotlights" },
     { value: "resource", label: "Publishing Craft" },
   ];
