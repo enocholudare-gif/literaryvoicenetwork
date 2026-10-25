@@ -22,8 +22,7 @@ export default function AdminLayout({
         if (!data.authenticated) {
           router.push("/auth?mode=login");
         } else if (
-          data.user?.role !== "admin" &&
-          data.user?.role !== "editor"
+          data.user?.role !== "admin"
         ) {
           // Non-admin/editor users go to their dashboard
           router.push("/dashboard");
@@ -52,7 +51,7 @@ export default function AdminLayout({
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           {/* Logo + title */}
           <div className="flex items-center gap-3">
-            <LvnCrestLogo className="size-8" />
+            <img src="/logo.png" alt="LVN Logo" className="size-9 object-contain rounded-lg" />
             <div className="leading-tight">
               <p className="font-serif text-sm font-bold text-[#FAF8F3]">
                 LVN Admin Console

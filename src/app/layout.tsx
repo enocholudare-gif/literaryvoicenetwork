@@ -34,6 +34,10 @@ export const metadata: Metadata = {
     "author interviews",
     "book reviews",
   ],
+  icons: {
+    icon: [{ url: "/logo.png" }, { url: "/favicon.ico" }],
+    apple: [{ url: "/logo.png" }],
+  },
   openGraph: {
     title: "Literary Voices Network (LVN)",
     description:

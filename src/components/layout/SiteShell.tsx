@@ -475,7 +475,7 @@ export function SiteShell({
             className="flex items-center gap-2.5 group shrink-0 min-w-0"
           >
             <div className="group-hover:scale-105 transition-transform duration-300 shrink-0">
-              <LvnCrestLogo className="size-10" />
+              <img src="/logo.png" alt="LVN Crest" className="size-10 object-contain rounded-lg" />
             </div>
             <div className="leading-tight">
               <span className="block font-serif-display text-xs sm:text-sm font-bold tracking-tight brand-name-transition">
@@ -752,7 +752,7 @@ export function SiteShell({
                   <span className="hidden xl:inline">Workspace</span>
                 </Link>
 
-                {(user.role === "admin" || user.role === "editor") && (
+                {user.role === "admin" && (
                   <Link
                     href="/admin"
                     prefetch={true}
@@ -973,7 +973,7 @@ export function SiteShell({
             {/* Brand & Dispatch Column */}
             <div className="lg:col-span-2 space-y-4">
               <Link href="/" className="flex items-center gap-3 group">
-                <LvnCrestLogo className="size-11" />
+                <img src="/logo.png" alt="LVN Crest" className="size-11 object-contain rounded-lg" />
                 <div>
                   <p className="font-serif-display text-lg font-bold brand-name-transition">
                     Literary Voices Network

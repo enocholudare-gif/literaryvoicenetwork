@@ -268,7 +268,7 @@ function AuthFormContent() {
         {/* LVN brand mark */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-flex flex-col items-center gap-1 group">
-            <Feather className="size-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
+            <img src="/logo.png" alt="LVN Logo" className="size-12 object-contain rounded-xl group-hover:scale-105 transition-transform shadow-md" />
             <span className="font-serif-display text-lg font-bold text-white">
               Literary Voices Network
             </span>

@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
       const authData = await authRes.json();
       if (
         !authData.authenticated ||
-        (authData.user?.role !== "admin" && authData.user?.role !== "editor")
+        (authData.user?.role !== "admin")
       ) {
         router.push("/auth?mode=login");
         return;

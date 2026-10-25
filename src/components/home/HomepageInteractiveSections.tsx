@@ -69,8 +69,8 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     title: "The Glass Meridian",
     author: "Eleanor Vance",
     slug: "the-glass-meridian",
-    coverUrl: "/media/covers/the-glass-meridian.svg",
-    fallbackCover: "/media/covers/the-glass-meridian.svg",
+    coverUrl: "/media/covers/the-glass-meridian.jpg",
+    fallbackCover: "/media/covers/the-glass-meridian.jpg",
     rating: 4.9,
     publisher: "Meridian House Press",
     year: 2026,
@@ -92,8 +92,8 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     title: "The Saltwater Ledger",
     author: "Amara Osei",
     slug: "the-saltwater-ledger",
-    coverUrl: "/media/covers/the-saltwater-ledger.svg",
-    fallbackCover: "/media/covers/the-saltwater-ledger.svg",
+    coverUrl: "/media/covers/the-saltwater-ledger.jpg",
+    fallbackCover: "/media/covers/the-saltwater-ledger.jpg",
     rating: 4.9,
     publisher: "Harbour & Loom",
     year: 2026,
@@ -115,8 +115,8 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     title: "Atlas of Quiet Cities",
     author: "Julian Thorne",
     slug: "atlas-of-quiet-cities",
-    coverUrl: "/media/covers/atlas-of-quiet-cities.svg",
-    fallbackCover: "/media/covers/atlas-of-quiet-cities.svg",
+    coverUrl: "/media/covers/atlas-of-quiet-cities.jpg",
+    fallbackCover: "/media/covers/atlas-of-quiet-cities.jpg",
     rating: 4.8,
     publisher: "Northlight Editions",
     year: 2026,
@@ -138,8 +138,8 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     title: "Winter Harmonics",
     author: "Claire Moreau",
     slug: "winter-harmonics",
-    coverUrl: "/media/covers/winter-harmonics.svg",
-    fallbackCover: "/media/covers/winter-harmonics.svg",
+    coverUrl: "/media/covers/winter-harmonics.jpg",
+    fallbackCover: "/media/covers/winter-harmonics.jpg",
     rating: 4.8,
     publisher: "Atelier Boréal",
     year: 2026,
@@ -161,8 +161,8 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     title: "The Republic of Typesetters",
     author: "Søren Lindqvist",
     slug: "the-republic-of-typesetters",
-    coverUrl: "/media/covers/republic-of-typesetters.svg",
-    fallbackCover: "/media/covers/republic-of-typesetters.svg",
+    coverUrl: "/media/covers/republic-of-typesetters.jpg",
+    fallbackCover: "/media/covers/republic-of-typesetters.jpg",
     rating: 4.9,
     publisher: "Fjord & Folio Press",
     year: 2026,
@@ -184,8 +184,8 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     title: "The Architecture of Memory",
     author: "LVN Literary Quarterly",
     slug: "the-glass-meridian",
-    coverUrl: "/media/covers/issue-14.svg",
-    fallbackCover: "/media/covers/issue-14.svg",
+    coverUrl: "/media/covers/cover-redwood.jpg",
+    fallbackCover: "/media/covers/cover-redwood.jpg",
     rating: 4.9,
     publisher: "Grove Press",
     year: 2025,
@@ -1324,12 +1324,12 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
                 <div className="aspect-[2/3] rounded-xl overflow-hidden bg-[#050505] mb-3.5 border border-[#D4AF37]/25 relative">
                   <img
                     src={
-                      book.cover_url || "/media/covers/the-glass-meridian.svg"
+                      book.cover_url || "/media/covers/the-glass-meridian.jpg"
                     }
                     alt={book.title}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =
-                        "/media/covers/the-glass-meridian.svg";
+                        "/media/covers/the-glass-meridian.jpg";
                     }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
