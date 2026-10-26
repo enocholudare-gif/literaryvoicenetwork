@@ -722,6 +722,17 @@ export default function AdminDashboardPage() {
                     {sub.entity_title}
                   </h3>
 
+                  {/* Formatted Mail Text Dispatch Box */}
+                  <div className="rounded-xl bg-[#080808] text-[#FAF8F3] border border-[#D4AF37]/40 p-3.5 text-xs font-mono space-y-1">
+                    <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[#D4AF37] border-b border-white/10 pb-1.5 mb-1.5">
+                      <span>✉ Mail Notification Text (Sent to {settings?.editorialEmail || "Admin Email"})</span>
+                      <span>Status: {sub.status}</span>
+                    </div>
+                    <p><strong>Subject:</strong> [LVN Admin Approval Required] New {sub.entity_type === "book" ? "Book" : "Article"} Submitted — &ldquo;{sub.entity_title}&rdquo;</p>
+                    <p><strong>From Author:</strong> {sub.author_name}</p>
+                    <p><strong>Notes:</strong> {sub.submission_notes || "Please review and approve for publication on the Literary Voices Network directory."}</p>
+                  </div>
+
                   {sub.submission_notes && (
                     <p className="text-xs text-[#080808]/75 bg-[#FAF8F3] p-3 rounded-xl">
                       <strong>Author’s Submission Note:</strong> {sub.submission_notes}
@@ -1519,6 +1530,21 @@ export default function AdminDashboardPage() {
                   Hero Video & Global Site Settings
                 </h2>
                 <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#AA7C11] mb-1">
+                    Admin Book &amp; Submission Notification Email (Receives Mail Texts)
+                  </label>
+                  <input
+                    type="email"
+                    value={settings.editorialEmail || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        editorialEmail: e.target.value,
+                      })
+                    }
+                    placeholder="Enter your email address to receive book submission alerts..."
+                    className="w-full px-3 py-2 mb-3 rounded-xl border-2 border-[#D4AF37] bg-[#FAF8F3] text-xs font-semibold text-[#080808]"
+                  />
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
                     Announcement Bar Text
                   </label>

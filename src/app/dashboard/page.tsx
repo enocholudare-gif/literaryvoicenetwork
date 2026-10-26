@@ -315,7 +315,7 @@ function MemberDashboardContent() {
       text: publishImmediately
         ? `Book "${data.book.title}" published directly under your public profile (${profile?.display_name})!`
         : submitForReview
-        ? `Book "${data.book.title}" submitted to the LVN editorial board for review!`
+        ? `✉ Mail Dispatched to Admin for Approval! Book "${data.book.title}" by ${profile?.display_name} is now awaiting Admin approval before appearing on the website.`
         : `Draft saved for "${data.book.title}".`,
     });
     resetBookForm();
@@ -966,9 +966,9 @@ function MemberDashboardContent() {
                   className="px-5 py-2.5 rounded-xl bg-[#080808] text-white font-bold text-xs hover:bg-[#141414] inline-flex items-center gap-1.5"
                 >
                   <Send className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  Submit for Editorial Review
+                  Submit Book for Admin Approval
                 </button>
-                {(true || isStaff) && (
+                {user?.role === "admin" && (
                   <button
                     type="button"
                     onClick={() => handleSaveBook(false, true)}

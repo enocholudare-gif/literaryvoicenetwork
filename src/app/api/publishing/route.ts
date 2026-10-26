@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
           ok: true,
           book: res.book,
           submission: res.submission,
+          mailText: `[LVN Admin Approval Required]\nBook Title: ${res.book.title}\nAuthor: ${session.profile?.display_name || session.user.email}\nGenre: ${res.book.genre} (${res.book.format})\nISBN: ${res.book.isbn || "N/A"}\nStatus: Sent to Admin Email for Approval`,
         });
       }
       return NextResponse.json({ ok: true, book });

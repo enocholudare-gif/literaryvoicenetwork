@@ -637,11 +637,49 @@ export async function submitBookForReview(
   await createNotification({
     userId: ctx.user.id,
     type: "submission_received",
-    title: `Book Submitted for Review: ${existing.title}`,
-    message: `Your book listing "${existing.title}" has been received by the LVN editorial board and is queued for review.`,
+    title: `Book Submitted for Admin Approval: ${existing.title}`,
+    message: `Your book listing "${existing.title}" has been received and sent to the Administrator for review and approval.`,
     linkUrl: "/dashboard?tab=books",
     recipientEmail: ctx.user.email,
   });
+
+  // Notify Administrator & dispatch email alert to the configured admin email
+  const adminUser = db.prepare("SELECT id, email FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string; email: string } | undefined;
+  const emailSetting = db.prepare("SELECT setting_value_json FROM site_settings WHERE setting_key = 'editorialEmail'").get() as { setting_value_json: string } | undefined;
+  let targetAdminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || (adminUser ? adminUser.email : "admin@literaryvoicesnetwork.org");
+  if (emailSetting && emailSetting.setting_value_json) {
+    try {
+      targetAdminEmail = JSON.parse(emailSetting.setting_value_json);
+    } catch {
+      targetAdminEmail = emailSetting.setting_value_json;
+    }
+  }
+
+  const mailBodyText = [
+    "NEW BOOK SUBMISSION FOR ADMIN APPROVAL",
+    "----------------------------------------",
+    `Book Title: ${existing.title}`,
+    `Subtitle: ${existing.subtitle || "N/A"}`,
+    `Author: ${ctx.profile.display_name} (${ctx.user.email})`,
+    `Genre / Format: ${existing.genre} · ${existing.format}`,
+    `ISBN: ${existing.isbn || "N/A"}`,
+    `Publisher: ${existing.publisher || "Independent"}`,
+    `Author Notes: ${submissionNotes.trim() || "None provided"}`,
+    `Synopsis: ${existing.description}`,
+    "----------------------------------------",
+    "Log in to the Admin Console (/admin -> Moderation Queue) to Approve & Publish this book.",
+  ].join("\n");
+
+  if (adminUser) {
+    await createNotification({
+      userId: adminUser.id,
+      type: "admin_book_submission_alert",
+      title: `[Admin Approval Required] New Book Submitted: ${existing.title} by ${ctx.profile.display_name}`,
+      message: mailBodyText,
+      linkUrl: "/admin",
+      recipientEmail: targetAdminEmail,
+    });
+  }
 
   recordAuditLog({
     actorUserId: ctx.user.id,

@@ -102,7 +102,8 @@ export async function createNotification(
             "Literary Voices Network <editorial@literaryvoicesnetwork.org>",
           to: [input.recipientEmail],
           subject: `[LVN] ${input.title}`,
-          html: `<p>${input.message}</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}">View on Literary Voices Network</a></p>`,
+          text: `${input.message}\n\nView on Literary Voices Network: ${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}`,
+          html: `<div style="font-family: Georgia, serif; max-width: 600px; padding: 24px; background: #080808; color: #FAF8F3; border: 1px solid #D4AF37; border-radius: 12px;"><h2 style="color: #F7DF8B; margin-top: 0;">${input.title}</h2><pre style="white-space: pre-wrap; font-family: inherit; line-height: 1.6; color: #FAF8F3;">${input.message}</pre><p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}" style="display: inline-block; padding: 10px 20px; background: #D4AF37; color: #050505; font-weight: bold; text-decoration: none; border-radius: 999px;">Review &amp; Approve in Admin Console →</a></p></div>`,
         }),
       });
       emailStatus = response.ok ? "sent" : "failed";
