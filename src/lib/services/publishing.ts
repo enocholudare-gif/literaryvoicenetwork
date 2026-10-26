@@ -581,7 +581,7 @@ export async function submitBookForReview(
   ctx: AuthenticatedContext,
   bookId: string,
   submissionNotes = ""
-): Promise<{ book: Book; submission: Submission }> {
+): Promise<{ book: Book; submission: Submission; mailText: string; recipientEmail: string }> {
   requireRole(ctx, ["member", "author", "editor", "admin"]);
   const existing = getBookByIdInternal(bookId);
   if (!existing) {
@@ -643,20 +643,13 @@ export async function submitBookForReview(
     recipientEmail: ctx.user.email,
   });
 
-  // Notify Administrator & dispatch email alert to the configured admin email
+  // Notify Administrator & dispatch email alert to enquiry@literarynetwork.org
   const adminUser = db.prepare("SELECT id, email FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string; email: string } | undefined;
-  const emailSetting = db.prepare("SELECT setting_value_json FROM site_settings WHERE setting_key = 'editorialEmail'").get() as { setting_value_json: string } | undefined;
-  let targetAdminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || (adminUser ? adminUser.email : "admin@literaryvoicesnetwork.org");
-  if (emailSetting && emailSetting.setting_value_json) {
-    try {
-      targetAdminEmail = JSON.parse(emailSetting.setting_value_json);
-    } catch {
-      targetAdminEmail = emailSetting.setting_value_json;
-    }
-  }
+  const targetAdminEmail = "enquiry@literarynetwork.org";
 
   const mailBodyText = [
-    "NEW BOOK SUBMISSION FOR ADMIN APPROVAL",
+    "To: enquiry@literarynetwork.org",
+    `Subject: [LVN Admin Approval Required] New Book Submission: "${existing.title}" by ${ctx.profile.display_name}`,
     "----------------------------------------",
     `Book Title: ${existing.title}`,
     `Subtitle: ${existing.subtitle || "N/A"}`,
@@ -666,6 +659,7 @@ export async function submitBookForReview(
     `Publisher: ${existing.publisher || "Independent"}`,
     `Author Notes: ${submissionNotes.trim() || "None provided"}`,
     `Synopsis: ${existing.description}`,
+    `Status: Pending Admin Approval`,
     "----------------------------------------",
     "Log in to the Admin Console (/admin -> Moderation Queue) to Approve & Publish this book.",
   ].join("\n");
@@ -693,6 +687,8 @@ export async function submitBookForReview(
   return {
     book: getBookByIdInternal(bookId)!,
     submission: getSubmissionByIdInternal(subId)!,
+    mailText: mailBodyText,
+    recipientEmail: targetAdminEmail,
   };
 }
 

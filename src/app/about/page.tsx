@@ -5,6 +5,7 @@ import {
   ExternalLink,
   Feather,
   Headphones,
+  Mail,
   Newspaper,
   Phone,
   ShieldCheck,
@@ -37,6 +38,12 @@ const LEADERSHIP = [
     title: "Director of Digital Media & Technology",
     focus: "Digital Platform, Streaming & Innovation",
     bio: "Leads the LVN digital infrastructure — from the streaming broadcast platform and audiobook distribution to the digital magazine, website, and emerging technology integrations.",
+  },
+  {
+    photo: "/media/team/social.jpg",
+    title: "Social Media Manager",
+    focus: "Social Strategy, Community & Digital Audience",
+    bio: "Leads social media strategy, digital campaigns, author spotlights, and global reader community engagement across Literary Voices Network's social channels.",
   },
 ];
 
@@ -96,7 +103,7 @@ export default function AboutPage() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {LEADERSHIP.map((p, i) => (
             <article
               key={p.title}
@@ -153,14 +160,24 @@ export default function AboutPage() {
         <div className="rounded-3xl bg-[#080808] border-2 border-[#D4AF37]/45 p-10 text-center text-[#FAF8F3]">
           <h2 className="font-serif-display text-3xl font-bold">Talk to Our Team</h2>
           <p className="text-sm text-[#FAF8F3]/70 mt-2">
-            Partnerships, events, author features, or press — we&apos;d love to hear from you.
+            Partnerships, events, author features, or press — we&apos;d love to hear from you at{" "}
+            <a href="mailto:enquiry@literarynetwork.org" className="text-[#F7DF8B] underline">
+              enquiry@literarynetwork.org
+            </a>
+            .
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <a
+              href="mailto:enquiry@literarynetwork.org"
+              className="inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 text-xs font-bold text-[#050505] hover:brightness-110"
+            >
+              <Mail className="size-4" /> enquiry@literarynetwork.org
+            </a>
             <a
               href="https://wa.me/13678481372"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 text-xs font-bold text-[#050505] hover:brightness-110"
+              className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/50 px-6 py-3 text-xs font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/15"
             >
               <Phone className="size-4" /> WhatsApp Us
             </a>

@@ -99,7 +99,7 @@ export async function createNotification(
         body: JSON.stringify({
           from:
             process.env.EMAIL_FROM ||
-            "Literary Voices Network <editorial@literaryvoicesnetwork.org>",
+            "Literary Voices Network <enquiry@literarynetwork.org>",
           to: [input.recipientEmail],
           subject: `[LVN] ${input.title}`,
           text: `${input.message}\n\nView on Literary Voices Network: ${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}`,

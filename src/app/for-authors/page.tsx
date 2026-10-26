@@ -13,6 +13,7 @@ import {
 
 export default function ForAuthorsPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -22,19 +23,34 @@ export default function ForAuthorsPage() {
     pitch: "",
   });
 
+  const formattedMailText = [
+    "To: enquiry@literarynetwork.org",
+    `Subject: [LVN Admin Approval Required] New Book Submission: "${form.bookTitle}" by ${form.name}`,
+    "----------------------------------------",
+    `Book Title: ${form.bookTitle}`,
+    `Author / Publicist: ${form.name} (${form.email})`,
+    `Primary Genre: ${form.genre}`,
+    `ISBN / Retail Link: ${form.isbn || "N/A"}`,
+    `Synopsis & Talking Points: ${form.pitch}`,
+    "Status: Pending Admin Approval",
+    "----------------------------------------",
+    "Sent to Admin Console (/admin) & enquiry@literarynetwork.org for review and approval.",
+  ].join("\n");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCopied(false);
     await fetch("/api/platform", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "create-enquiry",
         enquiryData: {
-          enquiryType: "author_broadcast_pitch",
+          enquiryType: "author_promotion",
           name: form.name,
           email: form.email,
-          subject: `Book Broadcast Submission: ${form.bookTitle}`,
-          message: `Genre: ${form.genre} | ISBN: ${form.isbn}\n\nPitch: ${form.pitch}`,
+          subject: `[Admin Approval Required] Book Submission: ${form.bookTitle}`,
+          message: formattedMailText,
         },
       }),
     }).catch(() => {});
@@ -158,23 +174,52 @@ export default function ForAuthorsPage() {
         <div className="lg:col-span-7">
           <div className="rounded-3xl bg-white border border-[#D4AF37]/30 p-8 shadow-lg">
             {submitted ? (
-              <div className="text-center py-12 space-y-4">
-                <CheckCircle2 className="size-12 text-amber-500 mx-auto" />
-                <h3 className="font-serif-display text-2xl font-bold text-[#080808]">
-                  Book Submission Received
-                </h3>
-                <p className="text-sm text-slate-600 max-w-md mx-auto">
-                  Thank you! Our editorial producer team will review your title
-                  and reply within 2–3 business days with available broadcast
-                  dates.
+              <div className="space-y-5 py-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="size-10 text-amber-500 shrink-0" />
+                  <div>
+                    <span className="inline-block rounded-full bg-gold-gradient px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#050505]">
+                      ✉ Mail Text Dispatched for Admin Approval
+                    </span>
+                    <h3 className="font-serif-display text-2xl font-bold text-[#080808] mt-1">
+                      Book Submission Sent to Admin
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Your book submission now awaits Admin approval before appearing on the public website. Below is the official mail text dispatched to{" "}
+                  <strong className="text-[#080808]">enquiry@literarynetwork.org</strong>:
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setSubmitted(false)}
-                  className="rounded-full bg-[#080808] px-6 py-2.5 text-xs font-bold text-[#FAF8F3]"
-                >
-                  Submit Another Title
-                </button>
+                <div className="rounded-2xl bg-[#080808] text-[#FAF8F3] border border-[#D4AF37]/50 p-4 font-mono text-xs whitespace-pre-wrap leading-relaxed">
+                  {formattedMailText}
+                </div>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href={`mailto:enquiry@literarynetwork.org?subject=${encodeURIComponent(
+                      `[LVN Admin Approval Required] New Book Submission: "${form.bookTitle}" by ${form.name}`
+                    )}&body=${encodeURIComponent(formattedMailText)}`}
+                    className="rounded-full bg-gold-gradient px-5 py-2.5 text-xs font-bold text-[#050505] hover:brightness-110"
+                  >
+                    ✉ Open in Mail App (enquiry@literarynetwork.org)
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(formattedMailText);
+                      setCopied(true);
+                    }}
+                    className="rounded-full border border-[#080808]/30 px-4 py-2.5 text-xs font-semibold text-[#080808] hover:border-[#D4AF37] cursor-pointer"
+                  >
+                    {copied ? "✓ Copied Mail Text" : "Copy Mail Text"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSubmitted(false)}
+                    className="rounded-full bg-[#080808] px-5 py-2.5 text-xs font-bold text-[#FAF8F3] cursor-pointer"
+                  >
+                    Submit Another Title
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">

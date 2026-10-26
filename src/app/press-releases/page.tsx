@@ -35,7 +35,7 @@ export default function PressReleasesPage() {
                 <Mail className="w-3.5 h-3.5" />
                 Media & Press Office
               </span>
-              <p className="text-[#FAF8F3]/80">press@literaryvoicesnetwork.org</p>
+              <p className="text-[#FAF8F3]/80">enquiry@literarynetwork.org</p>
               <Link
                 href="/contact?type=partnership"
                 className="text-[#F7DF8B] font-semibold hover:underline inline-block pt-1"

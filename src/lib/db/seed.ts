@@ -25,9 +25,9 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsMap = {
   logoText: "Literary Voices Network",
   primaryColorHex: "#080808",
   accentColorHex: "#D4AF37",
-  editorialEmail: "editorial@literaryvoicesnetwork.org",
-  pressEmail: "press@literaryvoicesnetwork.org",
-  partnershipsEmail: "partnerships@literaryvoicesnetwork.org",
+  editorialEmail: "enquiry@literarynetwork.org",
+  pressEmail: "enquiry@literarynetwork.org",
+  partnershipsEmail: "enquiry@literarynetwork.org",
   memberPublishingEnabled: true,
   liveBroadcastActive: false,
   seoDefaultTitle:
@@ -92,7 +92,7 @@ export function seedDatabase(db: DatabaseSync): void {
     // Mandatory Administrator account with Public LVN Member/Author Identity
     insertUser.run(
       "user-admin-eleanor",
-      "admin@literaryvoicesnetwork.org",
+      "perrycreativity@gmail.com",
       defaultPasswordHash,
       "admin",
       prefs,
@@ -919,11 +919,11 @@ export function seedDatabase(db: DatabaseSync): void {
       `<p><strong>NEW YORK &amp; LONDON — October 20, 2026</strong> — Literary Voices Network (LVN) today announced its expanded Autumn/Winter 2026 programming slate alongside the opening of the submission window for Issue No. 14 of the LVN Digital Magazine, themed <em>The Architecture of Memory</em>.</p>
 <p>Authors and eligible members can now submit book listings, long-form essays, critical reviews, and interview pitches directly through the LVN Member Dashboard, with full revision tracking and editorial moderation.</p>
 <h3>Media &amp; Press Enquiries</h3>
-<p>Editorial &amp; Press Desk: <strong>press@literaryvoicesnetwork.org</strong></p>`,
+<p>Editorial &amp; Press Desk: <strong>enquiry@literarynetwork.org</strong></p>`,
       "/media/banners/editorial-desk.svg",
       4,
       "Literary Voices Network Newsroom",
-      "Press Office · press@literaryvoicesnetwork.org",
+      "Press Office · enquiry@literarynetwork.org",
       1,
       0,
       "published",
@@ -954,7 +954,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "/media/covers/issue-15.svg",
       3,
       "Literary Voices Network Newsroom",
-      "Marcus Sterling, Senior Commissioning Editor · press@literaryvoicesnetwork.org",
+      "Marcus Sterling, Senior Commissioning Editor · enquiry@literarynetwork.org",
       0,
       0,
       "published",

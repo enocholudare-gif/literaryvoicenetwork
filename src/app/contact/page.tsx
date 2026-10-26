@@ -62,37 +62,31 @@ export default function ContactPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-5 space-y-6">
-          <div className="p-6 rounded-2xl bg-white border border-[#080808]/12 space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#AA7C11]">
-              Editorial & Commissioning Desk
+          <div className="p-6 rounded-2xl bg-white border border-[#D4AF37]/40 space-y-2 shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#AA7C11] flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" />
+              Official Enquiries, Editorial &amp; Press Desk
             </span>
-            <p className="font-serif text-lg font-bold text-[#080808]">
-              editorial@literaryvoicesnetwork.org
-            </p>
+            <a
+              href="mailto:enquiry@literarynetwork.org"
+              className="block font-serif text-lg font-bold text-[#080808] hover:text-[#AA7C11] transition-colors"
+            >
+              enquiry@literarynetwork.org
+            </a>
             <p className="text-xs text-[#080808]/70">
-              For questions regarding magazine issues, book reviews, and manuscript submissions.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-white border border-[#080808]/12 space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#AA7C11]">
-              Broadcast Studio & Press Office
-            </span>
-            <p className="font-serif text-lg font-bold text-[#080808]">
-              press@literaryvoicesnetwork.org
-            </p>
-            <p className="text-xs text-[#080808]/70">
-              For interview scheduling, audio/video studio bookings, and press releases.
+              For all book submissions, magazine issues, author interviews, studio bookings, partnerships, and press enquiries.
             </p>
           </div>
 
           <a
-            href="tel:+13678481372"
+            href="https://wa.me/13678481372"
+            target="_blank"
+            rel="noopener noreferrer"
             className="block p-6 rounded-2xl bg-[#080808] border-2 border-[#D4AF37]/50 space-y-2 hover:border-[#F7DF8B] transition-colors"
           >
             <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5" />
-              Call Us Directly
+              WhatsApp Us Directly
             </span>
             <p className="font-serif text-xl font-bold text-[#F7DF8B]">
               +1 (367) 848-1372

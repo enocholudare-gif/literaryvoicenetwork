@@ -725,7 +725,7 @@ export default function AdminDashboardPage() {
                   {/* Formatted Mail Text Dispatch Box */}
                   <div className="rounded-xl bg-[#080808] text-[#FAF8F3] border border-[#D4AF37]/40 p-3.5 text-xs font-mono space-y-1">
                     <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[#D4AF37] border-b border-white/10 pb-1.5 mb-1.5">
-                      <span>✉ Mail Notification Text (Sent to {settings?.editorialEmail || "Admin Email"})</span>
+                      <span>✉ Mail Notification Text (Sent to enquiry@literarynetwork.org)</span>
                       <span>Status: {sub.status}</span>
                     </div>
                     <p><strong>Subject:</strong> [LVN Admin Approval Required] New {sub.entity_type === "book" ? "Book" : "Article"} Submitted — &ldquo;{sub.entity_title}&rdquo;</p>

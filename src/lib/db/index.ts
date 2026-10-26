@@ -48,8 +48,24 @@ export function initializeSchema(db: DatabaseSync): void {
   }
 
   db.exec(INITIAL_SCHEMA_SQL);
-  try { db.exec("ALTER TABLE books ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0;"); } catch {}
-  db.exec("CREATE TABLE IF NOT EXISTS book_reviews (id TEXT PRIMARY KEY, book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, user_name TEXT NOT NULL, user_avatar TEXT NOT NULL DEFAULT '/media/avatars/default-portrait.svg', rating INTEGER NOT NULL, headline TEXT NOT NULL DEFAULT '', content TEXT NOT NULL, created_at TEXT NOT NULL);");
+  try {
+    db.exec("ALTER TABLE books ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0;");
+  } catch {
+    // column already exists
+  }
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS book_reviews (id TEXT PRIMARY KEY, book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, user_name TEXT NOT NULL, user_avatar TEXT NOT NULL DEFAULT '/media/avatars/default-portrait.svg', rating INTEGER NOT NULL, headline TEXT NOT NULL DEFAULT '', content TEXT NOT NULL, created_at TEXT NOT NULL);"
+  );
+
+  // Ensure Admin login email is perrycreativity@gmail.com and official email is enquiry@literarynetwork.org
+  try {
+    db.exec("UPDATE users SET email = 'perrycreativity@gmail.com' WHERE role = 'admin';");
+    db.exec(
+      "UPDATE site_settings SET setting_value_json = '\"enquiry@literarynetwork.org\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
+    );
+  } catch {
+    // ignore if tables are not yet seeded
+  }
 
   const existingMigration = db
     .prepare("SELECT version FROM schema_migrations WHERE version = ?")
@@ -83,6 +99,16 @@ export function getDb(): DatabaseSync {
     seedDatabase(db);
   }
 
+  // Re-ensure Admin email and enquiry email after seeding
+  try {
+    db.exec("UPDATE users SET email = 'perrycreativity@gmail.com' WHERE role = 'admin';");
+    db.exec(
+      "UPDATE site_settings SET setting_value_json = '\"enquiry@literarynetwork.org\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
+    );
+  } catch {
+    // ignore
+  }
+
   globalThis.__lvnDbInstance = db;
   globalThis.__lvnDbPath = targetPath;
   return db;
@@ -101,4 +127,3 @@ export function resetDatabaseForTesting(seed = true): DatabaseSync {
   process.env.LVN_SKIP_AUTO_SEED = seed ? "false" : "true";
   return getDb();
 }
-

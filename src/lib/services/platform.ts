@@ -1365,6 +1365,18 @@ export function createEnquiry(
     now
   );
 
+  const adminUser = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string } | undefined;
+  if (adminUser && parsed.enquiryType !== "newsletter") {
+    void createNotification({
+      userId: adminUser.id,
+      type: "enquiry_received",
+      title: parsed.subject.trim() || `New ${parsed.enquiryType} Enquiry from ${parsed.name.trim()}`,
+      message: parsed.message.trim(),
+      linkUrl: "/admin",
+      recipientEmail: "enquiry@literarynetwork.org",
+    });
+  }
+
   return {
     id,
     enquiry_type: parsed.enquiryType,

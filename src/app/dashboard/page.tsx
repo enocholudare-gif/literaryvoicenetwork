@@ -116,6 +116,13 @@ function MemberDashboardContent() {
   // Revisions Modal State
   const [revisionsList, setRevisionsList] = useState<ContentRevision[]>([]);
   const [revisionsModalTitle, setRevisionsModalTitle] = useState("");
+  const [mailPopupModal, setMailPopupModal] = useState<{
+    recipient: string;
+    subject: string;
+    body: string;
+    bookTitle: string;
+  } | null>(null);
+  const [copiedMailText, setCopiedMailText] = useState(false);
 
   // Profile Editor State
   const [profDisplayName, setProfDisplayName] = useState("");
@@ -315,9 +322,39 @@ function MemberDashboardContent() {
       text: publishImmediately
         ? `Book "${data.book.title}" published directly under your public profile (${profile?.display_name})!`
         : submitForReview
-        ? `✉ Mail Dispatched to Admin for Approval! Book "${data.book.title}" by ${profile?.display_name} is now awaiting Admin approval before appearing on the website.`
+        ? `✉ Mail Text Dispatched to enquiry@literarynetwork.org for Admin Approval! Book "${data.book.title}" is now awaiting Admin approval before appearing on the website.`
         : `Draft saved for "${data.book.title}".`,
     });
+
+    if (submitForReview && !publishImmediately) {
+      const subjectLine = `[LVN Admin Approval Required] New Book Submission: "${data.book.title}" by ${profile?.display_name || user?.email || "Author"}`;
+      const formattedMail =
+        data.mailText ||
+        [
+          "To: enquiry@literarynetwork.org",
+          `Subject: ${subjectLine}`,
+          "----------------------------------------",
+          `Book Title: ${data.book.title}`,
+          `Subtitle: ${data.book.subtitle || "N/A"}`,
+          `Author: ${profile?.display_name || "Author"} (${user?.email || ""})`,
+          `Genre / Format: ${data.book.genre} · ${data.book.format}`,
+          `ISBN: ${data.book.isbn || "N/A"}`,
+          `Publisher: ${data.book.publisher || "Independent"}`,
+          `Author Notes: ${bookSubmissionNotes || "None provided"}`,
+          `Synopsis: ${data.book.description}`,
+          "Status: Pending Admin Approval",
+          "----------------------------------------",
+          "Log in to the Admin Console (/admin -> Moderation Queue) to Approve & Publish this book.",
+        ].join("\n");
+      setCopiedMailText(false);
+      setMailPopupModal({
+        recipient: "enquiry@literarynetwork.org",
+        subject: subjectLine,
+        body: formattedMail,
+        bookTitle: data.book.title,
+      });
+    }
+
     resetBookForm();
     loadWorkspaceData();
   };
@@ -1783,6 +1820,68 @@ function MemberDashboardContent() {
           </div>
         )}
       </div>
+
+      {/* Mail Notification Text Dispatched Popup Modal */}
+      {mailPopupModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#080808] text-[#FAF8F3] border-2 border-[#D4AF37] rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#050505]">
+                  ✉ Mail Text Dispatched for Admin Approval
+                </span>
+                <h3 className="font-serif text-2xl font-bold text-[#FAF8F3] mt-2">
+                  Book Submitted to Admin Queue
+                </h3>
+                <p className="text-xs text-[#FAF8F3]/75 mt-1">
+                  Your book <strong>&ldquo;{mailPopupModal.bookTitle}&rdquo;</strong> now requires Admin approval before appearing on the public website. Below is the official mail text notification sent to <strong>{mailPopupModal.recipient}</strong>:
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMailPopupModal(null)}
+                className="text-xs font-bold text-white/60 hover:text-white px-2.5 py-1 rounded-lg bg-white/10"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="rounded-2xl bg-[#121212] border border-[#D4AF37]/40 p-4 font-mono text-xs text-[#FAF8F3]/90 whitespace-pre-wrap max-h-72 overflow-y-auto leading-relaxed">
+              {mailPopupModal.body}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap gap-2.5">
+                <a
+                  href={`mailto:${mailPopupModal.recipient}?subject=${encodeURIComponent(
+                    mailPopupModal.subject
+                  )}&body=${encodeURIComponent(mailPopupModal.body)}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gold-gradient px-5 py-2.5 text-xs font-bold text-[#050505] hover:brightness-110 transition-all"
+                >
+                  ✉ Open in Mail App ({mailPopupModal.recipient})
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(mailPopupModal.body);
+                    setCopiedMailText(true);
+                  }}
+                  className="rounded-full border border-[#D4AF37]/50 px-4 py-2.5 text-xs font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/15 transition-colors cursor-pointer"
+                >
+                  {copiedMailText ? "✓ Copied Mail Text" : "Copy Mail Text"}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMailPopupModal(null)}
+                className="rounded-full bg-white/10 hover:bg-white/20 px-5 py-2.5 text-xs font-bold text-white transition-colors cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Revisions History Modal */}
       {revisionsModalTitle && (

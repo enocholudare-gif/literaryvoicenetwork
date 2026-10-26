@@ -323,6 +323,17 @@ const HOSTS_DATA = [
     delay: "750ms",
     bio: "Leads the LVN digital infrastructure — streaming platforms, audiobook distribution, digital magazine, and emerging technology integrations.",
   },
+  {
+    id: "host-5",
+    name: "Social Media Manager",
+    role: "Social Media & Community Engagement Manager",
+    show: "LVN Social & Reader Community",
+    slug: "",
+    photo: "/media/team/social.jpg",
+    avatar: "/media/team/social.jpg",
+    delay: "1000ms",
+    bio: "Leads social media strategy, digital campaigns, author spotlights, and global reader community engagement across Literary Voices Network's channels.",
+  },
 ];
 
 const UPCOMING_BROADCASTS = [
@@ -560,11 +571,11 @@ export function MeetOurHostsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 pt-2">
           {HOSTS_DATA.map((host) => (
             <Link
               key={host.id}
-              href={`/authors/${host.slug}`}
+              href={host.slug ? `/authors/${host.slug}` : "/about"}
               style={{ animationDelay: host.delay }}
               className="animate-host-bounce group relative rounded-2xl overflow-hidden bg-[#121212] border-2 border-[#D4AF37]/45 aspect-[3/4] flex flex-col justify-end shadow-[0_18px_40px_rgba(212,175,55,0.15)] hover:border-[#F7DF8B] transition-all duration-300"
             >
