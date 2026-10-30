@@ -2,19 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import {
-  BookOpen,
-  Calendar,
-  Clock,
-  ExternalLink,
-  Heart,
-  MapPin,
-  Mic2,
-  Play,
-  Sparkles,
-  UserCheck,
-  UserPlus,
-} from "lucide-react";
+import { Award, BookOpen, Calendar, Clock, ExternalLink, Heart, MapPin, Mic2, Play, UserCheck, UserPlus } from "lucide-react";
 import { useAudioPlayer } from "../layout/AudioPlayerContext";
 import type {
   Article,
@@ -537,7 +525,7 @@ export function EventCard({ event }: { event: LiteraryEvent }) {
 
       <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
         <span className="text-slate-500 inline-flex items-center gap-1">
-          <Sparkles className="size-3.5 text-[#D4AF37]" />
+          <Award className="size-3.5 text-[#D4AF37]" />
           {event.registration_count ?? 0} Registered
         </span>
         <Link

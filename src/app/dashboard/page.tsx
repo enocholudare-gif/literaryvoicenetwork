@@ -3,31 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  AlertCircle,
-  Bookmark,
-  BookOpen,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  Eye,
-  Feather,
-  FileText,
-  Heading2,
-  History,
-  List,
-  MessageSquare,
-  Plus,
-  Quote,
-  Send,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  Trash2,
-  Upload,
-  User,
-} from "lucide-react";
+import { AlertCircle, Award, BookOpen, Bookmark, Calendar, CheckCircle2, Clock, ExternalLink, Eye, Feather, FileText, Heading2, History, List, MessageSquare, Plus, Quote, Send, Settings, ShieldCheck, Trash2, Upload, User } from "lucide-react";
 import { StatusBadge } from "@/components/ui/Cards";
 import type {
   Article,
@@ -614,7 +590,7 @@ function MemberDashboardContent() {
           <div className="mt-8 flex flex-wrap gap-2 border-t border-white/10 pt-5">
             {(
               [
-                { id: "overview", label: "Overview & Queue", icon: Sparkles },
+                { id: "overview", label: "Overview & Queue", icon: Award },
                 { id: "books", label: `My Books (${books.length})`, icon: BookOpen },
                 {
                   id: "publications",

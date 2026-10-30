@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Feather, Search, Sparkles, Users } from "lucide-react";
+import { Award, Feather, Search, Users } from "lucide-react";
 import { AuthorCard } from "@/components/ui/Cards";
 import { listPublicAuthors } from "@/lib/services/platform";
 
@@ -52,7 +52,7 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
               href="/auth?mode=register"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-xs hover:bg-[#F7DF8B] transition-colors"
             >
-              <Sparkles className="w-4 h-4" />
+              <Award className="w-4 h-4" />
               Create Author Profile
             </Link>
           </div>

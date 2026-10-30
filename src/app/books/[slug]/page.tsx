@@ -1,20 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  Award,
-  BookOpen,
-  Calendar,
-  ExternalLink,
-  FileText,
-  Globe,
-  Layers,
-  ShieldCheck,
-  Sparkles,
-  User,
-  Eye,
-} from "lucide-react";
+import { ArrowLeft, Award, BookOpen, Calendar, ExternalLink, Eye, FileText, Globe, Layers, ShieldCheck, User } from "lucide-react";
 import { BookReviewSection } from "@/components/books/BookReviewSection";
 import { incrementBookView, listBookReviews } from "@/lib/services/publishing";
 import { ArticleCard, BookCard, StatusBadge } from "@/components/ui/Cards";

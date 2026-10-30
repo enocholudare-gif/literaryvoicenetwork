@@ -97,6 +97,8 @@ export function validateStatusTransition(
 export const BookInputSchema = z.object({
   title: z.string().min(2, "Book title is required").max(200),
   subtitle: z.string().max(240).optional().default(""),
+  authorName: z.string().max(160).optional(),
+  authorProfileId: z.string().max(120).optional(),
   slug: z.string().max(120).optional(),
   isbn: z.string().max(40).optional().default(""),
   description: z.string().min(20, "Book description must be at least 20 characters").max(8000),
@@ -270,7 +272,7 @@ export function mapArticleRow(row: Record<string, unknown>): Article {
 }
 
 function generateUniqueSlug(
-  table: "books" | "articles",
+  table: "books" | "articles" | "profiles",
   rawTitleOrSlug: string,
   excludeId?: string
 ): string {
@@ -381,9 +383,44 @@ export function createBookDraft(
     scheduledFor = options.scheduledFor;
   }
 
+  // Attribute author profile
+  let authorProfileId = ctx.profile.id;
+  if (ctx.user.role === "admin" || ctx.user.role === "editor") {
+    if (parsed.authorProfileId) {
+      authorProfileId = parsed.authorProfileId;
+    } else if (parsed.authorName && parsed.authorName.trim()) {
+      const trimmedName = parsed.authorName.trim();
+      const existing = db
+        .prepare("SELECT id FROM profiles WHERE LOWER(display_name) = LOWER(?)")
+        .get(trimmedName) as { id: string } | undefined;
+      if (existing) {
+        authorProfileId = existing.id;
+      } else {
+        const authorProfId = generateId();
+        const authorSlug = generateUniqueSlug("profiles", trimmedName);
+        db.prepare(`
+          INSERT INTO profiles (
+            id, user_id, slug, display_name, pen_name, is_author_profile,
+            avatar_url, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+        `).run(
+          authorProfId,
+          ctx.user.id,
+          authorSlug,
+          trimmedName,
+          trimmedName,
+          "/media/avatars/default-portrait.svg",
+          now,
+          now
+        );
+        authorProfileId = authorProfId;
+      }
+    }
+  }
+
   // Ensure the creator's profile is marked as an author profile when they create a book
   db.prepare("UPDATE profiles SET is_author_profile = 1 WHERE id = ?").run(
-    ctx.profile.id
+    authorProfileId
   );
   if (ctx.user.role === "member") {
     db.prepare("UPDATE users SET role = 'author', updated_at = ? WHERE id = ?").run(
@@ -405,7 +442,7 @@ export function createBookDraft(
   `).run(
     id,
     slug,
-    ctx.profile.id, // Explicitly attributed to the creator's own public LVN profile
+    authorProfileId,
     ctx.user.id,
     parsed.title.trim(),
     parsed.subtitle.trim(),

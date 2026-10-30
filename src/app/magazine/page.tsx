@@ -1,14 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Calendar,
-  Clock,
-  Feather,
-  Newspaper,
-  Search,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Award, Calendar, Clock, Feather, Newspaper, Search } from "lucide-react";
 import { ArticleCard } from "@/components/ui/Cards";
 import { listCategories, listEditorialIssues } from "@/lib/services/platform";
 import { listPublicArticles } from "@/lib/services/publishing";
@@ -172,7 +164,7 @@ export default async function MagazinePage({ searchParams }: MagazinePageProps) 
               />
               <div className="absolute top-4 left-4">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#D4AF37] text-[#080808]">
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Award className="w-3.5 h-3.5" />
                   Featured Cover Story
                 </span>
               </div>

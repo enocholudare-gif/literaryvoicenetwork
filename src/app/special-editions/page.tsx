@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Award } from "lucide-react";
 import { BroadcastCard } from "@/components/ui/Cards";
 import { listBroadcasts } from "@/lib/services/platform";
 
@@ -14,7 +14,7 @@ export default function SpecialEditionsPage() {
       <section className="bg-gradient-to-br from-[#050505] via-[#080808] to-[#141414] text-[#FAF8F3] border-b border-[#D4AF37]/25 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/45 bg-[#D4AF37]/15 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#F7DF8B]">
-            <Sparkles className="size-3.5 text-[#D4AF37]" />
+            <Award className="size-3.5 text-[#D4AF37]" />
             Special Editions
           </span>
           <h1 className="font-serif-display text-4xl sm:text-5xl font-bold mt-4">

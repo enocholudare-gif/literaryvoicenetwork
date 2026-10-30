@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,11 +8,14 @@ import {
   BookOpen,
   CheckCircle2,
   Clock,
+  ExternalLink,
   Feather,
   Headphones,
+  Image as ImageIcon,
   KeyRound,
   Layers,
   LayoutDashboard,
+  LogOut,
   Mail,
   Mic2,
   Newspaper,
@@ -20,6 +23,7 @@ import {
   Send,
   Settings,
   ShieldCheck,
+  Upload,
   User,
   Users,
 } from "lucide-react";
@@ -39,6 +43,7 @@ import type {
 
 type AdminTab =
   | "approvals"
+  | "books"
   | "podcast"
   | "audiobook"
   | "magazine"
@@ -47,12 +52,210 @@ type AdminTab =
   | "catalog"
   | "settings";
 
+const PRESET_COVERS = [
+  { name: "The Glass Meridian", url: "/media/covers/the-glass-meridian.jpg" },
+  { name: "Atlas of Quiet Cities", url: "/media/covers/atlas-of-quiet-cities.jpg" },
+  { name: "The Saltwater Ledger", url: "/media/covers/the-saltwater-ledger.jpg" },
+  { name: "Winter Harmonics", url: "/media/covers/winter-harmonics.jpg" },
+  { name: "Republic of Typesetters", url: "/media/covers/republic-of-typesetters.jpg" },
+  { name: "Redwood Echo", url: "/media/covers/cover-redwood.jpg" },
+  { name: "The Scoundrel", url: "/media/covers/cover-scoundrel.jpg" },
+  { name: "The Librarian", url: "/media/covers/cover-librarian.jpg" },
+];
+
+/* ──────────────────────────────────────────────────────────
+   Reusable Image Upload & Live Preview Field
+────────────────────────────────────────────────────────── */
+function ImageUploadField({
+  label,
+  value,
+  onChange,
+  aspect = "book",
+  helperText,
+}: {
+  label: string;
+  value: string;
+  onChange: (url: string) => void;
+  aspect?: "book" | "square" | "wide";
+  helperText?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("assetCategory", "editorial");
+      const res = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.asset?.url) {
+        onChange(data.asset.url);
+        setUploading(false);
+        return;
+      }
+    } catch {
+      // Fallback below
+    }
+
+    // Fallback: FileReader Base64 Data URL
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      onChange(String(evt.target?.result || ""));
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-bold text-[#080808] uppercase tracking-wider flex items-center gap-1.5">
+          <ImageIcon className="size-3.5 text-[#D4AF37]" />
+          {label}
+        </label>
+        {aspect === "book" && (
+          <button
+            type="button"
+            onClick={() => setShowPresets(!showPresets)}
+            className="text-[11px] font-semibold text-[#D4AF37] hover:underline cursor-pointer"
+          >
+            {showPresets ? "Close Library" : "Choose from LVN Library"}
+          </button>
+        )}
+      </div>
+
+      {showPresets && (
+        <div className="p-3 rounded-2xl border border-[#D4AF37]/40 bg-[#141414] text-white grid grid-cols-2 sm:grid-cols-4 gap-2.5 shadow-md">
+          {PRESET_COVERS.map((preset) => (
+            <button
+              key={preset.url}
+              type="button"
+              onClick={() => {
+                onChange(preset.url);
+                setShowPresets(false);
+              }}
+              className={`flex items-center gap-2 p-1.5 rounded-xl border text-left text-xs transition-colors cursor-pointer ${
+                value === preset.url
+                  ? "border-[#D4AF37] bg-[#D4AF37]/20 text-[#F7DF8B] font-bold"
+                  : "border-white/10 hover:border-white/30 text-white/80"
+              }`}
+            >
+              <img
+                src={preset.url}
+                alt={preset.name}
+                className="size-8 object-cover rounded shadow"
+              />
+              <span className="truncate">{preset.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-4 items-start bg-white p-3.5 rounded-2xl border border-[#080808]/10 shadow-xs">
+        {/* Thumbnail Preview */}
+        <div
+          className={`relative shrink-0 overflow-hidden rounded-xl border border-[#D4AF37]/50 bg-[#080808] shadow flex items-center justify-center ${
+            aspect === "book"
+              ? "w-24 h-32"
+              : aspect === "square"
+              ? "w-24 h-24 rounded-full"
+              : "w-40 h-24"
+          }`}
+        >
+          {value ? (
+            <img
+              src={value}
+              alt="Preview"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="text-center p-2 text-white/40 text-[10px]">
+              No Image
+            </div>
+          )}
+          {uploading && (
+            <div className="absolute inset-0 bg-black/80 flex items-center justify-center text-[10px] text-[#F7DF8B] font-bold">
+              Uploading…
+            </div>
+          )}
+        </div>
+
+        {/* Upload Controls */}
+        <div className="flex-1 space-y-2.5 w-full">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="hidden"
+          />
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#D4AF37] bg-gold-gradient px-3.5 py-2 text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-xs cursor-pointer"
+            >
+              <Upload className="size-3.5" />
+              <span>{value ? "Upload Different Image" : "Upload Image from Device"}</span>
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="rounded-xl border border-neutral-300 px-3 py-2 text-xs text-neutral-600 hover:text-black hover:border-black cursor-pointer transition-colors"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold text-[#080808]/60 uppercase tracking-wider block">
+              Or paste hosted image URL:
+            </label>
+            <input
+              type="url"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="https://... or /media/covers/..."
+              className="w-full rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-1.5 text-xs text-[#080808] placeholder:text-neutral-400 focus:border-[#D4AF37] focus:bg-white focus:outline-none"
+            />
+          </div>
+          {helperText && (
+            <p className="text-[11px] text-neutral-500">{helperText}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+   Main Admin Dashboard Component
+────────────────────────────────────────────────────────── */
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>("approvals");
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Omit<UserModel, "password_hash"> | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+
+  // Authentication State for unauthenticated visitors
+  const [isAuthenticatedAdmin, setIsAuthenticatedAdmin] = useState<boolean | null>(null);
+  const [loginEmail, setLoginEmail] = useState("perrycreativity@gmail.com");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [allBooks, setAllBooks] = useState<Book[]>([]);
@@ -68,17 +271,33 @@ export default function AdminDashboardPage() {
   // Moderation state
   const [selectedSub, setSelectedSub] = useState<Submission | null>(null);
   const [modFeedback, setModFeedback] = useState("");
+  const [modEditCoverUrl, setModEditCoverUrl] = useState("");
 
-  // 1. Publish Podcast Form State
+  // 1. Publish Book for Author State
+  const [bkTitle, setBkTitle] = useState("");
+  const [bkSubtitle, setBkSubtitle] = useState("");
+  const [bkAuthor, setBkAuthor] = useState("");
+  const [bkGenre, setBkGenre] = useState("Literary Fiction");
+  const [bkFormat, setBkFormat] = useState<BookFormat>("Hardcover");
+  const [bkPublisher, setBkPublisher] = useState("LVN Imprint Editions");
+  const [bkCoverUrl, setBkCoverUrl] = useState("/media/covers/the-glass-meridian.jpg");
+  const [bkSynopsis, setBkSynopsis] = useState("");
+  const [bkExcerpt, setBkExcerpt] = useState("");
+  const [bkAmazon, setBkAmazon] = useState("");
+  const [bkBookshop, setBkBookshop] = useState("");
+  const [bkBarnes, setBkBarnes] = useState("");
+
+  // 2. Publish Podcast Form State
   const [podTitle, setPodTitle] = useState("");
   const [podProgramme, setPodProgramme] = useState("The Meridian Conversation");
   const [podAuthorGuest, setPodAuthorGuest] = useState("");
+  const [podCoverUrl, setPodCoverUrl] = useState("/media/covers/atlas-of-quiet-cities.jpg");
   const [podAudioUrl, setPodAudioUrl] = useState("/media/audio/lvn-studio-preview.wav");
   const [podEpisodeNum, setPodEpisodeNum] = useState<number>(45);
   const [podDesc, setPodDesc] = useState("");
   const [podDate, setPodDate] = useState("2026-11-20T18:00:00.000Z");
 
-  // 2. Publish Audiobook Form State
+  // 3. Publish Audiobook Form State
   const [abTitle, setAbTitle] = useState("");
   const [abSubtitle, setAbSubtitle] = useState("");
   const [abAuthor, setAbAuthor] = useState("");
@@ -90,7 +309,7 @@ export default function AdminDashboardPage() {
   const [abBookshopUrl, setAbBookshopUrl] = useState("");
   const [abSynopsis, setAbSynopsis] = useState("");
 
-  // 3. Publish Magazine Form State
+  // 4. Publish Magazine Form State
   const [magTitle, setMagTitle] = useState("");
   const [magSubtitle, setMagSubtitle] = useState("");
   const [magType, setMagType] = useState<ArticleType>("essay");
@@ -101,7 +320,7 @@ export default function AdminDashboardPage() {
     "<p class=\"lead\">Published by the Executive Editorial Desk for the LVN Digital Magazine.</p>\n<h2>Section I</h2>\n<p>Enter the long-form essay, interview, review, or cultural commentary here.</p>"
   );
 
-  // 4. Author Spotlight Form State
+  // 5. Author Spotlight Form State
   const [spotName, setSpotName] = useState("");
   const [spotHeadline, setSpotHeadline] = useState("Featured Novelist & Literary Essayist");
   const [spotBio, setSpotBio] = useState("");
@@ -109,7 +328,7 @@ export default function AdminDashboardPage() {
   const [spotLocation, setSpotLocation] = useState("New York");
   const [spotGenres, setSpotGenres] = useState("Literary Fiction, Historical Fiction");
 
-  // 5. Live Radio Form State
+  // 6. Live Radio Form State
   const [radioIsLive, setRadioIsLive] = useState(false);
   const [radioTitle, setRadioTitle] = useState("Live On Air: Author Dialogues & Literary Culture");
   const [radioProgramme, setRadioProgramme] = useState("LVN Live Studio");
@@ -118,7 +337,7 @@ export default function AdminDashboardPage() {
   );
   const [radioDesc, setRadioDesc] = useState("Live studio audio broadcast streaming worldwide across the network.");
 
-  // 6. Settings Form State
+  // 7. Settings Form State
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newLoginEmail, setNewLoginEmail] = useState("");
@@ -130,9 +349,11 @@ export default function AdminDashboardPage() {
       const authRes = await fetch("/api/auth");
       const authData = await authRes.json();
       if (!authData.authenticated || authData.user?.role !== "admin") {
-        router.push("/auth?mode=login");
+        setIsAuthenticatedAdmin(false);
+        setLoading(false);
         return;
       }
+      setIsAuthenticatedAdmin(true);
       setUser(authData.user);
       setProfile(authData.profile);
       setNewLoginEmail(authData.user.email);
@@ -160,11 +381,8 @@ export default function AdminDashboardPage() {
           setRadioIsLive(Boolean(admData.settings.liveBroadcastActive));
         }
       }
-    } catch {
-      setBanner({
-        type: "error",
-        text: "Could not load administrative console data.",
-      });
+    } catch (err) {
+      console.error("Error loading admin data:", err);
     } finally {
       setLoading(false);
     }
@@ -174,7 +392,39 @@ export default function AdminDashboardPage() {
     loadData();
   }, []);
 
-  // 1. Moderate / Approve Author Submission
+  // Direct In-Page Admin Login
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "login",
+          email: loginEmail.trim(),
+          password: loginPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.user?.role !== "admin") {
+        setLoginError(data.error || "Access denied. Only authorized administrators may log in.");
+        setLoginLoading(false);
+        return;
+      }
+      setIsAuthenticatedAdmin(true);
+      setUser(data.user);
+      setProfile(data.profile);
+      loadData();
+    } catch {
+      setLoginError("Network connection error. Please try again.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  // 1. Author Moderation Approval Handler
   const handleModerate = async (
     entityType: "book" | "article",
     entityId: string,
@@ -209,7 +459,52 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // 2. Publish Podcast for Author
+  // 2. Publish Book for Author
+  const handlePublishBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBanner(null);
+    const res = await fetch("/api/publishing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "create-book",
+        publishImmediately: true,
+        bookData: {
+          title: bkTitle.trim(),
+          subtitle: bkSubtitle.trim(),
+          authorName: bkAuthor.trim() || profile?.display_name || "Author",
+          genre: bkGenre,
+          format: bkFormat,
+          publisher: bkPublisher.trim(),
+          coverUrl: bkCoverUrl.trim() || "/media/covers/the-glass-meridian.jpg",
+          description: bkSynopsis.trim(),
+          excerpt: bkExcerpt.trim(),
+          retailerLinks: {
+            amazon: bkAmazon.trim(),
+            bookshop: bkBookshop.trim(),
+            barnesAndNoble: bkBarnes.trim(),
+          },
+        },
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setBanner({ type: "error", text: data.error || "Failed to publish book." });
+      return;
+    }
+    setBanner({
+      type: "success",
+      text: `Book "${bkTitle}" has been published directly to the main website shelf and directory for author "${bkAuthor || "Author"}"!`,
+    });
+    setBkTitle("");
+    setBkSubtitle("");
+    setBkAuthor("");
+    setBkSynopsis("");
+    setBkExcerpt("");
+    loadData();
+  };
+
+  // 3. Publish Podcast for Author
   const handlePublishPodcast = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -226,6 +521,7 @@ export default function AdminDashboardPage() {
           guestName: podAuthorGuest.trim(),
           broadcastType: "podcast",
           audioFileUrl: podAudioUrl.trim(),
+          featuredImageUrl: podCoverUrl.trim(),
           description: podDesc.trim(),
           scheduledStart: podDate,
           status: "published",
@@ -247,7 +543,7 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // 3. Publish Audiobook
+  // 4. Publish Audiobook
   const handlePublishAudiobook = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -291,7 +587,7 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // 4. Publish Magazine Article
+  // 5. Publish Magazine Article
   const handlePublishMagazine = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -329,7 +625,7 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // 5. Publish Author Spotlight
+  // 6. Publish Author Spotlight
   const handlePublishSpotlight = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -363,49 +659,45 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // 6. Update Live Radio
-  const handleUpdateLiveRadio = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 7. Master Live Radio Toggle
+  const handleToggleRadio = async (nextState: boolean) => {
     setBanner(null);
     const res = await fetch("/api/platform", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "upsert-live-radio",
-        liveRadioData: {
-          isLive: radioIsLive,
-          liveStreamUrl: radioStreamUrl.trim(),
-          title: radioTitle.trim(),
-          programmeName: radioProgramme.trim(),
-          hostName: profile?.display_name || "Executive Founder & CEO",
-          description: radioDesc.trim(),
-        },
+        isLive: nextState,
+        title: radioTitle.trim(),
+        streamUrl: radioStreamUrl.trim(),
+        programmeName: radioProgramme.trim(),
       }),
     });
     const data = await res.json();
     if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Failed to update live radio." });
+      setBanner({ type: "error", text: data.error || "Failed to update Live Radio feed." });
       return;
     }
+    setRadioIsLive(nextState);
     setBanner({
       type: "success",
-      text: radioIsLive
-        ? "Live Radio is now ON AIR! Broadcast feed updated across the website and /live."
-        : "Live Radio set to Off Air.",
+      text: `Live Radio Master Feed updated! Live broadcast is now ${
+        nextState ? "ON AIR (Streaming Live worldwide)" : "OFF AIR"
+      }.`,
     });
     loadData();
   };
 
-  // 7. Change Admin Password
+  // 8. Update Password
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
-    if (newPassword.length < 8) {
+    if (!newPassword || newPassword.length < 8) {
       setBanner({ type: "error", text: "New password must be at least 8 characters long." });
       return;
     }
     if (newPassword !== confirmPassword) {
-      setBanner({ type: "error", text: "Password confirmation does not match." });
+      setBanner({ type: "error", text: "New password and confirmation do not match." });
       return;
     }
     const res = await fetch("/api/auth", {
@@ -418,7 +710,7 @@ export default function AdminDashboardPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Failed to update password." });
+      setBanner({ type: "error", text: data.error || "Failed to change password." });
       return;
     }
     setBanner({ type: "success", text: "Admin password successfully updated!" });
@@ -426,7 +718,7 @@ export default function AdminDashboardPage() {
     setConfirmPassword("");
   };
 
-  // 8. Update Admin Login Email
+  // 9. Update Login Email
   const handleUpdateLoginEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -447,7 +739,7 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // 9. Update Receiving Email
+  // 10. Update Receiving Email
   const handleUpdateReceivingEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -478,7 +770,85 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center p-12 text-sm text-[#080808]">
-        Loading Admin Operations Console...
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="size-6 text-[#D4AF37] animate-spin" />
+          <span className="font-semibold">Loading Admin Operations Console...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Unauthenticated Admin Gateway Login Screen ──
+  if (isAuthenticatedAdmin === false) {
+    return (
+      <div className="min-h-[85vh] bg-[#060606] text-[#FAF8F3] flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md p-8 rounded-3xl border border-[#D4AF37]/40 bg-[#0e0e0e] shadow-[0_8px_32px_rgba(0,0,0,0.8)] space-y-6">
+          <div className="text-center space-y-2">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gold-gradient text-[10px] font-bold uppercase tracking-widest text-[#050505]">
+              <ShieldCheck className="size-3.5" />
+              Executive Admin Gateway
+            </span>
+            <h1 className="font-serif text-3xl font-bold text-[#FAF8F3]">
+              Admin Sign In
+            </h1>
+            <p className="text-xs text-[#FAF8F3]/60">
+              Sign in with your pre-authorized administrator credentials to access the moderation queue, publishing controls, and live radio feed.
+            </p>
+          </div>
+
+          {loginError && (
+            <div className="p-3.5 rounded-xl border border-rose-500/50 bg-rose-950/70 text-xs text-rose-200">
+              {loginError}
+            </div>
+          )}
+
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-[#F7DF8B]">
+                Admin Email
+              </label>
+              <input
+                type="email"
+                required
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="perrycreativity@gmail.com"
+                className="w-full rounded-xl border border-white/20 bg-black/60 px-4 py-2.5 text-xs text-white placeholder:text-white/30 focus:border-[#D4AF37] focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-[#F7DF8B]">
+                Admin Password
+              </label>
+              <input
+                type="password"
+                required
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full rounded-xl border border-white/20 bg-black/60 px-4 py-2.5 text-xs text-white placeholder:text-white/30 focus:border-[#D4AF37] focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loginLoading}
+              className="w-full rounded-xl bg-gold-gradient py-3 text-xs font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+            >
+              {loginLoading ? "Authenticating Admin…" : "Sign In to Admin Console"}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-white/10 text-center">
+            <Link
+              href="/"
+              className="text-xs text-white/50 hover:text-[#F7DF8B] transition-colors"
+            >
+              ← Return to Main Website
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -498,27 +868,30 @@ export default function AdminDashboardPage() {
               <span className="px-3 py-1 rounded-full bg-gold-gradient text-[10px] font-bold uppercase tracking-widest text-[#050505]">
                 Admin Operations
               </span>
-              <span className="text-xs text-[#D4AF37] font-semibold">
-                Logged in as: {profile?.display_name || "Executive Founder & CEO"} ({user?.email})
+              <span className="text-xs text-white/60">
+                Logged in as: <strong className="text-[#F7DF8B]">{profile?.display_name || "Executive Founder & CEO"}</strong> ({user?.email})
               </span>
             </div>
-            <h1 className="font-serif text-3xl font-bold text-white mt-2">
-              Executive Publishing &amp; Moderation Console
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold mt-2 text-[#FAF8F3]">
+              Executive Publishing & Broadcast Control
             </h1>
+            <p className="text-xs text-[#FAF8F3]/75 mt-1 max-w-2xl">
+              Centralized command for author approvals, live radio broadcast, podcasts, audiobooks, digital magazines, and author spotlight.
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
-            >
-              ← Return to Main Website
-            </Link>
+          <div className="flex items-center gap-2.5">
             <Link
               href="/dashboard"
-              className="px-4 py-2 rounded-xl border border-[#D4AF37]/40 text-xs font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/15 transition-colors"
+              className="px-4 py-2 rounded-full border border-white/20 bg-white/5 text-xs font-semibold text-white hover:border-[#D4AF37] transition-all"
             >
               Author Studio
+            </Link>
+            <Link
+              href="/"
+              className="px-4 py-2 rounded-full bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
+            >
+              View Main Site
             </Link>
           </div>
         </div>
@@ -535,8 +908,9 @@ export default function AdminDashboardPage() {
                 icon: ShieldCheck,
                 highlight: pendingSubmissions.length > 0,
               },
+              { id: "books" as AdminTab, label: "Publish Book for Author", icon: BookOpen },
               { id: "podcast" as AdminTab, label: "Publish Podcast", icon: Headphones },
-              { id: "audiobook" as AdminTab, label: "Publish Audiobook", icon: BookOpen },
+              { id: "audiobook" as AdminTab, label: "Publish Audiobook", icon: Mic2 },
               { id: "magazine" as AdminTab, label: "Publish Magazine", icon: Newspaper },
               { id: "spotlight" as AdminTab, label: "Author Spotlight", icon: Award },
               { id: "live_radio" as AdminTab, label: "Live Radio Control", icon: Radio },
@@ -600,945 +974,995 @@ export default function AdminDashboardPage() {
                   Every book or article submitted by authors requires Admin approval before appearing on the main website.
                 </p>
               </div>
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#080808] text-[#F7DF8B]">
-                {pendingSubmissions.length} Pending Approval
-              </span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-neutral-300 bg-white text-xs font-semibold text-neutral-700">
+                <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
+                Alerts dispatched to: <span className="text-[#080808] font-bold">{receivingEmail}</span>
+              </div>
             </div>
 
             {pendingSubmissions.length === 0 ? (
-              <div className="rounded-3xl bg-white border border-[#080808]/10 p-12 text-center space-y-3">
-                <CheckCircle2 className="w-12 h-12 text-[#25D366] mx-auto" />
-                <h3 className="font-serif text-xl font-bold text-[#080808]">
-                  Queue Clear — All Submissions Approved
+              <div className="p-12 text-center rounded-3xl border border-neutral-200 bg-white space-y-3">
+                <CheckCircle2 className="size-12 text-emerald-600 mx-auto" />
+                <h3 className="font-serif text-lg font-bold text-[#080808]">
+                  Queue Clear — All Submissions Approved!
                 </h3>
-                <p className="text-xs text-[#080808]/60 max-w-md mx-auto">
-                  There are no author submissions waiting in the queue. When authors submit books or publications, they will appear here with mail notification text.
+                <p className="text-xs text-neutral-500 max-w-md mx-auto">
+                  There are no pending submissions awaiting review. When an author submits a book or article, it will immediately appear here for your review and notification.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-5">
-                {pendingSubmissions.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="p-6 rounded-3xl bg-white border-2 border-[#D4AF37]/50 shadow-md space-y-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-[#080808] text-[#F7DF8B]">
-                          {sub.entity_type}
-                        </span>
-                        <StatusBadge status={sub.status} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {pendingSubmissions.map((sub) => {
+                  const isBook = sub.entity_type === "book";
+                  const entity = isBook
+                    ? allBooks.find((b) => b.id === sub.entity_id)
+                    : allArticles.find((a) => a.id === sub.entity_id);
+
+                  return (
+                    <div
+                      key={sub.id}
+                      className="p-6 rounded-3xl border border-neutral-200 bg-white shadow-xs space-y-4 flex flex-col justify-between"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase tracking-wider">
+                            {isBook ? "Book Submission" : "Article Submission"}
+                          </span>
+                          <span className="text-[11px] text-neutral-500 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(sub.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-4 items-start">
+                          {isBook && entity && (
+                            <img
+                              src={(entity as Book).cover_url || "/media/covers/the-glass-meridian.jpg"}
+                              alt="Book Cover"
+                              className="w-16 h-22 object-cover rounded-lg border border-neutral-200 shrink-0 shadow-xs"
+                            />
+                          )}
+                          <div className="space-y-1 flex-1">
+                            <h3 className="font-serif text-xl font-bold text-[#080808]">
+                              {entity?.title || "Untitled Submission"}
+                            </h3>
+                            <p className="text-xs text-neutral-600 font-medium">
+                              Author: <strong className="text-neutral-900">{sub.author_name || "Author"}</strong>
+                            </p>
+                            {sub.submission_notes && (
+                              <p className="text-xs text-neutral-500 italic bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
+                                "{sub.submission_notes}"
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {entity && (
+                          <div className="text-xs text-neutral-600 space-y-1.5 pt-2 border-t border-neutral-100">
+                            {isBook ? (
+                              <>
+                                <p><strong>Genre:</strong> {(entity as Book).genre}</p>
+                                <p><strong>Format:</strong> {(entity as Book).format}</p>
+                                <p className="line-clamp-2"><strong>Synopsis:</strong> {(entity as Book).description}</p>
+                              </>
+                            ) : (
+                              <>
+                                <p><strong>Type:</strong> {(entity as Article).article_type}</p>
+                                <p className="line-clamp-2"><strong>Excerpt:</strong> {(entity as Article).excerpt}</p>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <span className="text-xs text-[#080808]/70">
-                        Submitted by: <strong className="text-[#080808]">{sub.author_name}</strong>
-                      </span>
-                    </div>
 
-                    <div>
-                      <h3 className="font-serif text-xl font-bold text-[#080808]">
-                        {sub.entity_title}
-                      </h3>
-                      {sub.submission_notes && (
-                        <p className="text-xs text-[#080808]/80 mt-1 italic">
-                          Author note: &ldquo;{sub.submission_notes}&rdquo;
-                        </p>
-                      )}
-                    </div>
+                      <div className="pt-4 border-t border-neutral-200 space-y-3">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleModerate(sub.entity_type, sub.entity_id, "published", "Approved by Executive Founder & CEO")}
+                            className="flex-1 py-2.5 px-4 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-xs cursor-pointer text-center"
+                          >
+                            ✓ Approve & Publish to Main Site
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSub(selectedSub?.id === sub.id ? null : sub)}
+                            className="py-2.5 px-4 rounded-xl border border-neutral-300 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 cursor-pointer"
+                          >
+                            Details & Feedback
+                          </button>
+                        </div>
 
-                    {/* Mail Notification Text Box */}
-                    <div className="rounded-2xl bg-[#080808] text-[#FAF8F3] border border-[#D4AF37]/40 p-4 text-xs font-mono space-y-1">
-                      <div className="flex items-center justify-between text-[10px] uppercase text-[#D4AF37] border-b border-white/10 pb-1 mb-1">
-                        <span>✉ Mail Dispatched to {receivingEmail}</span>
-                        <span>Status: {sub.status}</span>
-                      </div>
-                      <p><strong>Subject:</strong> [LVN Admin Approval Required] New {sub.entity_type === "book" ? "Book" : "Article"} Submitted: &ldquo;{sub.entity_title}&rdquo;</p>
-                      <p><strong>Author:</strong> {sub.author_name}</p>
-                      <p><strong>Notes:</strong> {sub.submission_notes || "Please review and approve for publication on Literary Voices Network."}</p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                      <Link
-                        href={
-                          sub.entity_type === "book"
-                            ? `/books/${sub.entity_slug}`
-                            : `/magazine/${sub.entity_slug}`
-                        }
-                        target="_blank"
-                        className="text-xs font-bold text-[#AA7C11] hover:underline"
-                      >
-                        Inspect Preview →
-                      </Link>
-
-                      <div className="flex flex-wrap gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleModerate(sub.entity_type, sub.entity_id, "published", "Approved by Administrator.")}
-                          className="px-5 py-2 rounded-xl bg-gold-gradient text-[#050505] font-bold text-xs hover:brightness-110 shadow-xs cursor-pointer"
-                        >
-                          ✓ Approve &amp; Publish to Website
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const feedback = prompt("Enter revision instructions for the author:");
-                            if (feedback) {
-                              handleModerate(sub.entity_type, sub.entity_id, "revision_requested", feedback);
-                            }
-                          }}
-                          className="px-4 py-2 rounded-xl border border-amber-600/50 text-amber-900 bg-amber-50 text-xs font-semibold hover:bg-amber-100 cursor-pointer"
-                        >
-                          Request Revisions
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm("Reject this submission?")) {
-                              handleModerate(sub.entity_type, sub.entity_id, "rejected", "Does not meet editorial guidelines.");
-                            }
-                          }}
-                          className="px-4 py-2 rounded-xl border border-rose-300 text-rose-700 bg-rose-50 text-xs font-semibold hover:bg-rose-100 cursor-pointer"
-                        >
-                          Reject
-                        </button>
+                        {selectedSub?.id === sub.id && (
+                          <div className="space-y-3 p-4 rounded-2xl bg-neutral-50 border border-neutral-200">
+                            <label className="text-xs font-semibold text-neutral-800 block">
+                              Editorial Feedback to Author:
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={modFeedback}
+                              onChange={(e) => setModFeedback(e.target.value)}
+                              placeholder="Optional notes or feedback sent to author..."
+                              className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleModerate(sub.entity_type, sub.entity_id, "published", modFeedback)}
+                                className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                              >
+                                Approve with Note
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleModerate(sub.entity_type, sub.entity_id, "revision_requested", modFeedback)}
+                                className="flex-1 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 cursor-pointer"
+                              >
+                                Request Revision
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleModerate(sub.entity_type, sub.entity_id, "rejected", modFeedback)}
+                                className="py-2 px-3 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
-        {/* 2. PUBLISH PODCAST TAB */}
-        {activeTab === "podcast" && (
-          <div className="max-w-3xl bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-6 shadow-sm">
+        {/* 2. PUBLISH BOOK FOR AUTHOR TAB */}
+        {activeTab === "books" && (
+          <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-6 shadow-xs max-w-4xl mx-auto">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                Admin Audio Syndication
-              </span>
-              <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1">
-                Publish Podcast for Author
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
+                Publish Book for Author
               </h2>
-              <p className="text-xs text-[#080808]/70 mt-1">
-                Directly syndicate and publish a podcast episode or author interview to the LVN Podcast feed and Spotify broadcast network.
+              <p className="text-xs text-neutral-600 mt-1">
+                Publish any author's book directly to the main LVN website, 3D Interactive Shelf, charts, and public book directory.
               </p>
             </div>
 
-            <form onSubmit={handlePublishPodcast} className="space-y-4">
+            <form onSubmit={handlePublishBook} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Episode / Interview Title *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Book Title *</label>
                   <input
                     type="text"
                     required
-                    value={podTitle}
-                    onChange={(e) => setPodTitle(e.target.value)}
-                    placeholder="e.g. Navigating Historical Fiction & Archives"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    value={bkTitle}
+                    onChange={(e) => setBkTitle(e.target.value)}
+                    placeholder="e.g. The Architecture of Silence"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Featured Author / Guest Name *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Subtitle (Optional)</label>
                   <input
                     type="text"
-                    required
-                    value={podAuthorGuest}
-                    onChange={(e) => setPodAuthorGuest(e.target.value)}
-                    placeholder="e.g. Amara Osei"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    value={bkSubtitle}
+                    onChange={(e) => setBkSubtitle(e.target.value)}
+                    placeholder="e.g. Essays on Solitude and Craft"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Programme Show
-                  </label>
-                  <select
-                    value={podProgramme}
-                    onChange={(e) => setPodProgramme(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm bg-white"
-                  >
-                    <option>The Meridian Conversation</option>
-                    <option>First Editions Live</option>
-                    <option>In the Hot Seat</option>
-                    <option>Atlantic Archives &amp; Voices</option>
-                    <option>LVN Author Spotlight</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Episode Number
-                  </label>
-                  <input
-                    type="number"
-                    value={podEpisodeNum}
-                    onChange={(e) => setPodEpisodeNum(Number(e.target.value) || 1)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Release Date
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author Name *</label>
                   <input
                     type="text"
-                    value={podDate}
-                    onChange={(e) => setPodDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
+                    required
+                    value={bkAuthor}
+                    onChange={(e) => setBkAuthor(e.target.value)}
+                    placeholder="e.g. Maya Thorne"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Primary Genre</label>
+                  <select
+                    value={bkGenre}
+                    onChange={(e) => setBkGenre(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  >
+                    <option value="Literary Fiction">Literary Fiction</option>
+                    <option value="Historical Fiction">Historical Fiction</option>
+                    <option value="Non-Fiction">Non-Fiction</option>
+                    <option value="Poetry">Poetry</option>
+                    <option value="Memoir">Memoir</option>
+                    <option value="Science Fiction & Fantasy">Science Fiction & Fantasy</option>
+                    <option value="Mystery & Thriller">Mystery & Thriller</option>
+                    <option value="Philosophy & Culture">Philosophy & Culture</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Format</label>
+                  <select
+                    value={bkFormat}
+                    onChange={(e) => setBkFormat(e.target.value as BookFormat)}
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  >
+                    <option value="Hardcover">Hardcover</option>
+                    <option value="Paperback">Paperback</option>
+                    <option value="Audiobook">Audiobook</option>
+                    <option value="eBook">eBook</option>
+                  </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Audio Link or File Stream URL *
-                </label>
+              {/* Book Cover Image Upload */}
+              <ImageUploadField
+                label="Book Cover Art"
+                value={bkCoverUrl}
+                onChange={setBkCoverUrl}
+                aspect="book"
+                helperText="Upload cover image directly from your phone/computer, or pick from our high-resolution library."
+              />
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Publisher / Imprint</label>
                 <input
                   type="text"
-                  required
-                  value={podAudioUrl}
-                  onChange={(e) => setPodAudioUrl(e.target.value)}
-                  placeholder="https://open.spotify.com/... or MP3 link"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
+                  value={bkPublisher}
+                  onChange={(e) => setBkPublisher(e.target.value)}
+                  placeholder="e.g. LVN Press / Riverhead Books"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Episode Synopsis &amp; Show Notes *
-                </label>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Book Synopsis / Description *</label>
                 <textarea
                   rows={4}
                   required
-                  value={podDesc}
-                  onChange={(e) => setPodDesc(e.target.value)}
-                  placeholder="In-depth conversation with the author exploring themes, research, and craft..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                  value={bkSynopsis}
+                  onChange={(e) => setBkSynopsis(e.target.value)}
+                  placeholder="Enter the full book synopsis and thematic overview..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Book Excerpt / Opening Chapter (Optional)</label>
+                <textarea
+                  rows={3}
+                  value={bkExcerpt}
+                  onChange={(e) => setBkExcerpt(e.target.value)}
+                  placeholder="Paste excerpt or sample passage for reader previews..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Amazon Link</label>
+                  <input
+                    type="url"
+                    value={bkAmazon}
+                    onChange={(e) => setBkAmazon(e.target.value)}
+                    placeholder="https://amazon.com/dp/..."
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Bookshop.org Link</label>
+                  <input
+                    type="url"
+                    value={bkBookshop}
+                    onChange={(e) => setBkBookshop(e.target.value)}
+                    placeholder="https://bookshop.org/..."
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Barnes & Noble Link</label>
+                  <input
+                    type="url"
+                    value={bkBarnes}
+                    onChange={(e) => setBkBarnes(e.target.value)}
+                    placeholder="https://barnesandnoble.com/..."
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-[#080808] text-[#F7DF8B] font-bold text-xs hover:bg-[#141414] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gold-gradient text-xs font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
               >
-                <Headphones className="w-4 h-4 text-[#D4AF37]" />
-                Publish Podcast to Main Site
+                Publish Book Directly to Live Website
               </button>
             </form>
           </div>
         )}
 
-        {/* 3. PUBLISH AUDIOBOOK TAB */}
-        {activeTab === "audiobook" && (
-          <div className="max-w-3xl bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-6 shadow-sm">
+        {/* 3. PUBLISH PODCAST TAB */}
+        {activeTab === "podcast" && (
+          <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-6 shadow-xs max-w-4xl mx-auto">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                Admin Audiobook Catalogue
-              </span>
-              <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1">
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
+                Publish Podcast for Author
+              </h2>
+              <p className="text-xs text-neutral-600 mt-1">
+                Release an audio podcast interview or feature to the network feed and Spotify syndicate.
+              </p>
+            </div>
+
+            <form onSubmit={handlePublishPodcast} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Episode Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={podTitle}
+                    onChange={(e) => setPodTitle(e.target.value)}
+                    placeholder="e.g. Dialogue: The Interior Landscape"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Featured Author / Guest *</label>
+                  <input
+                    type="text"
+                    required
+                    value={podAuthorGuest}
+                    onChange={(e) => setPodAuthorGuest(e.target.value)}
+                    placeholder="e.g. Julian Hayes"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Podcast Cover Art Upload */}
+              <ImageUploadField
+                label="Podcast Episode Cover Art"
+                value={podCoverUrl}
+                onChange={setPodCoverUrl}
+                aspect="wide"
+                helperText="Upload episode artwork or banner image."
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Show / Programme</label>
+                  <input
+                    type="text"
+                    value={podProgramme}
+                    onChange={(e) => setPodProgramme(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Episode Number</label>
+                  <input
+                    type="number"
+                    value={podEpisodeNum}
+                    onChange={(e) => setPodEpisodeNum(Number(e.target.value))}
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Scheduled Air Date</label>
+                  <input
+                    type="text"
+                    value={podDate}
+                    onChange={(e) => setPodDate(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Audio Stream / File URL</label>
+                <input
+                  type="url"
+                  value={podAudioUrl}
+                  onChange={(e) => setPodAudioUrl(e.target.value)}
+                  placeholder="https://... audio file"
+                  className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Episode Show Notes / Description</label>
+                <textarea
+                  rows={3}
+                  value={podDesc}
+                  onChange={(e) => setPodDesc(e.target.value)}
+                  placeholder="Detailed synopsis of the podcast dialogue..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gold-gradient text-xs font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+              >
+                Publish Podcast Episode Live
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* 4. PUBLISH AUDIOBOOK TAB */}
+        {activeTab === "audiobook" && (
+          <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-6 shadow-xs max-w-4xl mx-auto">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
                 Publish Audiobook
               </h2>
-              <p className="text-xs text-[#080808]/70 mt-1">
-                Add an audiobook edition directly to the LVN Book Directory and /books?format=audiobook collection.
+              <p className="text-xs text-neutral-600 mt-1">
+                Add an audiobook edition with retail stream links to Spotify, Audible, and Bookshop.
               </p>
             </div>
 
             <form onSubmit={handlePublishAudiobook} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Audiobook Title *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Audiobook Title *</label>
                   <input
                     type="text"
                     required
                     value={abTitle}
                     onChange={(e) => setAbTitle(e.target.value)}
-                    placeholder="e.g. The Glass Meridian"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. The Saltwater Ledger"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Subtitle (Optional)
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Subtitle</label>
                   <input
                     type="text"
                     value={abSubtitle}
                     onChange={(e) => setAbSubtitle(e.target.value)}
-                    placeholder="e.g. An Audio Drama"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. Unabridged Edition"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Author Name *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author *</label>
                   <input
                     type="text"
                     required
                     value={abAuthor}
                     onChange={(e) => setAbAuthor(e.target.value)}
                     placeholder="Author name"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Narrator
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Narrator</label>
                   <input
                     type="text"
                     value={abNarrator}
                     onChange={(e) => setAbNarrator(e.target.value)}
-                    placeholder="Narrated by..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="Narrator name"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Genre
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Genre</label>
                   <select
                     value={abGenre}
                     onChange={(e) => setAbGenre(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm bg-white"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   >
-                    <option>Literary Fiction</option>
-                    <option>Historical Fiction</option>
-                    <option>Speculative Fiction</option>
-                    <option>Poetry</option>
-                    <option>Non-Fiction</option>
+                    <option value="Literary Fiction">Literary Fiction</option>
+                    <option value="Historical Fiction">Historical Fiction</option>
+                    <option value="Non-Fiction">Non-Fiction</option>
+                    <option value="Poetry">Poetry</option>
+                    <option value="Memoir">Memoir</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Cover Image URL
-                </label>
-                <input
-                  type="text"
-                  value={abCoverUrl}
-                  onChange={(e) => setAbCoverUrl(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
-                />
-              </div>
+              {/* Audiobook Cover Upload */}
+              <ImageUploadField
+                label="Audiobook Cover Art"
+                value={abCoverUrl}
+                onChange={setAbCoverUrl}
+                aspect="book"
+                helperText="Upload square or book cover art for the audiobook."
+              />
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Audible URL
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Audible URL</label>
                   <input
                     type="url"
                     value={abAudibleUrl}
                     onChange={(e) => setAbAudibleUrl(e.target.value)}
                     placeholder="https://audible.com/..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Spotify Audio Link
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Spotify URL</label>
                   <input
                     type="url"
                     value={abSpotifyUrl}
                     onChange={(e) => setAbSpotifyUrl(e.target.value)}
-                    placeholder="https://spotify.com/..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="https://open.spotify.com/..."
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Bookshop / Store Link
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Bookshop.org URL</label>
                   <input
                     type="url"
                     value={abBookshopUrl}
                     onChange={(e) => setAbBookshopUrl(e.target.value)}
                     placeholder="https://bookshop.org/..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Synopsis &amp; Production Details *
-                </label>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Audiobook Synopsis</label>
                 <textarea
-                  rows={4}
-                  required
+                  rows={3}
                   value={abSynopsis}
                   onChange={(e) => setAbSynopsis(e.target.value)}
-                  placeholder="Complete jacket synopsis of this audiobook edition..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                  placeholder="Audiobook description and narrator performance notes..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-[#080808] text-[#F7DF8B] font-bold text-xs hover:bg-[#141414] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gold-gradient text-xs font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
               >
-                <BookOpen className="w-4 h-4 text-[#D4AF37]" />
-                Publish Audiobook to Directory
+                Publish Audiobook Live
               </button>
             </form>
           </div>
         )}
 
-        {/* 4. PUBLISH MAGAZINE TAB */}
+        {/* 5. PUBLISH MAGAZINE TAB */}
         {activeTab === "magazine" && (
-          <div className="max-w-3xl bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-6 shadow-sm">
+          <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-6 shadow-xs max-w-4xl mx-auto">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                LVN Digital Magazine Studio
-              </span>
-              <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1">
-                Publish Magazine Article or Essay
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
+                Publish Digital Magazine Article
               </h2>
-              <p className="text-xs text-[#080808]/70 mt-1">
-                Publish long-form literary essays, critical reviews, author interviews, or lifestyle dispatches live to /magazine.
+              <p className="text-xs text-neutral-600 mt-1">
+                Publish long-form cover stories, essays, and critical reviews to the LVN Digital Magazine.
               </p>
             </div>
 
             <form onSubmit={handlePublishMagazine} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Article Title *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Article Title *</label>
                   <input
                     type="text"
                     required
                     value={magTitle}
                     onChange={(e) => setMagTitle(e.target.value)}
-                    placeholder="Article title"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. The Persistence of Ink"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Subtitle
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Subtitle / Deck</label>
                   <input
                     type="text"
                     value={magSubtitle}
                     onChange={(e) => setMagSubtitle(e.target.value)}
-                    placeholder="Subtitle or thesis statement"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. Why the printed volume defies obsolescence"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Article Category / Type
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Article Format</label>
                   <select
                     value={magType}
                     onChange={(e) => setMagType(e.target.value as ArticleType)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm bg-white"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   >
-                    <option value="essay">Essay &amp; Critical Commentary</option>
-                    <option value="interview">Author Interview</option>
-                    <option value="review">Book Review</option>
-                    <option value="cover_story">Cover Story</option>
-                    <option value="lifestyle">Literary Lifestyle</option>
+                    <option value="cover_story">Magazine Cover Story</option>
+                    <option value="essay">Literary Essay</option>
+                    <option value="interview">In-Depth Author Interview</option>
+                    <option value="review">Book Review & Critique</option>
+                    <option value="culture">Cultural Commentary</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Cover Banner Image URL
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author / Contributor</label>
                   <input
                     type="text"
-                    value={magCoverUrl}
-                    onChange={(e) => setMagCoverUrl(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
+                    value={magAuthor}
+                    onChange={(e) => setMagAuthor(e.target.value)}
+                    placeholder="Executive Editorial Desk"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Lead Excerpt (Summary for Magazine Cards) *
-                </label>
+              {/* Magazine Cover Upload */}
+              <ImageUploadField
+                label="Featured Editorial Cover Image"
+                value={magCoverUrl}
+                onChange={setMagCoverUrl}
+                aspect="wide"
+                helperText="Upload editorial header banner or feature photo."
+              />
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Excerpt / Pull Quote</label>
                 <textarea
                   rows={2}
-                  required
                   value={magExcerpt}
                   onChange={(e) => setMagExcerpt(e.target.value)}
-                  placeholder="One or two sentences summarizing the piece for readers..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                  placeholder="Short introductory summary for magazine indexes..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Full Article Body (HTML / Prose) *
-                </label>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Article Content (HTML or formatted text)</label>
                 <textarea
                   rows={8}
-                  required
                   value={magBody}
                   onChange={(e) => setMagBody(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs font-mono text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-[#080808] text-[#F7DF8B] font-bold text-xs hover:bg-[#141414] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gold-gradient text-xs font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
               >
-                <Newspaper className="w-4 h-4 text-[#D4AF37]" />
-                Publish to Digital Magazine
+                Publish Magazine Article Live
               </button>
             </form>
           </div>
         )}
 
-        {/* 5. AUTHOR SPOTLIGHT TAB */}
+        {/* 6. AUTHOR SPOTLIGHT TAB */}
         {activeTab === "spotlight" && (
-          <div className="max-w-3xl bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-6 shadow-sm">
+          <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-6 shadow-xs max-w-4xl mx-auto">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                Author Spotlight Management
-              </span>
-              <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1">
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
                 Publish Author Spotlight
               </h2>
-              <p className="text-xs text-[#080808]/70 mt-1">
-                Feature an author in the dedicated Author Spotlight navigation section (/authors and /author-spotlight).
+              <p className="text-xs text-neutral-600 mt-1">
+                Highlight and feature authors in the official Author Spotlight on the top navigation bar and homepage.
               </p>
             </div>
 
             <form onSubmit={handlePublishSpotlight} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Author Full Name *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author Full Name *</label>
                   <input
                     type="text"
                     required
                     value={spotName}
                     onChange={(e) => setSpotName(e.target.value)}
-                    placeholder="e.g. Chinua Achebe or Amara Osei"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. Celeste Vane"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Headline / Byline
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Spotlight Headline</label>
                   <input
                     type="text"
                     value={spotHeadline}
                     onChange={(e) => setSpotHeadline(e.target.value)}
-                    placeholder="e.g. Prize-Winning Historical Novelist"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. Winner of the 2026 National Narrative Prize"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
+              {/* Author Portrait Upload */}
+              <ImageUploadField
+                label="Author Portrait Photo"
+                value={spotPhoto}
+                onChange={setSpotPhoto}
+                aspect="square"
+                helperText="Upload author headshot or select from media directory."
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Author Photo URL
-                  </label>
-                  <input
-                    type="text"
-                    value={spotPhoto}
-                    onChange={(e) => setSpotPhoto(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    City / Location
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Location</label>
                   <input
                     type="text"
                     value={spotLocation}
                     onChange={(e) => setSpotLocation(e.target.value)}
-                    placeholder="e.g. London &amp; New York"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    placeholder="e.g. Dublin, Ireland"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Genres (comma separated)</label>
+                  <input
+                    type="text"
+                    value={spotGenres}
+                    onChange={(e) => setSpotGenres(e.target.value)}
+                    placeholder="Literary Fiction, Poetry, Cultural Criticism"
+                    className="w-full rounded-xl border border-neutral-300 p-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Primary Genres (comma separated)
-                </label>
-                <input
-                  type="text"
-                  value={spotGenres}
-                  onChange={(e) => setSpotGenres(e.target.value)}
-                  placeholder="Literary Fiction, Historical Fiction, Essays"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Author Spotlight Biography &amp; Recognition *
-                </label>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Author Bio & Spotlight Statement</label>
                 <textarea
                   rows={4}
-                  required
                   value={spotBio}
                   onChange={(e) => setSpotBio(e.target.value)}
-                  placeholder="Comprehensive profile of the author's work, honours, and contribution to literature..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                  placeholder="Author profile, notable publications, interviews, and literary background..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-gold-gradient text-[#050505] font-bold text-xs hover:brightness-110 transition-all inline-flex items-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gold-gradient text-xs font-bold text-[#050505] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
               >
-                <Award className="w-4 h-4 text-[#050505]" />
-                Publish to Author Spotlight
+                Publish and Feature in Author Spotlight
               </button>
             </form>
           </div>
         )}
 
-        {/* 6. LIVE RADIO CONTROL TAB */}
+        {/* 7. LIVE RADIO CONTROL TAB */}
         {activeTab === "live_radio" && (
-          <div className="max-w-3xl bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-6 shadow-sm">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                Master Broadcast Feed
-              </span>
-              <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1">
-                Live Radio Control
-              </h2>
-              <p className="text-xs text-[#080808]/70 mt-1">
-                Control the network&apos;s 24/7 Live Radio status, broadcast title, and stream feed across /live and homepage.
-              </p>
-            </div>
-
-            <form onSubmit={handleUpdateLiveRadio} className="space-y-4">
-              <div className="p-4 rounded-2xl bg-[#080808] text-white flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-sm">Broadcast Transmission Status</p>
-                  <p className="text-xs text-[#F7DF8B]">
-                    {radioIsLive ? "● Currently Broadcasting Live On Air" : "○ Currently Off Air"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setRadioIsLive(!radioIsLive)}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
+          <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-6 shadow-xs max-w-4xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#080808]">
+                  Live Radio Master Feed Control
+                </h2>
+                <p className="text-xs text-neutral-600 mt-1">
+                  Toggle the 24/7 global broadcast feed On-Air or Off-Air, and configure the active streaming source.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 ${
                     radioIsLive
-                      ? "bg-red-600 hover:bg-red-700 text-white"
-                      : "bg-[#25D366] hover:bg-[#20ba5a] text-white"
+                      ? "bg-rose-600 text-white animate-pulse"
+                      : "bg-neutral-200 text-neutral-600"
                   }`}
                 >
-                  {radioIsLive ? "Switch to Off Air" : "Go Live On Air"}
+                  <span className="size-2 rounded-full bg-white" />
+                  {radioIsLive ? "ON AIR NOW" : "OFF AIR"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleToggleRadio(!radioIsLive)}
+                  className={`py-2 px-5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                    radioIsLive
+                      ? "bg-neutral-800 text-white hover:bg-black"
+                      : "bg-gold-gradient text-[#050505] hover:brightness-110"
+                  }`}
+                >
+                  {radioIsLive ? "Switch Off-Air" : "Switch On-Air Now"}
                 </button>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Current Live Show Title *
-                </label>
+            <div className="space-y-4 pt-4 border-t border-neutral-200">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Broadcast Title</label>
                 <input
                   type="text"
-                  required
                   value={radioTitle}
                   onChange={(e) => setRadioTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Station / Programme
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Studio Programme</label>
                   <input
                     type="text"
                     value={radioProgramme}
                     onChange={(e) => setRadioProgramme(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Stream / HLS / Media Feed URL *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Audio Stream URL</label>
                   <input
-                    type="text"
-                    required
+                    type="url"
                     value={radioStreamUrl}
                     onChange={(e) => setRadioStreamUrl(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm font-mono"
+                    placeholder="https://... MP3/HLS/MP4 stream"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                  Live Show Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={radioDesc}
-                  onChange={(e) => setRadioDesc(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
-                />
               </div>
 
               <button
-                type="submit"
-                className="px-6 py-3 rounded-xl bg-[#080808] text-[#F7DF8B] font-bold text-xs hover:bg-[#141414] transition-colors inline-flex items-center gap-2 cursor-pointer"
+                type="button"
+                onClick={() => handleToggleRadio(radioIsLive)}
+                className="py-2.5 px-6 rounded-xl bg-[#080808] text-[#F7DF8B] text-xs font-bold hover:bg-black cursor-pointer transition-all"
               >
-                <Radio className="w-4 h-4 text-[#D4AF37]" />
-                Update Live Radio Configuration
+                Save Radio Settings
               </button>
-            </form>
+            </div>
           </div>
         )}
 
-        {/* 7. SETTINGS & SECURITY TAB */}
-        {activeTab === "settings" && (
-          <div className="max-w-3xl space-y-8">
-            {/* Password Change Form */}
-            <div className="bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-5 shadow-sm">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                  Authentication
-                </span>
-                <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1 flex items-center gap-2">
-                  <KeyRound className="w-5 h-5 text-[#D4AF37]" />
-                  Change Admin Password
-                </h2>
-                <p className="text-xs text-[#080808]/70 mt-1">
-                  Update the password required to sign in to the Admin Operations Console.
-                </p>
-              </div>
+        {/* 8. CATALOG OVERVIEW TAB */}
+        {activeTab === "catalog" && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
+                Published Network Catalog ({allBooks.length} Books, {audiobooks.length} Audiobooks, {allArticles.length} Articles)
+              </h2>
+              <p className="text-xs text-neutral-600 mt-1">
+                Overview of all published material currently live across the site.
+              </p>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {allBooks.slice(0, 12).map((book) => (
+                <div
+                  key={book.id}
+                  className="p-4 rounded-2xl border border-neutral-200 bg-white flex items-center gap-3.5 shadow-xs"
+                >
+                  <img
+                    src={book.cover_url}
+                    alt={book.title}
+                    className="w-14 h-20 object-cover rounded-lg border border-neutral-200 shadow-xs shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37]">
+                      {book.format}
+                    </span>
+                    <h3 className="font-serif font-bold text-sm text-[#080808] truncate">
+                      {book.title}
+                    </h3>
+                    <p className="text-xs text-neutral-500 truncate">
+                      {book.author_name || "Author"}
+                    </p>
+                    <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      Live on Site
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 9. SETTINGS & SECURITY TAB */}
+        {activeTab === "settings" && (
+          <div className="max-w-3xl mx-auto space-y-8">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-[#080808]">
+                Admin Settings & Security
+              </h2>
+              <p className="text-xs text-neutral-600 mt-1">
+                Configure your administrator login credentials, notification email for receiving author submissions, and password.
+              </p>
+            </div>
+
+            {/* Change Password Card */}
+            <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-4 shadow-xs">
+              <div className="flex items-center gap-2">
+                <KeyRound className="size-5 text-[#D4AF37]" />
+                <h3 className="font-serif text-lg font-bold text-[#080808]">Change Admin Password</h3>
+              </div>
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                      New Password (Min 8 chars) *
-                    </label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">New Password *</label>
                     <input
                       type="password"
                       required
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                      placeholder="Minimum 8 characters"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                      Confirm New Password *
-                    </label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">Confirm New Password *</label>
                     <input
                       type="password"
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                      placeholder="Repeat new password"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                     />
                   </div>
                 </div>
-
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#080808] text-white font-bold text-xs hover:bg-[#141414] transition-colors cursor-pointer"
+                  className="py-2.5 px-6 rounded-xl bg-[#080808] text-[#F7DF8B] text-xs font-bold hover:bg-black cursor-pointer transition-all"
                 >
-                  Save New Password
+                  Update Admin Password
                 </button>
               </form>
             </div>
 
-            {/* Change Admin Login Email */}
-            <div className="bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-5 shadow-sm">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                  Account Identity
-                </span>
-                <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1 flex items-center gap-2">
-                  <User className="w-5 h-5 text-[#D4AF37]" />
-                  Update Admin Login Email
-                </h2>
-                <p className="text-xs text-[#080808]/70 mt-1">
-                  Change the email used to authenticate into this Admin Console.
-                </p>
+            {/* Update Login Email Card */}
+            <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-4 shadow-xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="size-5 text-[#D4AF37]" />
+                <h3 className="font-serif text-lg font-bold text-[#080808]">Admin Login Email</h3>
               </div>
-
+              <p className="text-xs text-neutral-600">
+                Current login email for signing in: <strong className="text-[#080808]">{user?.email}</strong>
+              </p>
               <form onSubmit={handleUpdateLoginEmail} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Admin Sign-In Email Address *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-neutral-700">New Login Email</label>
                   <input
                     type="email"
                     required
                     value={newLoginEmail}
                     onChange={(e) => setNewLoginEmail(e.target.value)}
                     placeholder="perrycreativity@gmail.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#080808] text-white font-bold text-xs hover:bg-[#141414] transition-colors cursor-pointer"
+                  className="py-2.5 px-6 rounded-xl bg-[#080808] text-[#F7DF8B] text-xs font-bold hover:bg-black cursor-pointer transition-all"
                 >
-                  Update Admin Login Email
+                  Update Login Email
                 </button>
               </form>
             </div>
 
-            {/* Update Email for Receiving Requests & Submissions */}
-            <div className="bg-white rounded-3xl border border-[#080808]/12 p-8 space-y-5 shadow-sm">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-[#AA7C11]">
-                  Communications &amp; Notifications
-                </span>
-                <h2 className="font-serif text-2xl font-bold text-[#080808] mt-1 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-[#D4AF37]" />
-                  Receiving Email for Submissions &amp; Requests
-                </h2>
-                <p className="text-xs text-[#080808]/70 mt-1">
-                  Where email dispatches for book submissions, author pitches, and contact requests are forwarded.
-                </p>
+            {/* Notification Receiving Email Card */}
+            <div className="p-8 rounded-3xl border border-neutral-200 bg-white space-y-4 shadow-xs">
+              <div className="flex items-center gap-2">
+                <Mail className="size-5 text-[#D4AF37]" />
+                <h3 className="font-serif text-lg font-bold text-[#080808]">
+                  Notification Email for Author Submissions & Requests
+                </h3>
               </div>
-
+              <p className="text-xs text-neutral-600">
+                Whenever an author submits a book, publishes, or submits an enquiry on the website, instant notifications are dispatched here.
+              </p>
               <form onSubmit={handleUpdateReceivingEmail} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#080808] mb-1">
-                    Forwarding / Dispatch Email *
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-neutral-700">Receiving Email Address</label>
                   <input
                     type="email"
                     required
                     value={receivingEmail}
                     onChange={(e) => setReceivingEmail(e.target.value)}
                     placeholder="enquiry@literaryvoicenetwork.org"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#080808]/20 text-sm"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
-
-                <div className="p-4 rounded-2xl bg-[#080808] text-white text-xs space-y-1 font-mono">
-                  <p className="text-[#D4AF37] font-bold">SMTP Transport Configuration:</p>
-                  <p>• Dispatch Target: {receivingEmail}</p>
-                  <p>• SMTP Environment: {process.env.SMTP_HOST ? `Active (${process.env.SMTP_HOST})` : "Standard Server Mail Transport"}</p>
-                  <p>• Fallback: Direct In-Database Activity Logging &amp; Resend</p>
-                </div>
-
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#080808] text-white font-bold text-xs hover:bg-[#141414] transition-colors cursor-pointer"
+                  className="py-2.5 px-6 rounded-xl bg-gold-gradient text-[#050505] text-xs font-bold hover:brightness-110 cursor-pointer transition-all shadow-xs"
                 >
-                  Save Receiving Email
+                  Save Notification Email Address
                 </button>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* 8. CATALOG TAB */}
-        {activeTab === "catalog" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-[#080808]">
-                Published Website Catalogue
-              </h2>
-              <p className="text-xs text-[#080808]/70">
-                Overview of verified books, audiobooks, and magazine articles published live across the network.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Published Books & Audiobooks */}
-              <div className="bg-white rounded-3xl border border-[#080808]/12 p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                  <h3 className="font-serif text-lg font-bold text-[#080808] flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-[#AA7C11]" />
-                    Books &amp; Audiobooks ({allBooks.length})
-                  </h3>
-                  <span className="text-xs text-[#080808]/60">{audiobooks.length} Audiobooks</span>
-                </div>
-
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {allBooks.map((b) => (
-                    <div
-                      key={b.id}
-                      className="p-3.5 rounded-2xl bg-[#FAF8F3] border border-[#080808]/8 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <div className="truncate">
-                        <p className="font-bold text-[#080808] truncate">{b.title}</p>
-                        <p className="text-[#080808]/60 text-[11px] truncate">
-                          By {b.author_name} · {b.format} · {b.genre}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/books/${b.slug}`}
-                        target="_blank"
-                        className="text-xs font-bold text-[#AA7C11] hover:underline shrink-0"
-                      >
-                        View →
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Published Magazine Articles */}
-              <div className="bg-white rounded-3xl border border-[#080808]/12 p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                  <h3 className="font-serif text-lg font-bold text-[#080808] flex items-center gap-2">
-                    <Newspaper className="w-4 h-4 text-[#AA7C11]" />
-                    Magazine Articles &amp; Essays ({allArticles.length})
-                  </h3>
-                </div>
-
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {allArticles.map((a) => (
-                    <div
-                      key={a.id}
-                      className="p-3.5 rounded-2xl bg-[#FAF8F3] border border-[#080808]/8 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <div className="truncate">
-                        <p className="font-bold text-[#080808] truncate">{a.title}</p>
-                        <p className="text-[#080808]/60 text-[11px] truncate">
-                          {a.article_type} · By {a.author_name}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/magazine/${a.slug}`}
-                        target="_blank"
-                        className="text-xs font-bold text-[#AA7C11] hover:underline shrink-0"
-                      >
-                        View →
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}

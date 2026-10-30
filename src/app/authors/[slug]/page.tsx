@@ -1,20 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  BookOpen,
-  Calendar,
-  ExternalLink,
-  Feather,
-  Globe,
-  MapPin,
-  Mic2,
-  Newspaper,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Award, BookOpen, Calendar, ExternalLink, Feather, Globe, MapPin, Mic2, Newspaper, ShieldCheck, Users } from "lucide-react";
 import {
   ArticleCard,
   BookCard,
@@ -73,7 +60,7 @@ export default async function AuthorProfilePage({ params }: AuthorProfilePagePro
                 )}
                 {profile.role === "editor" && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#D4AF37]/25 text-[#F7DF8B] border border-[#D4AF37]/40">
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Award className="w-3.5 h-3.5" />
                     LVN Commissioning Editor
                   </span>
                 )}

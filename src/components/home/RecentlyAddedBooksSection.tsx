@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import type { Book } from "@/lib/db/types";
 
 const FALLBACK_COVER = "/media/covers/the-glass-meridian.jpg";
@@ -42,7 +42,7 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#D4AF37] inline-flex items-center gap-1.5">
-              <Sparkles className="size-3.5" /> Fresh on the Shelf
+              <BookOpen className="size-3.5" /> Fresh on the Shelf
             </p>
             <h2 className="font-serif-display text-3xl sm:text-4xl font-bold mt-1">
               Recently Added Books

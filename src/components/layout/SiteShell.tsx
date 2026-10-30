@@ -761,12 +761,10 @@ export function SiteShell({
                   <Link
                     href="/admin"
                     prefetch={true}
-                    className="hidden md:inline-flex items-center gap-1 rounded-full border border-[#D4AF37]/40 bg-[#141414] px-2.5 py-1.5 text-[11px] font-semibold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] transition-all"
+                    className="inline-flex items-center gap-1 rounded-full border border-[#D4AF37] bg-gold-gradient text-[#050505] px-2.5 py-1 text-[11px] font-bold hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
                   >
-                    <ShieldCheck className="size-3" />
-                    <span className="hidden xl:inline">
-                      {user.role === "admin" ? "Admin" : "Editorial"}
-                    </span>
+                    <ShieldCheck className="size-3.5" />
+                    <span>Admin</span>
                   </Link>
                 )}
 
@@ -781,13 +779,25 @@ export function SiteShell({
                 </button>
               </div>
             ) : (
-              <Link
-                href="/auth"
-                prefetch={true}
-                className="animate-nav-stagger-2 hidden sm:inline-flex rounded-full border border-[#D4AF37]/45 bg-[#141414] px-3.5 py-1.5 text-[11px] font-semibold text-[#FAF8F3] hover:border-[#F7DF8B] hover:text-[#F7DF8B] transition-all whitespace-nowrap"
-              >
-                Sign In
-              </Link>
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href="/auth"
+                  prefetch={true}
+                  className="hidden sm:inline-flex rounded-full border border-white/20 bg-[#141414] px-3 py-1.5 text-[11px] font-semibold text-[#FAF8F3] hover:border-[#F7DF8B] hover:text-[#F7DF8B] transition-all whitespace-nowrap"
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  href="/admin"
+                  prefetch={true}
+                  className="inline-flex items-center gap-1 rounded-full border border-[#D4AF37]/60 bg-[#18150a] px-2.5 py-1 text-[11px] font-bold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] transition-all shadow-[0_2px_8px_rgba(212,175,55,0.2)] whitespace-nowrap"
+                  title="Admin Portal & Moderation"
+                >
+                  <ShieldCheck className="size-3.5 text-[#D4AF37]" />
+                  <span>Admin</span>
+                </Link>
+              </div>
             )}
 
             {/* Primary Listen Live CTA — Staggered 3rd Item */}
@@ -847,7 +857,47 @@ export function SiteShell({
 
         {/* Mobile Responsive Accordion Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#D4AF37]/25 bg-[#080808] px-4 py-4 max-h-[82vh] overflow-y-auto space-y-2">
+          <div className="lg:hidden border-t border-[#D4AF37]/25 bg-[#080808] px-4 py-4 max-h-[82vh] overflow-y-auto space-y-3">
+            {/* Quick Access Action Card */}
+            <div className="rounded-2xl border border-[#D4AF37]/35 bg-gradient-to-b from-[#16140d] to-[#0a0a0a] p-3 space-y-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+              <div className="flex items-center justify-between text-[11px] px-1 font-semibold text-[#F7DF8B]">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="size-3.5 text-[#D4AF37]" />
+                  Executive & Member Portals
+                </span>
+                <span className="text-[10px] text-white/50 uppercase tracking-widest font-mono">Access</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-gold-gradient text-[#050505] py-2.5 px-3 text-xs font-bold shadow-[0_2px_12px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition-all text-center"
+                >
+                  <ShieldCheck className="size-3.5" />
+                  <span>Admin Portal</span>
+                </Link>
+
+                {user ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/5 text-[#FAF8F3] py-2.5 px-3 text-xs font-semibold hover:border-[#D4AF37] active:scale-95 transition-all text-center"
+                  >
+                    <LayoutDashboard className="size-3.5 text-[#D4AF37]" />
+                    <span>Workspace</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/auth"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/5 text-[#FAF8F3] py-2.5 px-3 text-xs font-semibold hover:border-[#D4AF37] active:scale-95 transition-all text-center"
+                  >
+                    <Users className="size-3.5 text-[#D4AF37]" />
+                    <span>Sign In</span>
+                  </Link>
+                )}
+              </div>
+            </div>
             {navGroups.map((group) => {
               const active = isGroupActive(group);
               const hasSub = Boolean(group.items && group.items.length > 0);
@@ -944,11 +994,18 @@ export function SiteShell({
               >
                 Listen Live Now
               </Link>
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 text-center rounded-xl border border-[#D4AF37]/60 bg-[#16140d] px-4 py-2.5 text-xs font-bold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] transition-all"
+              >
+                Admin Portal
+              </Link>
               {user && profile ? (
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center rounded-xl border border-[#D4AF37]/50 bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[#F7DF8B]"
+                  className="w-full text-center rounded-xl border border-white/15 bg-[#141414] px-4 py-2 text-xs font-semibold text-[#FAF8F3]"
                 >
                   Member Workspace
                 </Link>
@@ -956,7 +1013,7 @@ export function SiteShell({
                 <Link
                   href="/auth"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center rounded-xl border border-[#D4AF37]/50 bg-[#141414] px-4 py-2.5 text-xs font-semibold text-[#FAF8F3]"
+                  className="w-full text-center rounded-xl border border-white/15 bg-[#141414] px-4 py-2 text-xs font-semibold text-[#FAF8F3]"
                 >
                   Sign In / Join Free
                 </Link>
@@ -1297,6 +1354,12 @@ export function SiteShell({
                 className="hover:text-[#F7DF8B] transition-colors"
               >
                 Press
+              </Link>
+              <Link
+                href="/admin"
+                className="text-[#F7DF8B] font-semibold hover:underline transition-colors"
+              >
+                Admin Portal
               </Link>
             </div>
           </div>

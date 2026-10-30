@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { BookCard } from "@/components/ui/Cards";
 import { listPublicBooks } from "@/lib/services/publishing";
 
@@ -16,7 +16,7 @@ export default function CommunityBooksPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/45 bg-[#D4AF37]/15 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#F7DF8B]">
-              <Sparkles className="size-3.5 text-[#D4AF37]" />
+              <BookOpen className="size-3.5 text-[#D4AF37]" />
               Fresh on the Shelf
             </span>
             <h1 className="font-serif-display text-4xl sm:text-5xl font-bold mt-4">

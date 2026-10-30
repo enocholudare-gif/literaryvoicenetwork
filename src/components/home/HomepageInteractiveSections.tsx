@@ -2,35 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Bell,
-  BookOpen,
-  Calendar,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Compass,
-  ExternalLink,
-  Feather,
-  Globe,
-  Headphones,
-  MapPin,
-  Mic2,
-  Pause,
-  Play,
-  Radio,
-  RefreshCw,
-  RotateCw,
-  Search,
-  Sparkles,
-  Star,
-  Users,
-  Video,
-  X,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Award, Bell, BookOpen, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Feather, Globe, Headphones, MapPin, Mic2, Pause, Play, Radio, RefreshCw, RotateCw, Search, Star, Users, Video, X } from "lucide-react";
 import { useAudioPlayer } from "../layout/AudioPlayerContext";
 import type { Article, Book, Broadcast } from "@/lib/db/types";
 
@@ -455,7 +427,7 @@ export function AuthorPromoBanner() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#050505] shrink-0">
-            <Sparkles className="size-3" />
+            <Award className="size-3" />
             Limited Author Promotion
           </span>
           <p className="text-xs sm:text-sm font-medium text-[#FAF8F3]/90">

@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Award,
-  CheckCircle2,
-  ExternalLink,
-  Globe,
-  Mail,
-  Sparkles,
-} from "lucide-react";
+import { Award, CheckCircle2, ExternalLink, Globe, Mail } from "lucide-react";
 import type { Partner } from "@/lib/db/types";
 
 export default function PartnersPage() {

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Compass, Globe, Mic2, Sparkles } from "lucide-react";
+import { ArrowRight, Award, Compass, Globe, Mic2 } from "lucide-react";
 
 const FOUNDER_FEATURES = [
   {

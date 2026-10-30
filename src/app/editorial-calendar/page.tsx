@@ -1,14 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Feather,
-  Newspaper,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Award, Calendar, CheckCircle2, Clock, Feather, Newspaper } from "lucide-react";
 import { StatusBadge } from "@/components/ui/Cards";
 import { listEditorialIssues } from "@/lib/services/platform";
 
@@ -40,7 +32,7 @@ export default function EditorialCalendarPage() {
                 href="/dashboard?tab=pitches"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-xs hover:bg-[#F7DF8B] transition-colors"
               >
-                <Sparkles className="w-4 h-4" />
+                <Award className="w-4 h-4" />
                 Pitch a Feature or Interview
               </Link>
               <Link
