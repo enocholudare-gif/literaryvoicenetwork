@@ -869,7 +869,7 @@ export default function AdminDashboardPage() {
                 Admin Operations
               </span>
               <span className="text-xs text-white/60">
-                Logged in as: <strong className="text-[#F7DF8B]">{profile?.display_name || "Executive Founder & CEO"}</strong> ({user?.email})
+                Connected: <strong className="text-[#F7DF8B]">{user?.email}</strong>
               </span>
             </div>
             <h1 className="font-serif text-3xl sm:text-4xl font-bold mt-2 text-[#FAF8F3]">
@@ -878,21 +878,6 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-[#FAF8F3]/75 mt-1 max-w-2xl">
               Centralized command for author approvals, live radio broadcast, podcasts, audiobooks, digital magazines, and author spotlight.
             </p>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 rounded-full border border-white/20 bg-white/5 text-xs font-semibold text-white hover:border-[#D4AF37] transition-all"
-            >
-              Author Studio
-            </Link>
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-full bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
-            >
-              View Main Site
-            </Link>
           </div>
         </div>
       </section>
@@ -1970,3 +1955,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+     

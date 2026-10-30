@@ -31,7 +31,7 @@
   <!-- Divider -->
   <line x1="80" y1="380" x2="220" y2="380" stroke="url(#gold)" stroke-width="1"/>
   <!-- Author -->
-  <text x="150" y="400" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#D4AF37" letter-spacing="1">ELEANOR VANCE</text>
+  <text x="150" y="400" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#D4AF37" letter-spacing="1">EXECUTIVE FOUNDER &amp; CEO</text>
   <!-- Publisher -->
   <text x="150" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#FAF8F3" fill-opacity="0.4" letter-spacing="2">MERIDIAN HOUSE PRESS</text>
 </svg>
