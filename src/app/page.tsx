@@ -32,32 +32,32 @@ export default function HomePage() {
       {/* 1. Hero video + dedicated On Air Now player strip */}
       <HeroVideoSection settings={settings} featuredBroadcast={broadcasts[0] || null} />
 
-      {/* 2. Author promotion */}
-      <AuthorPromoBanner />
-
-      {/* 3. Step inside the broadcast */}
-      <StepInsideBroadcastSection />
-
-      {/* 4. Meet our hosts — bouncing cards */}
-      <MeetOurHostsSection />
-
-      {/* 5. Upcoming broadcasts — video cards flowing in & out */}
-      <UpcomingBroadcastsSection />
-
-      {/* 6. Past broadcasts — animated carousel */}
-      <PastBroadcastsSection episodes={broadcasts} />
-
-      {/* 7. Live video stage */}
-      <LiveVideoStageSection />
-
-      {/* 8. Trending books — 3D flip cards */}
+      {/* 2. Trending books — 3D flip cards */}
       <TrendingBooksSection dbBooks={allBooks} />
 
-      {/* 9. Recently added books — animated */}
+      {/* 3. Recently added books — animated */}
       <RecentlyAddedBooksSection books={allBooks.slice(0, 4)} />
 
-      {/* 10. On the shelf directory */}
+      {/* 4. On the shelf directory */}
       <OnTheShelfDirectorySection books={allBooks} />
+
+      {/* 5. Author promotion */}
+      <AuthorPromoBanner />
+
+      {/* 6. Step inside the broadcast */}
+      <StepInsideBroadcastSection />
+
+      {/* 7. Meet our hosts — bouncing cards */}
+      <MeetOurHostsSection />
+
+      {/* 8. Upcoming broadcasts — video cards flowing in & out */}
+      <UpcomingBroadcastsSection />
+
+      {/* 9. Past broadcasts — animated carousel */}
+      <PastBroadcastsSection episodes={broadcasts} />
+
+      {/* 10. Live video stage */}
+      <LiveVideoStageSection />
 
       {/* 11. Podcast feed & In the Hot Seat */}
       <PodcastAndHotSeatSection episodes={broadcasts} />

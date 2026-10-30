@@ -38,139 +38,139 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
   {
     id: "tb-1",
     rank: 1,
-    title: "The Glass Meridian",
-    author: "Executive Founder & CEO",
-    slug: "the-glass-meridian",
-    coverUrl: "/media/covers/the-glass-meridian.svg",
-    fallbackCover: "/media/covers/the-glass-meridian.svg",
+    title: "Pride and Prejudice",
+    author: "Jane Austen",
+    slug: "pride-and-prejudice",
+    coverUrl: "/media/covers/pride-and-prejudice.png",
+    fallbackCover: "/media/covers/pride-and-prejudice.png",
     rating: 4.9,
-    publisher: "Meridian House Press",
-    year: 2026,
-    pages: 368,
-    genres: ["Literary Fiction", "Historical", "Cartography"],
+    publisher: "T. Egerton / Penguin Classics",
+    year: 1813,
+    pages: 432,
+    genres: ["Classic Literature", "Romance", "Historical Fiction"],
     description:
-      "Set between an observatory in 1920s Edinburgh and a maritime archive in Bergen, two women separated by a century reconstruct a missing hydrographic atlas.",
+      "Since its immediate success in 1813, Pride and Prejudice has remained one of the most popular novels in the English language. Jane Austen called this brilliant work 'her own darling child' and its vivacious heroine, Elizabeth Bennet, 'as delightful a creature as ever appeared in print.'",
     links: {
-      amazon: "https://www.amazon.com/s?k=The+Glass+Meridian",
-      goodreads: "https://www.goodreads.com/search?q=The+Glass+Meridian",
+      amazon: "https://www.amazon.com/s?k=Pride+and+Prejudice+Jane+Austen",
+      goodreads: "https://www.goodreads.com/book/show/129915654-pride-and-prejudice",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=The+Glass+Meridian",
-      bookshop: "https://bookshop.org/search?keywords=The+Glass+Meridian",
+      audible: "https://www.audible.com/search?keywords=Pride+and+Prejudice",
+      bookshop: "https://bookshop.org/search?keywords=Pride+and+Prejudice",
     },
   },
   {
     id: "tb-2",
     rank: 2,
-    title: "The Saltwater Ledger",
-    author: "Amara Osei",
-    slug: "the-saltwater-ledger",
-    coverUrl: "/media/covers/the-saltwater-ledger.svg",
-    fallbackCover: "/media/covers/the-saltwater-ledger.svg",
-    rating: 4.9,
-    publisher: "Harbour & Loom",
-    year: 2026,
-    pages: 412,
-    genres: ["Historical Fiction", "Literary", "Diaspora"],
+    title: "The Queens of Crime",
+    author: "Marie Benedict",
+    slug: "the-queens-of-crime",
+    coverUrl: "/media/covers/the-queens-of-crime.png",
+    fallbackCover: "/media/covers/the-queens-of-crime.png",
+    rating: 4.8,
+    publisher: "Sourcebooks Landmark",
+    year: 2024,
+    pages: 368,
+    genres: ["Historical Fiction", "Mystery", "Biographical"],
     description:
-      "Three generations of women along the Gold Coast preserve a century-old maritime ledger that becomes the foundation for a clandestine literary movement.",
+      "From New York Times bestselling author Marie Benedict comes the explosive story of the real-life women behind the Golden Age of detective fiction—including Agatha Christie, Dorothy L. Sayers, Ngaio Marsh, and Margery Allingham—who formed a secret society and united to write a new chapter in literary history.",
     links: {
-      amazon: "https://www.amazon.com/s?k=The+Saltwater+Ledger",
-      goodreads: "https://www.goodreads.com/search?q=The+Saltwater+Ledger",
+      amazon: "https://www.amazon.com/s?k=The+Queens+of+Crime+Marie+Benedict",
+      goodreads: "https://www.goodreads.com/book/show/211003830-the-queens-of-crime",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=The+Saltwater+Ledger",
-      bookshop: "https://bookshop.org/search?keywords=The+Saltwater+Ledger",
+      audible: "https://www.audible.com/search?keywords=The+Queens+of+Crime+Marie+Benedict",
+      bookshop: "https://bookshop.org/search?keywords=The+Queens+of+Crime+Marie+Benedict",
     },
   },
   {
     id: "tb-3",
     rank: 3,
-    title: "Atlas of Quiet Cities",
-    author: "Julian Thorne",
-    slug: "atlas-of-quiet-cities",
-    coverUrl: "/media/covers/atlas-of-quiet-cities.svg",
-    fallbackCover: "/media/covers/atlas-of-quiet-cities.svg",
-    rating: 4.8,
-    publisher: "Northlight Editions",
+    title: "Kin",
+    author: "Tayari Jones",
+    slug: "kin",
+    coverUrl: "/media/covers/kin.svg",
+    fallbackCover: "/media/covers/kin.svg",
+    rating: 4.9,
+    publisher: "Algonquin Books",
     year: 2026,
-    pages: 328,
-    genres: ["Speculative Fiction", "Literary", "Architecture"],
+    pages: 352,
+    genres: ["Literary Fiction", "Family Saga", "Contemporary"],
     description:
-      "An archivist catalogues acoustic sanctuaries and forgotten reading rooms across twelve winter capitals.",
+      "From the bestselling author of An American Marriage, an emotionally gripping narrative exploring family loyalty, inheritance, and the fragile ties that bind us across generations.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Atlas+of+Quiet+Cities",
-      goodreads: "https://www.goodreads.com/search?q=Atlas+of+Quiet+Cities",
+      amazon: "https://www.amazon.com/s?k=Kin+Tayari+Jones",
+      goodreads: "https://www.goodreads.com/search?q=Kin+Tayari+Jones",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Atlas+of+Quiet+Cities",
-      bookshop: "https://bookshop.org/search?keywords=Atlas+of+Quiet+Cities",
+      audible: "https://www.audible.com/search?keywords=Kin+Tayari+Jones",
+      bookshop: "https://bookshop.org/search?keywords=Kin+Tayari+Jones",
     },
   },
   {
     id: "tb-4",
     rank: 4,
-    title: "Winter Harmonics",
-    author: "Claire Moreau",
-    slug: "winter-harmonics",
-    coverUrl: "/media/covers/winter-harmonics.svg",
-    fallbackCover: "/media/covers/winter-harmonics.svg",
+    title: "The Calamity Club",
+    author: "Kathryn Stockett",
+    slug: "the-calamity-club",
+    coverUrl: "/media/covers/the-calamity-club.svg",
+    fallbackCover: "/media/covers/the-calamity-club.svg",
     rating: 4.8,
-    publisher: "Atelier Boréal",
+    publisher: "Putnam",
     year: 2026,
-    pages: 196,
-    genres: ["Poetry", "Translation", "Lyric Essay"],
+    pages: 384,
+    genres: ["Historical Fiction", "Southern Fiction", "Drama"],
     description:
-      "Bilingual lyric sequences exploring Alpine glaciers, chamber music, and the acoustics of snow.",
+      "A compelling drama of friendship, ambition, and resilience among four women confronting personal and societal upheaval in the mid-century American South.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Winter+Harmonics",
-      goodreads: "https://www.goodreads.com/search?q=Winter+Harmonics",
+      amazon: "https://www.amazon.com/s?k=The+Calamity+Club+Kathryn+Stockett",
+      goodreads: "https://www.goodreads.com/search?q=The+Calamity+Club+Kathryn+Stockett",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Winter+Harmonics",
-      bookshop: "https://bookshop.org/search?keywords=Winter+Harmonics",
+      audible: "https://www.audible.com/search?keywords=The+Calamity+Club+Kathryn+Stockett",
+      bookshop: "https://bookshop.org/search?keywords=The+Calamity+Club+Kathryn+Stockett",
     },
   },
   {
     id: "tb-5",
     rank: 5,
-    title: "The Republic of Typesetters",
-    author: "Søren Lindqvist",
-    slug: "the-republic-of-typesetters",
-    coverUrl: "/media/covers/republic-of-typesetters.svg",
-    fallbackCover: "/media/covers/republic-of-typesetters.svg",
+    title: "Wild Dark Shore",
+    author: "Charlotte McConaghy",
+    slug: "wild-dark-shore",
+    coverUrl: "/media/covers/wild-dark-shore.svg",
+    fallbackCover: "/media/covers/wild-dark-shore.svg",
     rating: 4.9,
-    publisher: "Fjord & Folio Press",
+    publisher: "Flatiron Books",
     year: 2026,
-    pages: 448,
-    genres: ["Non-Fiction", "History", "Publishing"],
+    pages: 336,
+    genres: ["Literary Fiction", "Adventure", "Nature"],
     description:
-      "How nineteenth-century Nordic printshops and cellar presses shaped modern European letters.",
+      "A breathtaking story of survival and hope set along the rugged coastlines of the southern hemisphere, investigating nature, grief, and human endurance.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Republic+of+Typesetters",
-      goodreads: "https://www.goodreads.com/search?q=Republic+of+Typesetters",
+      amazon: "https://www.amazon.com/s?k=Wild+Dark+Shore+Charlotte+McConaghy",
+      goodreads: "https://www.goodreads.com/search?q=Wild+Dark+Shore+Charlotte+McConaghy",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Republic+of+Typesetters",
-      bookshop: "https://bookshop.org/search?keywords=Republic+of+Typesetters",
+      audible: "https://www.audible.com/search?keywords=Wild+Dark+Shore+Charlotte+McConaghy",
+      bookshop: "https://bookshop.org/search?keywords=Wild+Dark+Shore+Charlotte+McConaghy",
     },
   },
   {
     id: "tb-6",
     rank: 6,
-    title: "The Architecture of Memory",
-    author: "LVN Literary Quarterly",
-    slug: "the-architecture-of-memory",
-    coverUrl: "/media/covers/architecture-of-memory.svg",
-    fallbackCover: "/media/covers/architecture-of-memory.svg",
-    rating: 4.9,
-    publisher: "Grove Press",
-    year: 2025,
-    pages: 724,
-    genres: ["Literary Fiction", "Family Saga", "Historical"],
+    title: "Yesteryear",
+    author: "Caro Claire Burke",
+    slug: "yesteryear",
+    coverUrl: "/media/covers/yesteryear.svg",
+    fallbackCover: "/media/covers/yesteryear.svg",
+    rating: 4.8,
+    publisher: "Atria Books",
+    year: 2026,
+    pages: 320,
+    genres: ["Historical Fiction", "Mystery", "Time Travel"],
     description:
-      "Spanning 1900 to 1977 in Kerala, a magisterial epic of medicine, faith, and generational devotion.",
+      "An evocative journey through time, memory, and forgotten places, weaving intimate domestic history with the transformative pull of the modern era.",
     links: {
-      amazon: "https://www.amazon.com/s?k=The+Covenant+of+Water",
-      goodreads: "https://www.goodreads.com/search?q=The+Covenant+of+Water",
+      amazon: "https://www.amazon.com/s?k=Yesteryear+Caro+Claire+Burke",
+      goodreads: "https://www.goodreads.com/search?q=Yesteryear+Caro+Claire+Burke",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=The+Covenant+of+Water",
-      bookshop: "https://bookshop.org/search?keywords=The+Covenant+of+Water",
+      audible: "https://www.audible.com/search?keywords=Yesteryear+Caro+Claire+Burke",
+      bookshop: "https://bookshop.org/search?keywords=Yesteryear+Caro+Claire+Burke",
     },
   },
 ];
@@ -1008,8 +1008,8 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
       title: b.title,
       author: b.author_name || "LVN Author",
       slug: b.slug,
-      coverUrl: b.cover_url && !b.cover_url.endsWith(".svg") ? b.cover_url : "/media/covers/the-glass-meridian.jpg",
-      fallbackCover: "/media/covers/the-glass-meridian.jpg",
+      coverUrl: b.cover_url || "/media/covers/pride-and-prejudice.png",
+      fallbackCover: b.cover_url || "/media/covers/pride-and-prejudice.png",
       rating: 4.9,
       publisher: b.publisher || "LVN Edition",
       year: b.publication_date ? Number(b.publication_date.slice(0, 4)) || 2026 : 2026,
@@ -1090,9 +1090,9 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
                       : "group-hover:rotate-y-180"
                   }`}
                 >
-                  {/* FRONT OF CARD: Book Cover Showcase */}
-                  <div className="absolute inset-0 w-full h-full rounded-3xl bg-[#080808] border-2 border-[#D4AF37]/45 overflow-hidden backface-hidden flex flex-col justify-between p-6">
-                    <div className="flex items-center justify-between z-10">
+                  {/* FRONT OF CARD: Pure Book Cover Showcase (Flip to inspect details) */}
+                  <div className="absolute inset-0 w-full h-full rounded-3xl bg-[#080808] border-2 border-[#D4AF37]/45 overflow-hidden backface-hidden flex flex-col items-center justify-between p-4 sm:p-5">
+                    <div className="w-full flex items-center justify-between z-10">
                       <span className="rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-[#050505] shadow-md">
                         #{b.rank} on Chart
                       </span>
@@ -1102,41 +1102,34 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
                       </span>
                     </div>
 
-                    <div className="my-auto flex justify-center py-2">
-                      <div className="w-40 aspect-[2/3] rounded-xl overflow-hidden border border-[#D4AF37]/40 shadow-[0_16px_35px_rgba(0,0,0,0.75)]">
-                        <img
-                          src={useFallback ? b.fallbackCover : b.coverUrl}
-                          alt={b.title}
-                          onLoad={(e) => {
-                            if ((e.currentTarget as HTMLImageElement).naturalWidth <= 1) {
-                              setFallbackMap((prev) => ({
-                                ...prev,
-                                [b.id]: true,
-                              }));
-                            }
-                          }}
-                          onError={() =>
+                    {/* Book Cover — Dominant, clean realistic presentation */}
+                    <div className="my-auto w-full max-w-[210px] aspect-[2/3] rounded-2xl overflow-hidden border-2 border-[#D4AF37]/50 shadow-[0_20px_45px_rgba(0,0,0,0.85)] group-hover:border-[#F7DF8B] transition-colors">
+                      <img
+                        src={useFallback ? b.fallbackCover : b.coverUrl}
+                        alt={b.title}
+                        onLoad={(e) => {
+                          if ((e.currentTarget as HTMLImageElement).naturalWidth <= 1) {
                             setFallbackMap((prev) => ({
                               ...prev,
                               [b.id]: true,
-                            }))
+                            }));
                           }
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
+                        }}
+                        onError={() =>
+                          setFallbackMap((prev) => ({
+                            ...prev,
+                            [b.id]: true,
+                          }))
+                        }
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     </div>
 
-                    <div className="text-center z-10">
-                      <h3 className="font-serif-display text-lg font-bold text-[#FAF8F3] line-clamp-1">
-                        {b.title}
-                      </h3>
-                      <p className="text-xs font-semibold text-[#D4AF37] mt-0.5">
-                        {b.author}
-                      </p>
-                      <span className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-widest text-[#F7DF8B]/80">
+                    <div className="text-center z-10 pt-1">
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F7DF8B] bg-black/60 px-3 py-1 rounded-full border border-[#D4AF37]/30">
                         <RotateCw className="size-3 text-[#D4AF37]" />
-                        Hover or Tap to Flip for Details
+                        Flip to Read Synopsis &amp; Retailers
                       </span>
                     </div>
                   </div>

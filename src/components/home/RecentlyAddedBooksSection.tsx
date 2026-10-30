@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import type { Book } from "@/lib/db/types";
 
-const FALLBACK_COVER = "/media/covers/the-glass-meridian.jpg";
+const FALLBACK_COVER = "/media/covers/pride-and-prejudice.png";
 
 /**
  * Recently Added Books — cards rise in one after another when the section

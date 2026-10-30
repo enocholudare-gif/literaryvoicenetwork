@@ -158,6 +158,73 @@ export function seedDatabase(db: DatabaseSync): void {
       now
     );
 
+    // Bestseller / Literary Authors for Verified Books
+    insertUser.run(
+      "user-author-jane",
+      "jane.austen@literaryvoicesnetwork.org",
+      defaultPasswordHash,
+      "author",
+      prefs,
+      now,
+      now,
+      now
+    );
+
+    insertUser.run(
+      "user-author-marie",
+      "marie.benedict@literaryvoicesnetwork.org",
+      defaultPasswordHash,
+      "author",
+      prefs,
+      now,
+      now,
+      now
+    );
+
+    insertUser.run(
+      "user-author-tayari",
+      "tayari.jones@literaryvoicesnetwork.org",
+      defaultPasswordHash,
+      "author",
+      prefs,
+      now,
+      now,
+      now
+    );
+
+    insertUser.run(
+      "user-author-kathryn",
+      "kathryn.stockett@literaryvoicesnetwork.org",
+      defaultPasswordHash,
+      "author",
+      prefs,
+      now,
+      now,
+      now
+    );
+
+    insertUser.run(
+      "user-author-charlotte",
+      "charlotte.mcconaghy@literaryvoicesnetwork.org",
+      defaultPasswordHash,
+      "author",
+      prefs,
+      now,
+      now,
+      now
+    );
+
+    insertUser.run(
+      "user-author-caro",
+      "caro.burke@literaryvoicesnetwork.org",
+      defaultPasswordHash,
+      "author",
+      prefs,
+      now,
+      now,
+      now
+    );
+
     // Registered Member / Reader
     insertUser.run(
       "user-member-nadia",
@@ -315,6 +382,126 @@ export function seedDatabase(db: DatabaseSync): void {
       now
     );
 
+    insertProfile.run(
+      "profile-author-jane",
+      "user-author-jane",
+      "jane-austen",
+      "Jane Austen",
+      null,
+      "Celebrated English Novelist & Literary Pioneer",
+      "Jane Austen is one of the most widely read and beloved writers in English literature, renowned for her wit, social commentary, and masterful novels of manners including Pride and Prejudice.",
+      "/media/covers/pride-and-prejudice.png",
+      "/media/banners/editorial-desk.svg",
+      "Hampshire, United Kingdom",
+      "https://literaryvoicesnetwork.org/authors/jane-austen",
+      JSON.stringify(["Classic Literature", "Romance", "Historical Fiction"]),
+      JSON.stringify({ goodreads: "https://www.goodreads.com/book/show/129915654-pride-and-prejudice" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-marie",
+      "user-author-marie",
+      "marie-benedict",
+      "Marie Benedict",
+      null,
+      "New York Times Bestselling Historical Novelist",
+      "Marie Benedict is the bestselling author of The Queens of Crime, The Only Woman in the Room, and The Mystery of Mrs. Christie, celebrating pivotal historical women.",
+      "/media/covers/the-queens-of-crime.png",
+      "/media/banners/editorial-desk.svg",
+      "Pittsburgh, Pennsylvania",
+      "https://literaryvoicesnetwork.org/authors/marie-benedict",
+      JSON.stringify(["Historical Fiction", "Mystery", "Biographical"]),
+      JSON.stringify({ goodreads: "https://www.goodreads.com/book/show/211003830-the-queens-of-crime" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-tayari",
+      "user-author-tayari",
+      "tayari-jones",
+      "Tayari Jones",
+      null,
+      "Bestselling Author of An American Marriage & Kin",
+      "Tayari Jones is the New York Times bestselling author of four novels, including An American Marriage and Kin, exploring family, loyalty, and deep generational bonds.",
+      "/media/covers/kin.svg",
+      "/media/banners/editorial-desk.svg",
+      "Atlanta, Georgia",
+      "https://literaryvoicesnetwork.org/authors/tayari-jones",
+      JSON.stringify(["Literary Fiction", "Family Saga", "Contemporary"]),
+      JSON.stringify({ goodreads: "https://www.goodreads.com/search?q=Kin+Tayari+Jones" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-kathryn",
+      "user-author-kathryn",
+      "kathryn-stockett",
+      "Kathryn Stockett",
+      null,
+      "Acclaimed Author of The Help & The Calamity Club",
+      "Kathryn Stockett was born and raised in Jackson, Mississippi. Her novels explore intimate human relationships, community bonds, and transformative resilience.",
+      "/media/covers/the-calamity-club.svg",
+      "/media/banners/editorial-desk.svg",
+      "Jackson, Mississippi",
+      "https://literaryvoicesnetwork.org/authors/kathryn-stockett",
+      JSON.stringify(["Historical Fiction", "Southern Fiction", "Drama"]),
+      JSON.stringify({ goodreads: "https://www.goodreads.com/search?q=The+Calamity+Club+Kathryn+Stockett" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-charlotte",
+      "user-author-charlotte",
+      "charlotte-mcconaghy",
+      "Charlotte McConaghy",
+      null,
+      "International Bestselling Author of Migrations & Wild Dark Shore",
+      "Charlotte McConaghy is an Australian author whose fiction delves into the natural world, climate, and deep human resilience.",
+      "/media/covers/wild-dark-shore.svg",
+      "/media/banners/editorial-desk.svg",
+      "Sydney, Australia",
+      "https://literaryvoicesnetwork.org/authors/charlotte-mcconaghy",
+      JSON.stringify(["Literary Fiction", "Adventure", "Nature"]),
+      JSON.stringify({ goodreads: "https://www.goodreads.com/search?q=Wild+Dark+Shore+Charlotte+McConaghy" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-caro",
+      "user-author-caro",
+      "caro-claire-burke",
+      "Caro Claire Burke",
+      null,
+      "Author & Cultural Essayist",
+      "Caro Claire Burke writes evocative fiction touching upon memory, time, and hidden family histories across the American landscape.",
+      "/media/covers/yesteryear.svg",
+      "/media/banners/editorial-desk.svg",
+      "New York, New York",
+      "https://literaryvoicesnetwork.org/authors/caro-claire-burke",
+      JSON.stringify(["Historical Fiction", "Mystery", "Time Travel"]),
+      JSON.stringify({ goodreads: "https://www.goodreads.com/search?q=Yesteryear+Caro+Claire+Burke" }),
+      1,
+      1,
+      now,
+      now
+    );
+
     // Member Profile
     insertProfile.run(
       "profile-member-nadia",
@@ -454,7 +641,245 @@ export function seedDatabase(db: DatabaseSync): void {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    // Book 1: Authored & Published by Administrator Executive Founder & CEO under her public LVN profile
+    // =========================================================================
+    // FEATURED BESTSELLERS & VERIFIED BOOKS (Match Homepage 3D Shelf & Directory)
+    // =========================================================================
+
+    // 1. Pride and Prejudice by Jane Austen
+    insertBook.run(
+      "book-pride-and-prejudice",
+      "pride-and-prejudice",
+      "profile-author-jane",
+      "user-author-jane",
+      "Pride and Prejudice",
+      "A Novel of Manners, Society, and Enduring Romance",
+      "978-0-141439-51-8",
+      "Since its immediate success in 1813, Pride and Prejudice has remained one of the most popular novels in the English language. Jane Austen called this brilliant work 'her own darling child' and its vivacious heroine, Elizabeth Bennet, 'as delightful a creature as ever appeared in print.' The romantic clash between the opinionated Elizabeth and her proud beau, Mr. Darcy, is a splendid performance of civilized sparring.",
+      "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.",
+      "/media/covers/pride-and-prejudice.png",
+      "Classic Literature",
+      JSON.stringify(["Romance", "Historical Fiction"]),
+      "Hardcover",
+      "Penguin Classics",
+      "1813-01-28",
+      432,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/s?k=Pride+and+Prejudice+Jane+Austen",
+        goodreads: "https://www.goodreads.com/book/show/129915654-pride-and-prejudice",
+        bookshop: "https://bookshop.org/search?keywords=Pride+and+Prejudice",
+        audible: "https://www.audible.com/search?keywords=Pride+and+Prejudice",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-30T12:00:00.000Z",
+      "Pride and Prejudice by Jane Austen | Literary Voices Network",
+      "Discover Jane Austen's timeless masterpiece Pride and Prejudice on Literary Voices Network.",
+      now,
+      now
+    );
+
+    // 2. The Queens of Crime by Marie Benedict
+    insertBook.run(
+      "book-the-queens-of-crime",
+      "the-queens-of-crime",
+      "profile-author-marie",
+      "user-author-marie",
+      "The Queens of Crime",
+      "The Explosive Story of the Women of the Golden Age of Detective Fiction",
+      "978-1-492697-88-6",
+      "From New York Times bestselling author Marie Benedict comes the explosive story of the real-life women behind the Golden Age of detective fiction—including Agatha Christie, Dorothy L. Sayers, Ngaio Marsh, and Margery Allingham—who formed a secret society and united to write a new chapter in literary history.",
+      "The drawing room on Soho Square was thick with the scent of pipe tobacco and damp tweed, but when the four of us locked the door against Fleet Street, we held the entire architecture of twentieth-century mystery in our hands.",
+      "/media/covers/the-queens-of-crime.png",
+      "Historical Fiction",
+      JSON.stringify(["Mystery", "Biographical Fiction"]),
+      "Hardcover",
+      "Sourcebooks Landmark",
+      "2024-10-08",
+      368,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/s?k=The+Queens+of+Crime+Marie+Benedict",
+        goodreads: "https://www.goodreads.com/book/show/211003830-the-queens-of-crime",
+        bookshop: "https://bookshop.org/search?keywords=The+Queens+of+Crime+Marie+Benedict",
+        audible: "https://www.audible.com/search?keywords=The+Queens+of+Crime+Marie+Benedict",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-29T12:00:00.000Z",
+      "The Queens of Crime by Marie Benedict | Literary Voices Network",
+      "Read about The Queens of Crime by Marie Benedict on Literary Voices Network.",
+      now,
+      now
+    );
+
+    // 3. Kin by Tayari Jones
+    insertBook.run(
+      "book-kin",
+      "kin",
+      "profile-author-tayari",
+      "user-author-tayari",
+      "Kin",
+      "A Gripping Saga of Family, Ties, and Inheritance",
+      "978-1-616208-89-9",
+      "From the bestselling author of An American Marriage, an emotionally gripping narrative exploring family loyalty, inheritance, and the fragile ties that bind us across generations.",
+      "Every family preserves one story told only in whispers on Sunday evenings, the kind that survives every move and every fire, refusing to stay buried in the Atlanta red clay.",
+      "/media/covers/kin.svg",
+      "Literary Fiction",
+      JSON.stringify(["Family Saga", "Contemporary"]),
+      "Hardcover",
+      "Algonquin Books",
+      "2026-03-15",
+      352,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/s?k=Kin+Tayari+Jones",
+        goodreads: "https://www.goodreads.com/search?q=Kin+Tayari+Jones",
+        bookshop: "https://bookshop.org/search?keywords=Kin+Tayari+Jones",
+        audible: "https://www.audible.com/search?keywords=Kin+Tayari+Jones",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-28T12:00:00.000Z",
+      "Kin by Tayari Jones | Literary Voices Network",
+      "Explore Kin by Tayari Jones on Literary Voices Network.",
+      now,
+      now
+    );
+
+    // 4. The Calamity Club by Kathryn Stockett
+    insertBook.run(
+      "book-the-calamity-club",
+      "the-calamity-club",
+      "profile-author-kathryn",
+      "user-author-kathryn",
+      "The Calamity Club",
+      "A Mid-Century Tale of Friendship, Resilience, and Upheaval",
+      "978-0-399155-34-5",
+      "A compelling drama of friendship, ambition, and resilience among four women confronting personal and societal upheaval in the mid-century American South.",
+      "We convened every Thursday behind the parish library, ostensibly to discuss garden arrangements, but in truth to plan how each of us would rewrite the boundaries of our lives.",
+      "/media/covers/the-calamity-club.svg",
+      "Historical Fiction",
+      JSON.stringify(["Southern Fiction", "Drama"]),
+      "Hardcover",
+      "Putnam",
+      "2026-04-10",
+      384,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/s?k=The+Calamity+Club+Kathryn+Stockett",
+        goodreads: "https://www.goodreads.com/search?q=The+Calamity+Club+Kathryn+Stockett",
+        bookshop: "https://bookshop.org/search?keywords=The+Calamity+Club+Kathryn+Stockett",
+        audible: "https://www.audible.com/search?keywords=The+Calamity+Club+Kathryn+Stockett",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-27T12:00:00.000Z",
+      "The Calamity Club by Kathryn Stockett | Literary Voices Network",
+      "Read The Calamity Club by Kathryn Stockett on Literary Voices Network.",
+      now,
+      now
+    );
+
+    // 5. Wild Dark Shore by Charlotte McConaghy
+    insertBook.run(
+      "book-wild-dark-shore",
+      "wild-dark-shore",
+      "profile-author-charlotte",
+      "user-author-charlotte",
+      "Wild Dark Shore",
+      "An Odyssey of Survival, Sea, and Resilience",
+      "978-1-250805-44-2",
+      "A breathtaking story of survival and hope set along the rugged coastlines of the southern hemisphere, investigating nature, grief, and human endurance.",
+      "The wind off the Southern Ocean does not merely blow; it strips every illusion bare until only stone, salt, and the rhythm of your own heart remain.",
+      "/media/covers/wild-dark-shore.svg",
+      "Literary Fiction",
+      JSON.stringify(["Adventure", "Nature"]),
+      "Hardcover",
+      "Flatiron Books",
+      "2026-05-20",
+      336,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/s?k=Wild+Dark+Shore+Charlotte+McConaghy",
+        goodreads: "https://www.goodreads.com/search?q=Wild+Dark+Shore+Charlotte+McConaghy",
+        bookshop: "https://bookshop.org/search?keywords=Wild+Dark+Shore+Charlotte+McConaghy",
+        audible: "https://www.audible.com/search?keywords=Wild+Dark+Shore+Charlotte+McConaghy",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-26T12:00:00.000Z",
+      "Wild Dark Shore by Charlotte McConaghy | Literary Voices Network",
+      "Discover Wild Dark Shore by Charlotte McConaghy on Literary Voices Network.",
+      now,
+      now
+    );
+
+    // 6. Yesteryear by Caro Claire Burke
+    insertBook.run(
+      "book-yesteryear",
+      "yesteryear",
+      "profile-author-caro",
+      "user-author-caro",
+      "Yesteryear",
+      "A Journey Through Time, Memory, and Forgotten Sanctuaries",
+      "978-1-982189-12-3",
+      "An evocative journey through time, memory, and forgotten places, weaving intimate domestic history with the transformative pull of the modern era.",
+      "Time in the mountain hollow had its own geography; shadows didn't just mark the hour, they recalled every voice that had ever spoken across the ridge.",
+      "/media/covers/yesteryear.svg",
+      "Historical Fiction",
+      JSON.stringify(["Mystery", "Time Travel"]),
+      "Paperback",
+      "Atria Books",
+      "2026-06-01",
+      320,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/s?k=Yesteryear+Caro+Claire+Burke",
+        goodreads: "https://www.goodreads.com/search?q=Yesteryear+Caro+Claire+Burke",
+        bookshop: "https://bookshop.org/search?keywords=Yesteryear+Caro+Claire+Burke",
+        audible: "https://www.audible.com/search?keywords=Yesteryear+Caro+Claire+Burke",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-25T12:00:00.000Z",
+      "Yesteryear by Caro Claire Burke | Literary Voices Network",
+      "Discover Yesteryear by Caro Claire Burke on Literary Voices Network.",
+      now,
+      now
+    );
+
+    // Book 7: Authored & Published by Administrator Executive Founder & CEO under her public LVN profile
     insertBook.run(
       "book-glass-meridian",
       "the-glass-meridian",
