@@ -30,7 +30,7 @@ const AWARDS = [
     icon: BookOpen,
     winners: [
       {
-        name: "Eleanor Vance",
+        name: "Executive Founder & CEO",
         work: "The Glass Meridian",
         href: "/authors/eleanor-vance",
         citation:

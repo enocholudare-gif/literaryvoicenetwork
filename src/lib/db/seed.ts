@@ -187,18 +187,18 @@ export function seedDatabase(db: DatabaseSync): void {
       "profile-admin-eleanor",
       "user-admin-eleanor",
       "eleanor-vance",
-      "Eleanor Vance",
-      "E. M. Vance",
-      "Founding Publisher, Literary Critic & Novelist at Literary Voices Network",
-      "Eleanor Vance is the Founding Publisher and Editor-in-Chief of Literary Voices Network, as well as the author of two novels and a collection of critical essays on twentieth-century translation and archival memory. She hosts 'The Meridian Conversation' on LVN Broadcasts and regularly publishes original literary criticism, author interviews, and fiction under her public LVN profile.",
-      "/media/avatars/eleanor-vance.svg",
+      "Executive Founder & CEO",
+      "Founder & CEO",
+      "Founding Publisher, Chief Executive Officer & Anchor at Literary Voices Network",
+      "The Executive Founder & Chief Executive Officer of Literary Voices Network leads global broadcast syndication, author curation, and flagship studio dialogues across eight international hubs.",
+      "/media/team/ceo.jpg",
       "/media/banners/editorial-desk.svg",
       "New York & Edinburgh",
       "https://literaryvoicesnetwork.org/authors/eleanor-vance",
       JSON.stringify(["Literary Fiction", "Essays & Criticism", "Cultural History", "Translation"]),
       JSON.stringify({
-        twitter: "https://x.com/eleanorvance_lvn",
-        instagram: "https://instagram.com/eleanorvance_lvn",
+        twitter: "https://x.com/literaryvoices",
+        instagram: "https://instagram.com/literaryvoicesnetwork",
         goodreads: "https://goodreads.com",
       }),
       1,
@@ -454,7 +454,7 @@ export function seedDatabase(db: DatabaseSync): void {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    // Book 1: Authored & Published by Administrator Eleanor Vance under her public LVN profile
+    // Book 1: Authored & Published by Administrator Executive Founder & CEO under her public LVN profile
     insertBook.run(
       "book-glass-meridian",
       "the-glass-meridian",
@@ -488,8 +488,8 @@ export function seedDatabase(db: DatabaseSync): void {
       "published",
       null,
       "2026-09-10T10:00:00.000Z",
-      "The Glass Meridian by Eleanor Vance | Literary Voices Network",
-      "Discover The Glass Meridian, a novel of cartography and archival memory by Eleanor Vance.",
+      "The Glass Meridian by Executive Founder & CEO | Literary Voices Network",
+      "Discover The Glass Meridian, a novel of cartography and archival memory by Executive Founder & CEO.",
       now,
       now
     );
@@ -686,7 +686,7 @@ export function seedDatabase(db: DatabaseSync): void {
 
     // -------------------------------------------------------------------------
     // 6. ARTICLES (Magazine Stories, Interviews, Reviews, Essays, Press Releases)
-    //    Including Articles Authored by Administrator Eleanor Vance
+    //    Including Articles Authored by Administrator Executive Founder & CEO
     // -------------------------------------------------------------------------
     const insertArticle = db.prepare(`
       INSERT INTO articles (
@@ -698,7 +698,7 @@ export function seedDatabase(db: DatabaseSync): void {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    // Article 1: Cover Story by Administrator Eleanor Vance
+    // Article 1: Cover Story by Administrator Executive Founder & CEO
     insertArticle.run(
       "art-architecture-of-sentence",
       "the-architecture-of-the-unhurried-sentence",
@@ -728,13 +728,13 @@ export function seedDatabase(db: DatabaseSync): void {
       "published",
       null,
       "2026-10-05T09:00:00.000Z",
-      "The Architecture of the Unhurried Sentence — Eleanor Vance | LVN Magazine",
-      "Eleanor Vance explores why contemporary novelists are returning to archival form and deliberate cadence.",
+      "The Architecture of the Unhurried Sentence — Executive Founder & CEO | LVN Magazine",
+      "Executive Founder & CEO explores why contemporary novelists are returning to archival form and deliberate cadence.",
       now,
       now
     );
 
-    // Article 2: Author Interview by Administrator Eleanor Vance with Amara Osei
+    // Article 2: Author Interview by Administrator Executive Founder & CEO with Amara Osei
     insertArticle.run(
       "art-interview-amara-osei",
       "in-conversation-amara-osei-on-the-saltwater-ledger",
@@ -746,15 +746,15 @@ export function seedDatabase(db: DatabaseSync): void {
       "profile-author-amara",
       "interview",
       "In Conversation: Amara Osei on ‘The Saltwater Ledger’ and Maritime Memory",
-      "The novelist speaks with Eleanor Vance about customhouse archives, oral genealogy, and building a printing press in fiction",
+      "The novelist speaks with Executive Founder & CEO about customhouse archives, oral genealogy, and building a printing press in fiction",
       "Amara Osei discusses the five years of archival research behind her new novel, the discipline of polyphonic narration, and why independent presses remain central to literary culture.",
-      `<p class="lead">Shortly after the publication of <em>The Saltwater Ledger</em>, novelist Amara Osei joined Founding Publisher Eleanor Vance in the LVN studio to discuss how a nineteenth-century shipping register inspired her most ambitious book to date.</p>
+      `<p class="lead">Shortly after the publication of <em>The Saltwater Ledger</em>, novelist Amara Osei joined Founding Publisher Executive Founder & CEO in the LVN studio to discuss how a nineteenth-century shipping register inspired her most ambitious book to date.</p>
 <h2>On Discovering the First Ledger</h2>
-<p><strong>Eleanor Vance:</strong> <em>The Saltwater Ledger</em> begins not with a human character, but with a bound volume of indigo-dyed rag paper. Where did that image originate?</p>
+<p><strong>Executive Founder & CEO:</strong> <em>The Saltwater Ledger</em> begins not with a human character, but with a bound volume of indigo-dyed rag paper. Where did that image originate?</p>
 <p><strong>Amara Osei:</strong> Five years ago, while researching coastal trade routes in Accra and Liverpool, I came across a clerk’s ledger where the official cargo tallies occupied the recto pages, while the verso pages had been used thirty years later by the clerk’s granddaughter to draft poems and political broadsides. That dialogue across generations inside a single physical object became the spine of the novel.</p>
 <blockquote>“Paper remembers what official monuments are designed to omit. Once a family acquires a printing press, their private griefs and public arguments acquire permanence.”</blockquote>
 <h2>On Voice and Pacing</h2>
-<p><strong>Eleanor Vance:</strong> The novel moves across three distinct eras—1912, 1957, and 1994. How did you differentiate those voices without losing narrative momentum?</p>
+<p><strong>Executive Founder & CEO:</strong> The novel moves across three distinct eras—1912, 1957, and 1994. How did you differentiate those voices without losing narrative momentum?</p>
 <p><strong>Amara Osei:</strong> I read every chapter aloud before revising. Each generation has its own acoustic signature: the measured epistolary cadence of 1912, the urgent pamphlet-inflected syntax of the 1950s, and the reflective scholarly voice of the 1990s.</p>`,
       "/media/covers/the-saltwater-ledger.jpg",
       7,
@@ -766,7 +766,7 @@ export function seedDatabase(db: DatabaseSync): void {
       null,
       "2026-10-08T11:00:00.000Z",
       "In Conversation: Amara Osei on The Saltwater Ledger | LVN",
-      "Eleanor Vance interviews novelist Amara Osei on maritime archives and multigenerational fiction.",
+      "Executive Founder & CEO interviews novelist Amara Osei on maritime archives and multigenerational fiction.",
       now,
       now
     );
@@ -1012,8 +1012,8 @@ export function seedDatabase(db: DatabaseSync): void {
       "book-glass-meridian",
       1,
       "The Glass Meridian",
-      JSON.stringify({ title: "The Glass Meridian", status: "published", author: "Eleanor Vance" }),
-      "Initial publication by Administrator under public profile Eleanor Vance",
+      JSON.stringify({ title: "The Glass Meridian", status: "published", author: "Executive Founder & CEO" }),
+      "Initial publication by Administrator under public profile Executive Founder & CEO",
       "user-admin-eleanor",
       now
     );
@@ -1025,7 +1025,7 @@ export function seedDatabase(db: DatabaseSync): void {
       1,
       "The Architecture of the Unhurried Sentence",
       JSON.stringify({ title: "The Architecture of the Unhurried Sentence", status: "published" }),
-      "Initial cover story publication by Eleanor Vance",
+      "Initial cover story publication by Executive Founder & CEO",
       "user-admin-eleanor",
       now
     );
@@ -1113,10 +1113,10 @@ export function seedDatabase(db: DatabaseSync): void {
       "The Meridian Conversation",
       42,
       "Maritime Archives & Polyphonic Fiction with Amara Osei",
-      "Episode 42 · Hosted by Eleanor Vance",
-      "Founding Publisher Eleanor Vance welcomes novelist Amara Osei into the LVN studio for an extended conversation on 'The Saltwater Ledger', West African printing presses, and the music of historical prose.",
+      "Episode 42 · Hosted by Executive Founder & CEO",
+      "Founding Publisher Executive Founder & CEO welcomes novelist Amara Osei into the LVN studio for an extended conversation on 'The Saltwater Ledger', West African printing presses, and the music of historical prose.",
       "profile-admin-eleanor",
-      "Eleanor Vance",
+      "Executive Founder & CEO",
       "profile-author-amara",
       "Amara Osei",
       "book-saltwater-ledger",
@@ -1175,10 +1175,10 @@ export function seedDatabase(db: DatabaseSync): void {
       "The Translation Table",
       9,
       "Translating Alpine Dialects & Bilingual Poetics",
-      "Episode 9 · Hosted by Eleanor Vance",
+      "Episode 9 · Hosted by Executive Founder & CEO",
       "Claire Moreau reads in French and English from 'Winter Harmonics' and examines the craft of lyric translation.",
       "profile-admin-eleanor",
-      "Eleanor Vance",
+      "Executive Founder & CEO",
       "profile-author-claire",
       "Claire Moreau",
       "book-winter-harmonics",
@@ -1207,9 +1207,9 @@ export function seedDatabase(db: DatabaseSync): void {
       43,
       "Upcoming Broadcast: Lead Type & Independent Letters with Søren Lindqvist",
       "Episode 43 · Live Studio Conversation",
-      "Join Eleanor Vance and historian Søren Lindqvist for a live studio broadcast exploring how small cooperative printshops transformed modern European literature.",
+      "Join Executive Founder & CEO and historian Søren Lindqvist for a live studio broadcast exploring how small cooperative printshops transformed modern European literature.",
       "profile-admin-eleanor",
-      "Eleanor Vance",
+      "Executive Founder & CEO",
       "profile-author-soren",
       "Søren Lindqvist",
       "book-republic-of-typesetters",
@@ -1253,7 +1253,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "2026-11-08T19:00:00.000Z",
       "2026-11-08T20:30:00.000Z",
       "America/New_York (EST)",
-      "Eleanor Vance",
+      "Executive Founder & CEO",
       "profile-admin-eleanor",
       JSON.stringify(["Amara Osei"]),
       "book-saltwater-ledger",
@@ -1300,14 +1300,14 @@ export function seedDatabase(db: DatabaseSync): void {
       "panel-the-future-of-independent-literary-publishing",
       "Literary Panel: The Future of Independent Literary Publishing",
       "Roundtable on Print Craft, Reader Communities, and Editorial Independence",
-      "Søren Lindqvist, Eleanor Vance, and Julian Thorne discuss the economics and enduring cultural mission of independent literary presses in 2026.",
+      "Søren Lindqvist, Executive Founder & CEO, and Julian Thorne discuss the economics and enduring cultural mission of independent literary presses in 2026.",
       "panel",
       "2026-11-22T18:30:00.000Z",
       "2026-11-22T20:00:00.000Z",
       "America/New_York (EST)",
       "Marcus Sterling",
       "profile-editor-marcus",
-      JSON.stringify(["Søren Lindqvist", "Eleanor Vance", "Julian Thorne"]),
+      JSON.stringify(["Søren Lindqvist", "Executive Founder & CEO", "Julian Thorne"]),
       "book-republic-of-typesetters",
       "/media/covers/republic-of-typesetters.jpg",
       "LVN Live Broadcast Stage & New York Reading Room",
@@ -1325,7 +1325,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "evt-glass-meridian-launch",
       "book-launch-reading-the-glass-meridian",
       "Archive Recording: ‘The Glass Meridian’ Launch & Reading",
-      "Evening Reading and Archival Conversation with Eleanor Vance",
+      "Evening Reading and Archival Conversation with Executive Founder & CEO",
       "Recorded at the Edinburgh & New York simultaneous launch of 'The Glass Meridian', featuring readings from Part I and a conversation with Marcus Sterling.",
       "book_launch",
       "2026-09-12T19:00:00.000Z",
@@ -1333,7 +1333,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "Europe/London (BST)",
       "Marcus Sterling",
       "profile-editor-marcus",
-      JSON.stringify(["Eleanor Vance"]),
+      JSON.stringify(["Executive Founder & CEO"]),
       "book-glass-meridian",
       "/media/covers/the-glass-meridian.jpg",
       "Edinburgh Old Observatory & LVN Stream",
@@ -1513,7 +1513,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "user-admin-eleanor",
       "system",
       "Administrator & Public Author Profile Active",
-      "Your public author profile (Eleanor Vance) and full administrative privileges are active.",
+      "Your public author profile (Executive Founder & CEO) and full administrative privileges are active.",
       "/authors/eleanor-vance",
       now
     );
@@ -1543,7 +1543,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "ADMIN_DIRECT_PUBLISH",
       "book",
       "book-glass-meridian",
-      "Administrator Eleanor Vance published original book 'The Glass Meridian' under public profile /authors/eleanor-vance",
+      "Administrator Executive Founder & CEO published original book 'The Glass Meridian' under public profile /authors/eleanor-vance",
       JSON.stringify({ authorProfileId: "profile-admin-eleanor", slug: "the-glass-meridian" }),
       now
     );
@@ -1559,7 +1559,7 @@ export function seedDatabase(db: DatabaseSync): void {
       "ADMIN_DIRECT_PUBLISH",
       "article",
       "art-architecture-of-sentence",
-      "Administrator Eleanor Vance published cover story 'The Architecture of the Unhurried Sentence' under public profile /authors/eleanor-vance",
+      "Administrator Executive Founder & CEO published cover story 'The Architecture of the Unhurried Sentence' under public profile /authors/eleanor-vance",
       JSON.stringify({ authorProfileId: "profile-admin-eleanor", slug: "the-architecture-of-the-unhurried-sentence" }),
       now
     );

@@ -6,10 +6,12 @@ import {
 } from "@/lib/auth/session";
 import {
   authenticateUser,
+  changeUserPassword,
   deleteUserAccount,
   registerUser,
   requestPasswordReset,
   resetPasswordWithToken,
+  updateUserEmail,
   updateUserProfile,
   verifyEmailWithToken,
 } from "@/lib/services/auth";
@@ -137,6 +139,24 @@ export async function POST(request: NextRequest) {
     if (action === "mark-all-notifications-read") {
       markAllNotificationsRead(session.user.id);
       return NextResponse.json({ ok: true });
+    }
+
+    if (action === "change-password") {
+      const updated = changeUserPassword(session, String(body.newPassword || ""));
+      return NextResponse.json({
+        ok: true,
+        user: updated.user,
+        message: "Password successfully updated.",
+      });
+    }
+
+    if (action === "update-login-email") {
+      const updated = updateUserEmail(session, String(body.newEmail || ""));
+      return NextResponse.json({
+        ok: true,
+        user: updated.user,
+        message: "Admin login email successfully updated.",
+      });
     }
 
     if (action === "delete-account") {

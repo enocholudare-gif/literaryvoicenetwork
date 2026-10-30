@@ -31,7 +31,7 @@ const DEFAULT_STUDIO_TRACK: AudioTrack = {
   id: "bc-meridian-ep42",
   title: "Maritime Archives & Polyphonic Fiction with Amara Osei",
   programmeName: "The Meridian Conversation · Ep. 42",
-  hostName: "Eleanor Vance",
+  hostName: "Executive Founder & CEO",
   guestName: "Amara Osei",
   audioUrl: "/media/audio/lvn-studio-preview.wav",
   slug: "the-meridian-conversation-ep-42-amara-osei",

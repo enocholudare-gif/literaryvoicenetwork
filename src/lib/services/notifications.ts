@@ -1,6 +1,7 @@
 import { getDb } from "../db";
 import { generateId } from "../auth/crypto";
 import type { AuditLog, NotificationItem } from "../db/types";
+import nodemailer from "nodemailer";
 
 export interface CreateAuditLogInput {
   actorUserId: string | null;
@@ -86,21 +87,50 @@ export async function createNotification(
 
   let emailStatus: NotificationItem["email_delivery_status"] = "logged_dev";
 
-  // Integration boundary: only attempt external email send when RESEND_API_KEY is configured
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (resendApiKey && input.recipientEmail) {
+  // 1. SMTP Transport if configured via environment variables
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const fromEmail =
+    process.env.SMTP_FROM ||
+    process.env.EMAIL_FROM ||
+    "Literary Voices Network <enquiry@literaryvoicenetwork.org>";
+  const targetRecipient = input.recipientEmail || "enquiry@literaryvoicenetwork.org";
+
+  if (smtpHost && input.recipientEmail) {
+    try {
+      const port = Number(process.env.SMTP_PORT || 587);
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port,
+        secure: port === 465,
+        auth: smtpUser ? { user: smtpUser, pass: smtpPass || "" } : undefined,
+      });
+
+      await transporter.sendMail({
+        from: fromEmail,
+        to: targetRecipient,
+        subject: `[LVN] ${input.title}`,
+        text: `${input.message}\n\nView on Literary Voices Network: ${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}`,
+        html: `<div style="font-family: Georgia, serif; max-width: 600px; padding: 24px; background: #080808; color: #FAF8F3; border: 1px solid #D4AF37; border-radius: 12px;"><h2 style="color: #F7DF8B; margin-top: 0;">${input.title}</h2><pre style="white-space: pre-wrap; font-family: inherit; line-height: 1.6; color: #FAF8F3;">${input.message}</pre><p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}" style="display: inline-block; padding: 10px 20px; background: #D4AF37; color: #050505; font-weight: bold; text-decoration: none; border-radius: 999px;">Review &amp; Approve in Admin Console →</a></p></div>`,
+      });
+      emailStatus = "sent";
+    } catch (smtpErr) {
+      console.warn("SMTP Send Error:", smtpErr);
+      emailStatus = "failed";
+    }
+  } else if (process.env.RESEND_API_KEY && input.recipientEmail) {
+    // 2. Fallback to Resend API if RESEND_API_KEY is configured
     try {
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${resendApiKey}`,
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from:
-            process.env.EMAIL_FROM ||
-            "Literary Voices Network <enquiry@literarynetwork.org>",
-          to: [input.recipientEmail],
+          from: fromEmail,
+          to: [targetRecipient],
           subject: `[LVN] ${input.title}`,
           text: `${input.message}\n\nView on Literary Voices Network: ${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}`,
           html: `<div style="font-family: Georgia, serif; max-width: 600px; padding: 24px; background: #080808; color: #FAF8F3; border: 1px solid #D4AF37; border-radius: 12px;"><h2 style="color: #F7DF8B; margin-top: 0;">${input.title}</h2><pre style="white-space: pre-wrap; font-family: inherit; line-height: 1.6; color: #FAF8F3;">${input.message}</pre><p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}${linkUrl}" style="display: inline-block; padding: 10px 20px; background: #D4AF37; color: #050505; font-weight: bold; text-decoration: none; border-radius: 999px;">Review &amp; Approve in Admin Console →</a></p></div>`,
@@ -108,7 +138,6 @@ export async function createNotification(
       });
       emailStatus = response.ok ? "sent" : "failed";
     } catch {
-      // Never let external email failure corrupt database state
       emailStatus = "failed";
     }
   }

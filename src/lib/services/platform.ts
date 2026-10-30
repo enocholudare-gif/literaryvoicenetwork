@@ -1366,6 +1366,16 @@ export function createEnquiry(
   );
 
   const adminUser = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string } | undefined;
+  const emailSetting = db.prepare("SELECT setting_value_json FROM site_settings WHERE setting_key = 'editorialEmail'").get() as { setting_value_json: string } | undefined;
+  let targetAdminEmail = "enquiry@literaryvoicenetwork.org";
+  if (emailSetting && emailSetting.setting_value_json) {
+    try {
+      targetAdminEmail = JSON.parse(emailSetting.setting_value_json);
+    } catch {
+      targetAdminEmail = emailSetting.setting_value_json;
+    }
+  }
+
   if (adminUser && parsed.enquiryType !== "newsletter") {
     void createNotification({
       userId: adminUser.id,
@@ -1373,7 +1383,7 @@ export function createEnquiry(
       title: parsed.subject.trim() || `New ${parsed.enquiryType} Enquiry from ${parsed.name.trim()}`,
       message: parsed.message.trim(),
       linkUrl: "/admin",
-      recipientEmail: "enquiry@literarynetwork.org",
+      recipientEmail: targetAdminEmail,
     });
   }
 
@@ -1573,5 +1583,153 @@ export function updateUserRoleOrStatus(
   });
 
   return listAllUsersForAdmin(ctx).find((u) => u.id === targetUserId);
+}
+
+export function setLiveRadioState(
+  ctx: AuthenticatedContext,
+  input: {
+    isLive: boolean;
+    liveStreamUrl?: string;
+    title?: string;
+    programmeName?: string;
+    hostName?: string;
+    description?: string;
+  }
+) {
+  requireRole(ctx, ["admin"]);
+  const db = getDb();
+  const now = new Date().toISOString();
+
+  // If making live, ensure liveBroadcastActive in site_settings
+  updateSiteSettings(ctx, { liveBroadcastActive: input.isLive });
+
+  if (input.isLive) {
+    const liveRow = db.prepare("SELECT id FROM broadcasts WHERE is_live = 1 LIMIT 1").get() as { id: string } | undefined;
+    if (liveRow) {
+      db.prepare(`
+        UPDATE broadcasts SET
+          title = COALESCE(?, title),
+          programme_name = COALESCE(?, programme_name),
+          host_name = COALESCE(?, host_name),
+          live_stream_url = COALESCE(?, live_stream_url),
+          description = COALESCE(?, description),
+          status = 'live',
+          updated_at = ?
+        WHERE id = ?
+      `).run(
+        input.title?.trim() || null,
+        input.programmeName?.trim() || null,
+        input.hostName?.trim() || null,
+        input.liveStreamUrl?.trim() || null,
+        input.description?.trim() || null,
+        now,
+        liveRow.id
+      );
+    } else {
+      const id = generateId();
+      const slug = `live-studio-${Date.now().toString().slice(-4)}`;
+      db.prepare(`
+        INSERT INTO broadcasts (
+          id, slug, programme_name, title, host_name, broadcast_type,
+          is_live, live_stream_url, description, scheduled_start, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, 'audio', 1, ?, ?, ?, 'live', ?, ?)
+      `).run(
+        id,
+        slug,
+        input.programmeName?.trim() || "LVN Live Studio",
+        input.title?.trim() || "Live On Air: Author Dialogues & Literary Culture",
+        input.hostName?.trim() || "Executive Founder & CEO",
+        input.liveStreamUrl?.trim() || "https://videotourl.com/videos/1792770791367-b8ab28bf-7cd3-46ef-8bf5-cba07b6375bb.mp4",
+        input.description?.trim() || "Live broadcast streaming worldwide across the Literary Voices Network.",
+        now,
+        now,
+        now
+      );
+    }
+  } else {
+    db.prepare("UPDATE broadcasts SET is_live = 0, status = 'archived', updated_at = ? WHERE is_live = 1").run(now);
+  }
+
+  return { success: true, isLive: input.isLive };
+}
+
+export function upsertAuthorSpotlight(
+  ctx: AuthenticatedContext,
+  input: {
+    profileId?: string;
+    displayName: string;
+    headline: string;
+    bio: string;
+    avatarUrl?: string;
+    genres?: string[];
+    location?: string;
+    websiteUrl?: string;
+    isFeatured?: boolean;
+  }
+) {
+  requireRole(ctx, ["admin"]);
+  const db = getDb();
+  const now = new Date().toISOString();
+
+  if (input.profileId) {
+    db.prepare(`
+      UPDATE profiles SET
+        display_name = ?,
+        headline = ?,
+        bio = ?,
+        avatar_url = COALESCE(?, avatar_url),
+        genres_json = ?,
+        location = ?,
+        website_url = ?,
+        is_author_profile = 1,
+        is_featured = ?,
+        is_public = 1,
+        updated_at = ?
+      WHERE id = ?
+    `).run(
+      input.displayName.trim(),
+      input.headline.trim(),
+      input.bio.trim(),
+      input.avatarUrl?.trim() || null,
+      JSON.stringify(input.genres || ["Literary Fiction"]),
+      input.location?.trim() || "",
+      input.websiteUrl?.trim() || "",
+      input.isFeatured !== false ? 1 : 0,
+      now,
+      input.profileId
+    );
+    return db.prepare("SELECT * FROM profiles WHERE id = ?").get(input.profileId);
+  }
+
+  const id = generateId();
+  const slug = `${slugify(input.displayName)}-${id.slice(0, 4)}`;
+  const userId = `user-author-${id.slice(0, 8)}`;
+
+  db.prepare(`
+    INSERT OR IGNORE INTO users (id, email, password_hash, role, email_verified, account_status, created_at, updated_at)
+    VALUES (?, ?, 'N/A', 'author', 1, 'active', ?, ?)
+  `).run(userId, `${slug}@literaryvoicenetwork.org`, now, now);
+
+  db.prepare(`
+    INSERT INTO profiles (
+      id, user_id, slug, display_name, headline, bio, avatar_url,
+      genres_json, location, website_url, is_author_profile, is_featured, is_public, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 1, ?, ?)
+  `).run(
+    id,
+    userId,
+    slug,
+    input.displayName.trim(),
+    input.headline.trim(),
+    input.bio.trim(),
+    input.avatarUrl?.trim() || "/media/avatars/default-portrait.svg",
+    JSON.stringify(input.genres || ["Literary Fiction"]),
+    input.location?.trim() || "",
+    input.websiteUrl?.trim() || "",
+    now,
+    now
+  );
+
+  return db.prepare("SELECT * FROM profiles WHERE id = ?").get(id);
 }
 

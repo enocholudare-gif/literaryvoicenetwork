@@ -10,7 +10,7 @@ const WEEKLY_SHOWS = [
   {
     id: "show-1",
     title: "The Meridian Conversation",
-    host: "Eleanor Vance",
+    host: "Executive Founder & CEO",
     schedule: "Mondays & Thursdays · 7:00 PM EST",
     genre: "Flagship Author Interviews",
     desc: "Long-form studio dialogues with novelists, translators, and historians on archival memory and contemporary craft.",

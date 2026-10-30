@@ -597,3 +597,61 @@ export function deleteUserAccount(
   });
 }
 
+export function changeUserPassword(
+  ctx: AuthenticatedContext,
+  newPassword: string
+): AuthenticatedContext {
+  if (!newPassword || newPassword.length < 8) {
+    throw new Error("Password must be at least 8 characters.");
+  }
+  const db = getDb();
+  const newHash = hashPassword(newPassword);
+  const now = new Date().toISOString();
+  db.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?").run(
+    newHash,
+    now,
+    ctx.user.id
+  );
+  recordAuditLog({
+    actorUserId: ctx.user.id,
+    actorRole: ctx.user.role,
+    action: "PASSWORD_CHANGED",
+    entityType: "user",
+    entityId: ctx.user.id,
+    summary: `Password changed for ${ctx.user.email}`,
+  });
+  return getUserWithProfileById(ctx.user.id)!;
+}
+
+export function updateUserEmail(
+  ctx: AuthenticatedContext,
+  newEmail: string
+): AuthenticatedContext {
+  const emailNormalized = newEmail.trim().toLowerCase();
+  if (!emailNormalized.includes("@") || !emailNormalized.includes(".")) {
+    throw new Error("Please enter a valid email address.");
+  }
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT id FROM users WHERE email = ? AND id != ?")
+    .get(emailNormalized, ctx.user.id);
+  if (existing) {
+    throw new Error("An account with that email already exists.");
+  }
+  const now = new Date().toISOString();
+  db.prepare("UPDATE users SET email = ?, updated_at = ? WHERE id = ?").run(
+    emailNormalized,
+    now,
+    ctx.user.id
+  );
+  recordAuditLog({
+    actorUserId: ctx.user.id,
+    actorRole: ctx.user.role,
+    action: "EMAIL_CHANGED",
+    entityType: "user",
+    entityId: ctx.user.id,
+    summary: `Email changed from ${ctx.user.email} to ${emailNormalized}`,
+  });
+  return getUserWithProfileById(ctx.user.id)!;
+}
+

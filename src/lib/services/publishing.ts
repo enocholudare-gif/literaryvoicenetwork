@@ -643,12 +643,20 @@ export async function submitBookForReview(
     recipientEmail: ctx.user.email,
   });
 
-  // Notify Administrator & dispatch email alert to enquiry@literarynetwork.org
+  // Notify Administrator & dispatch email alert to enquiry@literaryvoicenetwork.org (or configured admin receiving email)
   const adminUser = db.prepare("SELECT id, email FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string; email: string } | undefined;
-  const targetAdminEmail = "enquiry@literarynetwork.org";
+  const emailSetting = db.prepare("SELECT setting_value_json FROM site_settings WHERE setting_key = 'editorialEmail'").get() as { setting_value_json: string } | undefined;
+  let targetAdminEmail = "enquiry@literaryvoicenetwork.org";
+  if (emailSetting && emailSetting.setting_value_json) {
+    try {
+      targetAdminEmail = JSON.parse(emailSetting.setting_value_json);
+    } catch {
+      targetAdminEmail = emailSetting.setting_value_json;
+    }
+  }
 
   const mailBodyText = [
-    "To: enquiry@literarynetwork.org",
+    `To: ${targetAdminEmail}`,
     `Subject: [LVN Admin Approval Required] New Book Submission: "${existing.title}" by ${ctx.profile.display_name}`,
     "----------------------------------------",
     `Book Title: ${existing.title}`,

@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Award,
   Bell,
   BookOpen,
   Calendar,
@@ -24,7 +25,6 @@ import {
   Radio,
   Search,
   ShieldCheck,
-  Sparkles,
   Users,
   X,
 } from "lucide-react";
@@ -297,6 +297,11 @@ export function SiteShell({
       href: "/books?format=audiobook",
     },
     {
+      id: "author-spotlight",
+      label: "Author Spotlight",
+      href: "/authors",
+    },
+    {
       id: "magazine-link",
       label: "Magazine",
       href: "/#lvn-digital-magazine",
@@ -361,7 +366,7 @@ export function SiteShell({
           href: "/community-books",
           label: "Recently Added Books",
           desc: "Fresh titles shared by our community",
-          icon: Sparkles,
+          icon: BookOpen,
         },
         {
           href: "/founder-spotlight",
@@ -385,7 +390,7 @@ export function SiteShell({
           href: "/awards",
           label: "Awards & Recognition",
           desc: "Celebrating authors honoured on our network",
-          icon: Sparkles,
+          icon: Award,
         },
       ],
     },
@@ -416,7 +421,7 @@ export function SiteShell({
           href: "/founder-spotlight/submit",
           label: "Founder Pitch",
           desc: "Apply for Business & Founder Spotlight",
-          icon: Sparkles,
+          icon: Mic2,
         },
         {
           href: "/editorial-calendar",
@@ -994,9 +999,11 @@ export function SiteShell({
                   href={CONTACT_WHATSAPP}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#141414] border border-[#D4AF37]/35 px-3.5 py-1.5 text-[#F7DF8B] hover:border-[#F7DF8B] transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#141414] border border-[#25D366]/40 px-3.5 py-1.5 text-[#25D366] hover:bg-[#25D366] hover:text-[#050505] transition-all font-semibold"
                 >
-                  <Phone className="size-3.5 text-[#D4AF37]" />
+                  <svg className="size-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12.031 2C6.51 2 2.023 6.48 2.023 12c0 1.838.498 3.564 1.365 5.053L2 22l5.093-1.336A9.94 9.94 0 0 0 12.031 22c5.522 0 10.01-4.48 10.01-10s-4.488-10-10.01-10zm0 18.232c-1.574 0-3.1-.423-4.437-1.223l-.318-.19-3.295.864.88-3.21-.208-.33a8.21 8.21 0 0 1-1.26-4.343c0-4.542 3.697-8.238 8.238-8.238 4.542 0 8.238 3.696 8.238 8.238 0 4.542-3.696 8.232-8.238 8.232zm4.516-6.173c-.248-.124-1.464-.722-1.691-.805-.227-.082-.393-.124-.558.124-.165.248-.641.805-.786.971-.144.165-.29.186-.537.062-.248-.124-1.047-.386-1.994-1.23-.737-.658-1.235-1.47-1.38-1.718-.144-.248-.015-.382.109-.505.111-.111.248-.29.372-.434.124-.145.165-.248.248-.414.083-.165.041-.31-.02-.434-.063-.124-.558-1.344-.765-1.841-.201-.484-.406-.418-.558-.426l-.475-.008c-.165 0-.434.062-.661.31-.227.248-.868.848-.868 2.067s.888 2.398 1.012 2.563c.124.165 1.748 2.669 4.234 3.743.592.256 1.054.409 1.414.523.594.189 1.135.162 1.562.098.477-.071 1.464-.599 1.671-1.178.207-.579.207-1.075.145-1.178-.062-.104-.227-.166-.475-.29z" />
+                  </svg>
                   <span>WhatsApp Us</span>
                 </a>
                 <a
@@ -1259,35 +1266,58 @@ export function SiteShell({
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FAF8F3]/60">
+          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FAF8F3]/70">
             <p>
-              {settings?.footerCopyright ||
-                "© 2026 Literary Voices Network (LVN). All rights reserved."}
+              © 2026 Literary Voices Network (LVN). An independent literary publication and publishing platform.
             </p>
-            <div className="flex flex-wrap items-center gap-5">
+            <div className="flex flex-wrap items-center gap-4">
               <a
                 href={ORBITTECH_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37]/40 bg-[#141414] px-3.5 py-1 text-xs font-bold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] transition-all"
               >
-                <Sparkles className="size-3 text-[#D4AF37]" />
                 <span>Powered by OrbitTech</span>
                 <ExternalLink className="size-3" />
               </a>
-              <Link href="/privacy" className="hover:text-[#F7DF8B]">
+              <Link
+                href="https://www.literaryvoicenetwork.org/privacy"
+                className="hover:text-[#F7DF8B] transition-colors"
+              >
                 Privacy
               </Link>
-              <Link href="/terms" className="hover:text-[#F7DF8B]">
+              <Link
+                href="https://www.literaryvoicenetwork.org/terms"
+                className="hover:text-[#F7DF8B] transition-colors"
+              >
                 Terms
               </Link>
-              <Link href="/press-releases" className="hover:text-[#F7DF8B]">
+              <Link
+                href="https://www.literaryvoicenetwork.org/press-releases"
+                className="hover:text-[#F7DF8B] transition-colors"
+              >
                 Press
               </Link>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <aside aria-label="WhatsApp quick chat" className="fixed bottom-6 right-6 z-50">
+        <a
+          href={CONTACT_WHATSAPP}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat with us on WhatsApp"
+          className="group flex items-center gap-2.5 rounded-full bg-[#25D366] text-white px-4 py-3 shadow-[0_8px_25px_rgba(37,211,102,0.4)] hover:bg-[#20ba5a] hover:scale-105 transition-all duration-300"
+        >
+          <svg className="size-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12.031 2C6.51 2 2.023 6.48 2.023 12c0 1.838.498 3.564 1.365 5.053L2 22l5.093-1.336A9.94 9.94 0 0 0 12.031 22c5.522 0 10.01-4.48 10.01-10s-4.488-10-10.01-10zm0 18.232c-1.574 0-3.1-.423-4.437-1.223l-.318-.19-3.295.864.88-3.21-.208-.33a8.21 8.21 0 0 1-1.26-4.343c0-4.542 3.697-8.238 8.238-8.238 4.542 0 8.238 3.696 8.238 8.238 0 4.542-3.696 8.232-8.238 8.232zm4.516-6.173c-.248-.124-1.464-.722-1.691-.805-.227-.082-.393-.124-.558.124-.165.248-.641.805-.786.971-.144.165-.29.186-.537.062-.248-.124-1.047-.386-1.994-1.23-.737-.658-1.235-1.47-1.38-1.718-.144-.248-.015-.382.109-.505.111-.111.248-.29.372-.434.124-.145.165-.248.248-.414.083-.165.041-.31-.02-.434-.063-.124-.558-1.344-.765-1.841-.201-.484-.406-.418-.558-.426l-.475-.008c-.165 0-.434.062-.661.31-.227.248-.868.848-.868 2.067s.888 2.398 1.012 2.563c.124.165 1.748 2.669 4.234 3.743.592.256 1.054.409 1.414.523.594.189 1.135.162 1.562.098.477-.071 1.464-.599 1.671-1.178.207-.579.207-1.075.145-1.178-.062-.104-.227-.166-.475-.29z" />
+          </svg>
+          <span className="text-xs font-bold tracking-wide hidden sm:inline">WhatsApp Us</span>
+        </a>
+      </aside>
     </div>
   );
 }

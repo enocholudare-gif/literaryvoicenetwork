@@ -222,7 +222,7 @@ describe("Literary Voices Network (LVN) — Phase 2 Backend Verification Suite",
     const adminCtx = getUserWithProfileById("user-admin-eleanor")!;
     expect(adminCtx.user.role).toBe("admin");
     expect(adminCtx.profile.slug).toBe("eleanor-vance");
-    expect(adminCtx.profile.display_name).toBe("Eleanor Vance");
+    expect(adminCtx.profile.display_name).toBe("Executive Founder & CEO");
 
     // Admin directly publishes an original essay under their public profile
     const adminArticle = createArticleDraft(
@@ -250,7 +250,7 @@ describe("Literary Voices Network (LVN) — Phase 2 Backend Verification Suite",
 
     expect(adminArticle.status).toBe("published");
     expect(adminArticle.author_profile_id).toBe("profile-admin-eleanor");
-    expect(adminArticle.author_name).toBe("Eleanor Vance");
+    expect(adminArticle.author_name).toBe("Executive Founder & CEO");
     expect(adminArticle.author_slug).toBe("eleanor-vance");
     // Verify XSS script was stripped by rich-text sanitizer
     expect(adminArticle.body_html).not.toContain("<script>");
@@ -263,7 +263,7 @@ describe("Literary Voices Network (LVN) — Phase 2 Backend Verification Suite",
         subtitle: "Collected Essays on Literature and Sea Charts",
         isbn: "978-1-960421-77-7",
         description:
-          "Twelve essays by Eleanor Vance examining maritime correspondence, translation, and northern European archives.",
+          "Twelve essays by Executive Founder & CEO examining maritime correspondence, translation, and northern European archives.",
         excerpt: "To read an old sea chart is to read a record of vanished anxieties.",
         coverUrl: "/media/covers/the-glass-meridian.svg",
         genre: "Essays & Criticism",
@@ -281,7 +281,7 @@ describe("Literary Voices Network (LVN) — Phase 2 Backend Verification Suite",
     );
 
     expect(adminBook.status).toBe("published");
-    expect(adminBook.author_name).toBe("Eleanor Vance");
+    expect(adminBook.author_name).toBe("Executive Founder & CEO");
     expect(adminBook.author_slug).toBe("eleanor-vance");
 
     // Verify both appear on Administrator's public author profile page (/authors/eleanor-vance)

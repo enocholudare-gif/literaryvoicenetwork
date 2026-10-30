@@ -118,9 +118,9 @@ export function HeroVideoSection({
       playTrack({
         id: "bcast-live-1",
         title:
-          "The Meridian Conversation: Eleanor Vance & Amara Osei on Archival Memory",
+          "The Meridian Conversation: Executive Founder & CEO & Amara Osei on Archival Memory",
         programmeName: "The Meridian Conversation",
-        hostName: "Eleanor Vance",
+        hostName: "Executive Founder & CEO",
         guestName: "Amara Osei",
         audioUrl: "/media/audio/lvn-studio-preview.wav",
         slug: "the-meridian-conversation-ep-42-amara-osei",
@@ -315,7 +315,7 @@ export function HeroVideoSection({
                     Hosted by{" "}
                     {currentTrack?.hostName ||
                       featuredBroadcast?.host_name ||
-                      "Eleanor Vance"}{" "}
+                      "Executive Founder & CEO"}{" "}
                     ·{" "}
                     {featuredBroadcast?.description ||
                       "Join our flagship studio broadcast exploring contemporary letters and archival memory."}

@@ -8,7 +8,7 @@ const FOUNDER_FEATURES = [
     num: "01",
     city: "Chicago & New York",
     company: "Vance & Meridian Imprints",
-    founder: "Eleanor Vance",
+    founder: "Executive Founder & CEO",
     role: "Founding Publisher & CEO",
     sector: "Independent Literary Publishing & Broadcast Media",
     quote:

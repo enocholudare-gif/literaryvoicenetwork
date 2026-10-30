@@ -26,6 +26,8 @@ import {
   updateHomepageSection,
   updateSiteSettings,
   updateUserRoleOrStatus,
+  setLiveRadioState,
+  upsertAuthorSpotlight,
   upsertBroadcast,
   upsertEditorialIssue,
   upsertEvent,
@@ -220,6 +222,16 @@ export async function POST(request: NextRequest) {
         body.updates
       );
       return NextResponse.json({ ok: true, user: updatedUser });
+    }
+
+    if (action === "upsert-live-radio") {
+      const res = setLiveRadioState(session, body.liveRadioData);
+      return NextResponse.json({ ok: true, ...res });
+    }
+
+    if (action === "publish-author-spotlight") {
+      const spotlight = upsertAuthorSpotlight(session, body.spotlightData);
+      return NextResponse.json({ ok: true, spotlight });
     }
 
     return NextResponse.json(

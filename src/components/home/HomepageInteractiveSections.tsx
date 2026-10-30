@@ -67,7 +67,7 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
     id: "tb-1",
     rank: 1,
     title: "The Glass Meridian",
-    author: "Eleanor Vance",
+    author: "Executive Founder & CEO",
     slug: "the-glass-meridian",
     coverUrl: "/media/covers/the-glass-meridian.jpg",
     fallbackCover: "/media/covers/the-glass-meridian.jpg",
@@ -341,8 +341,8 @@ const UPCOMING_BROADCASTS = [
     id: "up-1",
     dateBadge: "Fri, Nov 6 · 7:00 PM EST",
     show: "The Meridian Conversation",
-    title: "The Architecture of Memory: Live with Amara Osei & Eleanor Vance",
-    host: "Eleanor Vance",
+    title: "The Architecture of Memory: Live with Amara Osei & Executive Founder & CEO",
+    host: "Executive Founder & CEO",
     guest: "Amara Osei",
     videoUrl: COMPRESSED_LOOP_VIDEO_URL,
     delay: "0s",
@@ -366,7 +366,7 @@ const UPCOMING_BROADCASTS = [
     dateBadge: "Thu, Nov 19 · 8:00 PM EST",
     show: "In the Hot Seat",
     title: "Speculative Cartographies & Silent Cities with Julian Thorne",
-    host: "Eleanor Vance",
+    host: "Executive Founder & CEO",
     guest: "Julian Thorne",
     videoUrl: COMPRESSED_LOOP_VIDEO_URL,
     delay: "1.4s",
@@ -383,7 +383,7 @@ const PAST_BROADCASTS = [
     title: "Why Rag Paper Outlasts Digital Memory",
     quote:
       "“To read an old sea chart is to read a record of vanished anxieties and enduring craft.”",
-    host: "Eleanor Vance",
+    host: "Executive Founder & CEO",
     guest: "Søren Lindqvist",
     slug: "the-meridian-conversation-ep-43-soren-lindqvist",
     banner:
@@ -396,7 +396,7 @@ const PAST_BROADCASTS = [
     title: "Maritime Archives & Polyphonic Fiction with Amara Osei",
     quote:
       "“Every enduring literary movement began in a room small enough for everyone to hear the pages turn.”",
-    host: "Eleanor Vance",
+    host: "Executive Founder & CEO",
     guest: "Amara Osei",
     slug: "the-meridian-conversation-ep-42-amara-osei",
     banner:
@@ -577,31 +577,29 @@ export function MeetOurHostsSection() {
               key={host.id}
               href={host.slug ? `/authors/${host.slug}` : "/about"}
               style={{ animationDelay: host.delay }}
-              className="animate-host-bounce group relative rounded-2xl overflow-hidden bg-[#121212] border-2 border-[#D4AF37]/45 aspect-[3/4] flex flex-col justify-end shadow-[0_18px_40px_rgba(212,175,55,0.15)] hover:border-[#F7DF8B] transition-all duration-300"
+              className="group relative rounded-2xl overflow-hidden bg-[#121212] border border-[#D4AF37]/35 flex flex-col shadow-lg hover:border-[#F7DF8B] hover:-translate-y-1 transition-all duration-300"
             >
-              <img
-                src={host.photo}
-                alt={host.name}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = host.avatar;
-                }}
-                className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#040404] via-[#040404]/50 to-transparent" />
+              <div className="relative aspect-[4/4.5] overflow-hidden bg-[#0A0A0A]">
+                <img
+                  src={host.photo}
+                  alt={host.name}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = host.avatar;
+                  }}
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+              </div>
 
-              <div className="relative z-10 p-5 text-[#FAF8F3]">
-                <span className="inline-block rounded-full bg-gold-gradient px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#050505]">
+              <div className="p-4 bg-[#121212] text-center flex-1 flex flex-col justify-center border-t border-white/5">
+                <span className="inline-block self-center rounded-full bg-gold-gradient px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#050505] mb-1.5">
                   {host.show}
                 </span>
-                <h3 className="font-serif-display text-xl font-bold mt-2 text-[#FAF8F3] group-hover:text-[#F7DF8B] transition-colors">
+                <h3 className="font-serif-display text-base font-bold text-[#FAF8F3] group-hover:text-[#F7DF8B] transition-colors leading-tight">
                   {host.name}
                 </h3>
-                <p className="text-xs text-[#D4AF37] font-semibold">
+                <p className="text-[11px] text-[#D4AF37] font-medium mt-1 leading-snug">
                   {host.role}
-                </p>
-                <p className="text-xs text-[#FAF8F3]/80 mt-2 line-clamp-2 leading-relaxed">
-                  {host.bio}
                 </p>
               </div>
             </Link>
@@ -1620,7 +1618,7 @@ export function DigitalMagazineShowcaseSection({
         "Why contemporary novelists are returning to archival notebooks, long cadence, and documentary form",
       excerpt:
         "In an era of algorithmic brevity, a new generation of novelists and essayists is reclaiming slow syntax, marginalia, and historical documents as instruments of emotional precision.",
-      author: "Eleanor Vance",
+      author: "Executive Founder & CEO",
       authorSlug: "eleanor-vance",
       readTime: "8 min read",
       date: "Oct 20, 2026",
@@ -1662,7 +1660,7 @@ export function DigitalMagazineShowcaseSection({
         "Amara Osei’s sweeping Gold Coast chronicle transforms commercial shipping registers into polyphonic literature",
       excerpt:
         "Few contemporary historical novels achieve both architectural grandeur and lyric intimacy. Osei’s portrait of three generations along the Atlantic coast is an instant classic.",
-      author: "Eleanor Vance",
+      author: "Executive Founder & CEO",
       authorSlug: "eleanor-vance",
       readTime: "7 min read",
       date: "Oct 12, 2026",
@@ -1816,7 +1814,7 @@ export function GenreAndFounderSpotlightSection() {
       num: "01",
       city: "Chicago",
       name: "Vance & Meridian Imprints",
-      founder: "Eleanor Vance",
+      founder: "Executive Founder & CEO",
       sector: "Independent Literary Publishing",
       summary:
         "Building a hybrid print-and-broadcast house that brings archival criticism and contemporary fiction to 68 countries.",

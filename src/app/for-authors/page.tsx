@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
+  Award,
   BookOpen,
   CheckCircle2,
   Globe,
   Mic2,
   Radio,
-  Sparkles,
 } from "lucide-react";
 
 export default function ForAuthorsPage() {
@@ -93,8 +93,8 @@ export default function ForAuthorsPage() {
 
           <div className="lg:col-span-5 rounded-3xl bg-[#141414] border border-[#D4AF37]/40 p-6 sm:p-8 space-y-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D4AF37] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#080808]">
-              <Sparkles className="size-3" />
-              Seasonal Author Offer
+              <Award className="size-3" />
+              Seasonal Author Feature
             </span>
             <h2 className="font-serif-display text-2xl font-bold text-[#FAF8F3]">
               10% Off Author Broadcast Packages This Season

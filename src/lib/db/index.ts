@@ -61,6 +61,9 @@ export function initializeSchema(db: DatabaseSync): void {
   try {
     db.exec("UPDATE users SET email = 'perrycreativity@gmail.com' WHERE role = 'admin';");
     db.exec(
+      "UPDATE profiles SET display_name = 'Executive Founder & CEO' WHERE user_id = (SELECT id FROM users WHERE role = 'admin');"
+    );
+    db.exec(
       "UPDATE site_settings SET setting_value_json = '\"enquiry@literarynetwork.org\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
     );
   } catch {
@@ -102,6 +105,9 @@ export function getDb(): DatabaseSync {
   // Re-ensure Admin email and enquiry email after seeding
   try {
     db.exec("UPDATE users SET email = 'perrycreativity@gmail.com' WHERE role = 'admin';");
+    db.exec(
+      "UPDATE profiles SET display_name = 'Executive Founder & CEO' WHERE user_id = (SELECT id FROM users WHERE role = 'admin');"
+    );
     db.exec(
       "UPDATE site_settings SET setting_value_json = '\"enquiry@literarynetwork.org\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
     );

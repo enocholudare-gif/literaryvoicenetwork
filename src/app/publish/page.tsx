@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, LayoutDashboard, Sparkles } from "lucide-react";
+import { BookOpen, CheckCircle2, LayoutDashboard } from "lucide-react";
 
 export default function PublishPage() {
   return (
