@@ -307,11 +307,6 @@ export function SiteShell({
       href: "/#lvn-digital-magazine",
     },
     {
-      id: "admin-login-nav",
-      label: "Admin Login",
-      href: "/admin",
-    },
-    {
       id: "programming",
       label: "Programming",
       href: "/shows",
@@ -762,16 +757,14 @@ export function SiteShell({
                   <span className="hidden xl:inline">Workspace</span>
                 </Link>
 
-                {user.role === "admin" && (
-                  <Link
-                    href="/admin"
-                    prefetch={true}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37] bg-gold-gradient text-[#050505] px-3 py-1.5 text-xs font-bold hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
-                  >
-                    <ShieldCheck className="size-3.5" />
-                    <span>Admin Console</span>
-                  </Link>
-                )}
+                <Link
+                  href="/admin"
+                  prefetch={true}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37] bg-gold-gradient text-[#050505] px-3 py-1.5 text-xs font-bold hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
+                >
+                  <ShieldCheck className="size-3.5" />
+                  <span>Admin</span>
+                </Link>
 
                 <button
                   type="button"
@@ -784,11 +777,11 @@ export function SiteShell({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Link
                   href="/auth"
                   prefetch={true}
-                  className="hidden sm:inline-flex rounded-full border border-white/20 bg-[#141414] px-3.5 py-1.5 text-xs font-semibold text-[#FAF8F3] hover:border-[#D4AF37] hover:text-[#F7DF8B] transition-all whitespace-nowrap"
+                  className="inline-flex rounded-full border border-white/20 bg-[#141414] px-3 py-1.5 text-xs font-semibold text-[#FAF8F3] hover:border-[#D4AF37] hover:text-[#F7DF8B] transition-all whitespace-nowrap"
                 >
                   Sign In
                 </Link>
@@ -796,11 +789,11 @@ export function SiteShell({
                 <Link
                   href="/admin"
                   prefetch={true}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37] bg-gold-gradient px-3 py-1.5 text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-[0_2px_12px_rgba(212,175,55,0.4)] whitespace-nowrap"
-                  title="Admin Login & Moderation Portal"
+                  className="hidden sm:inline-flex items-center gap-1 rounded-full border border-[#D4AF37]/80 bg-[#18150a] px-3 py-1.5 text-xs font-bold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] active:scale-95 transition-all shadow-[0_2px_12px_rgba(212,175,55,0.25)] whitespace-nowrap"
+                  title="Admin Portal"
                 >
-                  <ShieldCheck className="size-3.5 text-[#050505]" />
-                  <span>Admin Login</span>
+                  <ShieldCheck className="size-3.5 text-[#D4AF37]" />
+                  <span>Admin</span>
                 </Link>
               </div>
             )}
@@ -995,16 +988,9 @@ export function SiteShell({
               <Link
                 href="/live"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 text-center rounded-xl bg-gold-gradient px-4 py-2.5 text-xs font-bold text-[#050505]"
+                className="w-full text-center rounded-xl bg-gold-gradient px-4 py-2.5 text-xs font-bold text-[#050505] shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
               >
                 Listen Live Now
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 text-center rounded-xl border border-[#D4AF37]/60 bg-[#16140d] px-4 py-2.5 text-xs font-bold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] transition-all"
-              >
-                Admin Portal
               </Link>
               {user && profile ? (
                 <Link
