@@ -8,6 +8,7 @@ import {
   Feather,
   Lock,
   Mail,
+  ShieldCheck,
   User,
 } from "lucide-react";
 
@@ -296,6 +297,23 @@ function AuthFormContent() {
                 {m === "forgot" ? "Forgot Password" : m === "login" ? "Sign In" : "Sign Up"}
               </button>
             ))}
+          </div>
+
+          {/* Quick Admin Portal Button */}
+          <div className="p-3 rounded-2xl border border-[#D4AF37]/40 bg-[#16140d] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="size-4 text-[#D4AF37]" />
+              <div className="text-left">
+                <p className="text-xs font-bold text-[#F7DF8B]">Admin Portal</p>
+                <p className="text-[10px] text-white/60">Executive & Moderation Console</p>
+              </div>
+            </div>
+            <Link
+              href="/admin"
+              className="px-3 py-1.5 rounded-xl bg-gold-gradient text-[#050505] text-xs font-bold hover:brightness-110 transition-all shadow-xs"
+            >
+              Admin Sign In →
+            </Link>
           </div>
 
           {/* Title */}

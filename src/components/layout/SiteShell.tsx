@@ -307,6 +307,11 @@ export function SiteShell({
       href: "/#lvn-digital-magazine",
     },
     {
+      id: "admin-login-nav",
+      label: "Admin Login",
+      href: "/admin",
+    },
+    {
       id: "programming",
       label: "Programming",
       href: "/shows",
@@ -761,10 +766,10 @@ export function SiteShell({
                   <Link
                     href="/admin"
                     prefetch={true}
-                    className="inline-flex items-center gap-1 rounded-full border border-[#D4AF37] bg-gold-gradient text-[#050505] px-2.5 py-1 text-[11px] font-bold hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37] bg-gold-gradient text-[#050505] px-3 py-1.5 text-xs font-bold hover:brightness-110 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
                   >
                     <ShieldCheck className="size-3.5" />
-                    <span>Admin</span>
+                    <span>Admin Console</span>
                   </Link>
                 )}
 
@@ -779,11 +784,11 @@ export function SiteShell({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Link
                   href="/auth"
                   prefetch={true}
-                  className="hidden sm:inline-flex rounded-full border border-white/20 bg-[#141414] px-3 py-1.5 text-[11px] font-semibold text-[#FAF8F3] hover:border-[#F7DF8B] hover:text-[#F7DF8B] transition-all whitespace-nowrap"
+                  className="hidden sm:inline-flex rounded-full border border-white/20 bg-[#141414] px-3.5 py-1.5 text-xs font-semibold text-[#FAF8F3] hover:border-[#D4AF37] hover:text-[#F7DF8B] transition-all whitespace-nowrap"
                 >
                   Sign In
                 </Link>
@@ -791,11 +796,11 @@ export function SiteShell({
                 <Link
                   href="/admin"
                   prefetch={true}
-                  className="inline-flex items-center gap-1 rounded-full border border-[#D4AF37]/60 bg-[#18150a] px-2.5 py-1 text-[11px] font-bold text-[#F7DF8B] hover:bg-gold-gradient hover:text-[#050505] transition-all shadow-[0_2px_8px_rgba(212,175,55,0.2)] whitespace-nowrap"
-                  title="Admin Portal & Moderation"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37] bg-gold-gradient px-3 py-1.5 text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-[0_2px_12px_rgba(212,175,55,0.4)] whitespace-nowrap"
+                  title="Admin Login & Moderation Portal"
                 >
-                  <ShieldCheck className="size-3.5 text-[#D4AF37]" />
-                  <span>Admin</span>
+                  <ShieldCheck className="size-3.5 text-[#050505]" />
+                  <span>Admin Login</span>
                 </Link>
               </div>
             )}
