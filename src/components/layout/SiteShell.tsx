@@ -302,9 +302,14 @@ export function SiteShell({
       href: "/authors",
     },
     {
+      id: "editorial",
+      label: "Editorial",
+      href: "/editorial",
+    },
+    {
       id: "magazine-link",
       label: "Magazine",
-      href: "/#lvn-digital-magazine",
+      href: "/magazine",
     },
     {
       id: "programming",
@@ -422,12 +427,6 @@ export function SiteShell({
           label: "Founder Pitch",
           desc: "Apply for Business & Founder Spotlight",
           icon: Mic2,
-        },
-        {
-          href: "/editorial-calendar",
-          label: "Editorial Calendar",
-          desc: "Seasonal magazine issues & deadlines",
-          icon: Calendar,
         },
       ],
     },

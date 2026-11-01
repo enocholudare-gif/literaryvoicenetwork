@@ -4,6 +4,7 @@ import {
   authorizeManuscriptDistribution,
   createArticleDraft,
   createBookDraft,
+  incrementBookView,
   listAllArticlesForStaff,
   listAllBooksForStaff,
   listModerationQueue,
@@ -102,6 +103,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json();
+    const action = String(body.action || "");
+
+    if (action === "increment-book-view") {
+      const slug = String(body.slug || "");
+      if (!slug) {
+        return NextResponse.json({ ok: false, error: "Missing book slug" }, { status: 400 });
+      }
+      const newCount = incrementBookView(slug);
+      return NextResponse.json({ ok: true, viewCount: newCount });
+    }
+
     const session = await getCurrentSession();
     if (!session) {
       return NextResponse.json(
@@ -109,9 +122,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const body = await request.json();
-    const action = String(body.action || "");
 
     if (action === "create-book") {
       const book = createBookDraft(session, body.bookData, {

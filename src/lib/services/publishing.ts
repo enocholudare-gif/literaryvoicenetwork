@@ -2000,11 +2000,15 @@ function getEntityTagNames(entityType: "book" | "article", entityId: string): st
 }
 
 
-export function incrementBookView(slug: string): void {
+export function incrementBookView(slug: string): number {
   const db = getDb();
   try {
     db.prepare("UPDATE books SET view_count = COALESCE(view_count, 0) + 1 WHERE slug = ?").run(slug);
-  } catch {}
+    const row = db.prepare("SELECT view_count FROM books WHERE slug = ?").get(slug) as { view_count: number } | undefined;
+    return row?.view_count ?? 1;
+  } catch {
+    return 1;
+  }
 }
 
 export function listBookReviews(bookId: string): import('@/lib/db/types').BookReview[] {

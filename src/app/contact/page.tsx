@@ -68,10 +68,10 @@ export default function ContactPage() {
               Official Enquiries, Editorial &amp; Press Desk
             </span>
             <a
-              href="mailto:enquiry@literarynetwork.org"
+              href="mailto:enquiry@literaryvoicenetwork.org"
               className="block font-serif text-lg font-bold text-[#080808] hover:text-[#AA7C11] transition-colors"
             >
-              enquiry@literarynetwork.org
+              enquiry@literaryvoicenetwork.org
             </a>
             <p className="text-xs text-[#080808]/70">
               For all book submissions, magazine issues, author interviews, studio bookings, partnerships, and press enquiries.

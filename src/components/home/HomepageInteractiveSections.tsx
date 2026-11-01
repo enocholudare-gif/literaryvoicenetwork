@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Award, Bell, BookOpen, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Feather, Globe, Headphones, MapPin, Mic2, Pause, Play, Radio, RefreshCw, RotateCw, Search, Star, Users, Video, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Award, Bell, BookOpen, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Eye, Feather, Globe, Headphones, MapPin, Mic2, Pause, Play, Radio, RefreshCw, RotateCw, Search, Star, Users, Video, X } from "lucide-react";
 import { useAudioPlayer } from "../layout/AudioPlayerContext";
 import type { Article, Book, Broadcast } from "@/lib/db/types";
 
@@ -16,7 +16,11 @@ export interface TrendingNetworkBook {
   rank: number;
   title: string;
   author: string;
+  authorSlug?: string;
+  authorAvatar?: string;
   slug?: string;
+  genre?: string;
+  viewCount?: number;
   coverUrl: string;
   fallbackCover: string;
   rating: number;
@@ -38,139 +42,235 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
   {
     id: "tb-1",
     rank: 1,
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    slug: "pride-and-prejudice",
-    coverUrl: "/media/covers/pride-and-prejudice.png",
-    fallbackCover: "/media/covers/pride-and-prejudice.png",
+    title: "AI: An Unlikely War",
+    author: "Tony Rebeiro",
+    authorSlug: "tony-rebeiro",
+    authorAvatar: "/media/avatars/tony-rebeiro.jpg",
+    slug: "ai-an-unlikely-war",
+    genre: "Editorial",
+    viewCount: 1420,
+    coverUrl: "/media/covers/the-first.jpg",
+    fallbackCover: "/media/covers/the-first.jpg",
     rating: 4.9,
-    publisher: "T. Egerton / Penguin Classics",
-    year: 1813,
-    pages: 432,
-    genres: ["Classic Literature", "Romance", "Historical Fiction"],
-    description:
-      "Since its immediate success in 1813, Pride and Prejudice has remained one of the most popular novels in the English language. Jane Austen called this brilliant work 'her own darling child' and its vivacious heroine, Elizabeth Bennet, 'as delightful a creature as ever appeared in print.'",
+    publisher: "LVN Imprint Editions",
+    year: 2026,
+    pages: 340,
+    genres: ["Editorial", "Science & Technology", "Geopolitics"],
+    description: "An urgent, high-stakes investigation of human intellect, autonomous algorithms, and societal evolution.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Pride+and+Prejudice+Jane+Austen",
-      goodreads: "https://www.goodreads.com/book/show/129915654-pride-and-prejudice",
+      amazon: "https://www.amazon.com/dp/B0HFZJ59RF",
+      goodreads: "https://www.amazon.com/dp/B0HFZJ59RF",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Pride+and+Prejudice",
-      bookshop: "https://bookshop.org/search?keywords=Pride+and+Prejudice",
+      audible: "https://www.amazon.com/dp/B0HFZJ59RF",
+      bookshop: "https://www.amazon.com/dp/B0HFZJ59RF",
     },
   },
   {
     id: "tb-2",
     rank: 2,
-    title: "The Queens of Crime",
-    author: "Marie Benedict",
-    slug: "the-queens-of-crime",
-    coverUrl: "/media/covers/the-queens-of-crime.png",
-    fallbackCover: "/media/covers/the-queens-of-crime.png",
-    rating: 4.8,
-    publisher: "Sourcebooks Landmark",
-    year: 2024,
-    pages: 368,
-    genres: ["Historical Fiction", "Mystery", "Biographical"],
-    description:
-      "From New York Times bestselling author Marie Benedict comes the explosive story of the real-life women behind the Golden Age of detective fiction—including Agatha Christie, Dorothy L. Sayers, Ngaio Marsh, and Margery Allingham—who formed a secret society and united to write a new chapter in literary history.",
+    title: "You Can Wine Too",
+    author: "David R. Sheldon",
+    authorSlug: "david-sheldon",
+    authorAvatar: "/media/avatars/david-sheldon.jpg",
+    slug: "you-can-wine-too",
+    genre: "Editorial",
+    viewCount: 1890,
+    coverUrl: "/media/covers/second-image.jpg",
+    fallbackCover: "/media/covers/second-image.jpg",
+    rating: 4.9,
+    publisher: "LVN Imprint Editions",
+    year: 2026,
+    pages: 280,
+    genres: ["Editorial", "Wine & Culinary", "Lifestyle"],
+    description: "An approachable, joyous guide to exploring the sensory subtleties and craft of winemaking.",
     links: {
-      amazon: "https://www.amazon.com/s?k=The+Queens+of+Crime+Marie+Benedict",
-      goodreads: "https://www.goodreads.com/book/show/211003830-the-queens-of-crime",
+      amazon: "https://www.amazon.com/dp/B0DXCLXWN6",
+      goodreads: "https://www.amazon.com/dp/B0DXCLXWN6",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=The+Queens+of+Crime+Marie+Benedict",
-      bookshop: "https://bookshop.org/search?keywords=The+Queens+of+Crime+Marie+Benedict",
+      audible: "https://www.amazon.com/dp/B0DXCLXWN6",
+      bookshop: "https://www.amazon.com/dp/B0DXCLXWN6",
     },
   },
   {
     id: "tb-3",
     rank: 3,
-    title: "Kin",
-    author: "Tayari Jones",
-    slug: "kin",
-    coverUrl: "/media/covers/kin.svg",
-    fallbackCover: "/media/covers/kin.svg",
+    title: "Legends of the Grail",
+    author: "Ayn Cates Sullivan, PhD",
+    authorSlug: "ayn-cates-sullivan",
+    authorAvatar: "/media/avatars/ayn-cates-sullivan.jpg",
+    slug: "legends-of-the-grail",
+    genre: "Editorial",
+    viewCount: 1640,
+    coverUrl: "/media/covers/third-image.jpg",
+    fallbackCover: "/media/covers/third-image.jpg",
     rating: 4.9,
-    publisher: "Algonquin Books",
+    publisher: "LVN Imprint Editions",
     year: 2026,
-    pages: 352,
-    genres: ["Literary Fiction", "Family Saga", "Contemporary"],
-    description:
-      "From the bestselling author of An American Marriage, an emotionally gripping narrative exploring family loyalty, inheritance, and the fragile ties that bind us across generations.",
+    pages: 320,
+    genres: ["Editorial", "Mythology", "Spiritual Literature"],
+    description: "Luminous retellings of Celtic mythos, sacred archetypes, and the eternal spiritual quest.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Kin+Tayari+Jones",
-      goodreads: "https://www.goodreads.com/search?q=Kin+Tayari+Jones",
+      amazon: "https://www.amazon.com/dp/B075C3XPPS",
+      goodreads: "https://www.amazon.com/dp/B075C3XPPS",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Kin+Tayari+Jones",
-      bookshop: "https://bookshop.org/search?keywords=Kin+Tayari+Jones",
+      audible: "https://www.amazon.com/dp/B075C3XPPS",
+      bookshop: "https://www.amazon.com/dp/B075C3XPPS",
     },
   },
   {
     id: "tb-4",
     rank: 4,
-    title: "The Calamity Club",
-    author: "Kathryn Stockett",
-    slug: "the-calamity-club",
-    coverUrl: "/media/covers/the-calamity-club.svg",
-    fallbackCover: "/media/covers/the-calamity-club.svg",
+    title: "Canthany Rising",
+    author: "Kenneth Bliss",
+    authorSlug: "kenneth-bliss",
+    authorAvatar: "/media/avatars/kenneth-bliss.jpg",
+    slug: "canthany-rising",
+    genre: "Editorial",
+    viewCount: 1210,
+    coverUrl: "/media/covers/fourth-image.jpg",
+    fallbackCover: "/media/covers/fourth-image.jpg",
     rating: 4.8,
-    publisher: "Putnam",
+    publisher: "LVN Imprint Editions",
     year: 2026,
-    pages: 384,
-    genres: ["Historical Fiction", "Southern Fiction", "Drama"],
-    description:
-      "A compelling drama of friendship, ambition, and resilience among four women confronting personal and societal upheaval in the mid-century American South.",
+    pages: 410,
+    genres: ["Editorial", "Fantasy", "Speculative Fiction"],
+    description: "An epic high-fantasy saga of fractured dynasties, celestial realms, and enduring honor.",
     links: {
-      amazon: "https://www.amazon.com/s?k=The+Calamity+Club+Kathryn+Stockett",
-      goodreads: "https://www.goodreads.com/search?q=The+Calamity+Club+Kathryn+Stockett",
+      amazon: "https://www.amazon.com/dp/B0GZ598XPX",
+      goodreads: "https://www.amazon.com/dp/B0GZ598XPX",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=The+Calamity+Club+Kathryn+Stockett",
-      bookshop: "https://bookshop.org/search?keywords=The+Calamity+Club+Kathryn+Stockett",
+      audible: "https://www.amazon.com/dp/B0GZ598XPX",
+      bookshop: "https://www.amazon.com/dp/B0GZ598XPX",
     },
   },
   {
     id: "tb-5",
     rank: 5,
-    title: "Wild Dark Shore",
-    author: "Charlotte McConaghy",
-    slug: "wild-dark-shore",
-    coverUrl: "/media/covers/wild-dark-shore.svg",
-    fallbackCover: "/media/covers/wild-dark-shore.svg",
+    title: "From Doctor to Healer",
+    author: "Erica M. Elliott, M.D.",
+    authorSlug: "erica-elliott",
+    authorAvatar: "/media/avatars/erica-elliott.jpg",
+    slug: "from-doctor-to-healer",
+    genre: "Editorial",
+    viewCount: 1750,
+    coverUrl: "/media/covers/fifth-image.jpg",
+    fallbackCover: "/media/covers/fifth-image.jpg",
     rating: 4.9,
-    publisher: "Flatiron Books",
+    publisher: "LVN Imprint Editions",
     year: 2026,
-    pages: 336,
-    genres: ["Literary Fiction", "Adventure", "Nature"],
-    description:
-      "A breathtaking story of survival and hope set along the rugged coastlines of the southern hemisphere, investigating nature, grief, and human endurance.",
+    pages: 350,
+    genres: ["Editorial", "Memoir", "Medicine & Healing"],
+    description: "A cross-cultural physician's profound memoir exploring environmental healing, listening, and indigenous wisdom.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Wild+Dark+Shore+Charlotte+McConaghy",
-      goodreads: "https://www.goodreads.com/search?q=Wild+Dark+Shore+Charlotte+McConaghy",
+      amazon: "https://www.amazon.com/dp/B0FR6KHC3Y",
+      goodreads: "https://www.amazon.com/dp/B0FR6KHC3Y",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Wild+Dark+Shore+Charlotte+McConaghy",
-      bookshop: "https://bookshop.org/search?keywords=Wild+Dark+Shore+Charlotte+McConaghy",
+      audible: "https://www.amazon.com/dp/B0FR6KHC3Y",
+      bookshop: "https://www.amazon.com/dp/B0FR6KHC3Y",
     },
   },
   {
     id: "tb-6",
     rank: 6,
-    title: "Yesteryear",
-    author: "Caro Claire Burke",
-    slug: "yesteryear",
-    coverUrl: "/media/covers/yesteryear.svg",
-    fallbackCover: "/media/covers/yesteryear.svg",
-    rating: 4.8,
-    publisher: "Atria Books",
+    title: "LEAP: Breaking Leadership Barriers",
+    author: "Dr. Stacey L. Horn",
+    authorSlug: "stacey-horn",
+    authorAvatar: "/media/avatars/stacey-horn.jpg",
+    slug: "leap-breaking-leadership-barriers",
+    genre: "Editorial",
+    viewCount: 2100,
+    coverUrl: "/media/covers/sixth-image.jpg",
+    fallbackCover: "/media/covers/sixth-image.jpg",
+    rating: 4.9,
+    publisher: "LVN Imprint Editions",
     year: 2026,
-    pages: 320,
-    genres: ["Historical Fiction", "Mystery", "Time Travel"],
-    description:
-      "An evocative journey through time, memory, and forgotten places, weaving intimate domestic history with the transformative pull of the modern era.",
+    pages: 290,
+    genres: ["Editorial", "Leadership", "Business Strategy"],
+    description: "Strategic frameworks for breaking through organizational inertia and mastering executive influence.",
     links: {
-      amazon: "https://www.amazon.com/s?k=Yesteryear+Caro+Claire+Burke",
-      goodreads: "https://www.goodreads.com/search?q=Yesteryear+Caro+Claire+Burke",
+      amazon: "https://www.amazon.com/dp/B0H8R4381Z",
+      goodreads: "https://www.amazon.com/dp/B0H8R4381Z",
       spotify: SPOTIFY_URL,
-      audible: "https://www.audible.com/search?keywords=Yesteryear+Caro+Claire+Burke",
-      bookshop: "https://bookshop.org/search?keywords=Yesteryear+Caro+Claire+Burke",
+      audible: "https://www.amazon.com/dp/B0H8R4381Z",
+      bookshop: "https://www.amazon.com/dp/B0H8R4381Z",
+    },
+  },
+  {
+    id: "tb-7",
+    rank: 7,
+    title: "Missed Cue",
+    author: "Lynn Slaughter",
+    authorSlug: "lynn-slaughter",
+    authorAvatar: "/media/avatars/lynn-slaughter.jpg",
+    slug: "missed-cue",
+    genre: "Editorial",
+    viewCount: 1980,
+    coverUrl: "/media/covers/seventh-image.jpg",
+    fallbackCover: "/media/covers/seventh-image.jpg",
+    rating: 4.8,
+    publisher: "LVN Imprint Editions",
+    year: 2026,
+    pages: 310,
+    genres: ["Editorial", "Mystery", "Theater & Arts"],
+    description: "A propulsive backstage thriller set in the competitive performing arts world, full of rivalry and suspense.",
+    links: {
+      amazon: "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX",
+      goodreads: "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX",
+      spotify: SPOTIFY_URL,
+      audible: "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX",
+      bookshop: "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX",
+    },
+  },
+  {
+    id: "tb-8",
+    rank: 8,
+    title: "Vengeance",
+    author: "Graham Wilson",
+    authorSlug: "graham-wilson",
+    authorAvatar: "/media/avatars/graham-wilson.jpg",
+    slug: "vengeance",
+    genre: "Editorial",
+    viewCount: 1530,
+    coverUrl: "/media/covers/ninth-image.jpg",
+    fallbackCover: "/media/covers/ninth-image.jpg",
+    rating: 4.8,
+    publisher: "LVN Imprint Editions",
+    year: 2026,
+    pages: 370,
+    genres: ["Editorial", "Thriller", "Psychological Suspense"],
+    description: "A dark, atmospheric psychological thriller of long-buried betrayals and relentless retribution.",
+    links: {
+      amazon: "https://www.amazon.com/dp/B0HC5KSH8J",
+      goodreads: "https://www.amazon.com/dp/B0HC5KSH8J",
+      spotify: SPOTIFY_URL,
+      audible: "https://www.amazon.com/dp/B0HC5KSH8J",
+      bookshop: "https://www.amazon.com/dp/B0HC5KSH8J",
+    },
+  },
+  {
+    id: "tb-9",
+    rank: 9,
+    title: "Seeking the Hook",
+    author: "Lou Lipsitz",
+    authorSlug: "lou-lipsitz",
+    authorAvatar: "/media/avatars/lou-lipsitz.jpg",
+    slug: "seeking-the-hook",
+    genre: "Magazine",
+    viewCount: 1340,
+    coverUrl: "/media/covers/maga1.jpg",
+    fallbackCover: "/media/covers/maga1.jpg",
+    rating: 4.9,
+    publisher: "LVN Magazine Editions",
+    year: 2026,
+    pages: 160,
+    genres: ["Magazine", "Poetry", "Literary Arts"],
+    description: "New and selected poems exploring love, aging, psychotherapy, and the quiet epiphanies of daily life.",
+    links: {
+      amazon: "https://www.amazon.com/dp/1439238251",
+      goodreads: "https://www.amazon.com/dp/1439238251",
+      spotify: SPOTIFY_URL,
+      audible: "https://www.amazon.com/dp/1439238251",
+      bookshop: "https://www.amazon.com/dp/1439238251",
     },
   },
 ];
@@ -1007,11 +1107,15 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
       rank: idx + 1,
       title: b.title,
       author: b.author_name || "LVN Author",
+      authorSlug: b.author_slug || "",
+      authorAvatar: b.author_avatar || "/media/avatars/default-portrait.svg",
       slug: b.slug,
-      coverUrl: b.cover_url || "/media/covers/pride-and-prejudice.png",
-      fallbackCover: b.cover_url || "/media/covers/pride-and-prejudice.png",
+      genre: b.genre || "Editorial",
+      viewCount: b.view_count || 1200,
+      coverUrl: b.cover_url || "/media/covers/the-first.jpg",
+      fallbackCover: b.cover_url || "/media/covers/the-first.jpg",
       rating: 4.9,
-      publisher: b.publisher || "LVN Edition",
+      publisher: b.publisher || "LVN Imprint Editions",
       year: b.publication_date ? Number(b.publication_date.slice(0, 4)) || 2026 : 2026,
       pages: b.page_count || 320,
       genres: [b.genre, ...(b.secondary_genres || [])],
@@ -1030,20 +1134,57 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
   const [books, setBooks] = useState<TrendingNetworkBook[]>(
     mergedPool.slice(0, 6)
   );
+  const [viewsMap, setViewsMap] = useState<Record<string, number>>({});
   const [fallbackMap, setFallbackMap] = useState<Record<string, boolean>>({});
-  const [flippedMap, setFlippedMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const initViews: Record<string, number> = {};
+    mergedPool.forEach((b) => {
+      initViews[b.id] = b.viewCount || 1200;
+    });
+    setViewsMap(initViews);
+  }, [dbBooks]);
 
   const handleShuffle = () => {
-    const shuffled = [...TRENDING_BOOKS_POOL]
+    const pool = mergedPool.length > 0 ? mergedPool : TRENDING_BOOKS_POOL;
+    const shuffled = [...pool]
       .sort(() => Math.random() - 0.5)
       .slice(0, 6)
       .map((b, i) => ({ ...b, rank: i + 1 }));
     setBooks(shuffled);
-    setFlippedMap({});
   };
 
-  const toggleFlip = (id: string) => {
-    setFlippedMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleViewOverview = (b: TrendingNetworkBook) => {
+    // Increment view count locally
+    setViewsMap((prev) => ({
+      ...prev,
+      [b.id]: (prev[b.id] ?? b.viewCount ?? 1200) + 1,
+    }));
+
+    // Increment on server
+    if (b.slug) {
+      fetch("/api/publishing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "increment-book-view",
+          slug: b.slug,
+        }),
+      })
+        .then(async (r) => {
+          if (r.ok) {
+            const data = await r.json();
+            if (data.viewCount) {
+              setViewsMap((prev) => ({ ...prev, [b.id]: data.viewCount }));
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Navigate to overview / Amazon link
+    const targetUrl = b.links.amazon || b.links.goodreads || (b.slug ? `/books/${b.slug}` : "/books");
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -1058,8 +1199,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
               Trending Books on the Network
             </h2>
             <p className="text-sm text-neutral-600 mt-1">
-              Hover or tap any book cover to flip the card and inspect full
-              edition details, synopsis, and retailer links.
+              Floating editions from the network catalog. Inspect author overviews, edition profiles, and retailer feeds.
             </p>
           </div>
           <button
@@ -1073,160 +1213,91 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {books.map((b) => {
+          {books.map((b, idx) => {
             const useFallback = Boolean(fallbackMap[b.id]);
-            const isFlipped = Boolean(flippedMap[b.id]);
+            const currentViews = viewsMap[b.id] ?? b.viewCount ?? 1200;
 
             return (
               <div
                 key={b.id}
-                onClick={() => toggleFlip(b.id)}
-                className="group perspective-1200 h-[430px] cursor-pointer select-none"
+                className="group relative flex flex-col justify-between rounded-3xl bg-[#080808] border-2 border-[#D4AF37]/45 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.55)] hover:border-[#F7DF8B] hover:shadow-[0_25px_60px_rgba(212,175,55,0.25)] transition-all duration-300"
+                style={{ animationDelay: `${idx * 180}ms` }}
               >
-                <div
-                  className={`relative w-full h-full rounded-3xl transition-transform duration-700 preserve-3d shadow-xl ${
-                    isFlipped
-                      ? "rotate-y-180"
-                      : "group-hover:rotate-y-180"
-                  }`}
-                >
-                  {/* FRONT OF CARD: Pure Book Cover Showcase (Flip to inspect details) */}
-                  <div className="absolute inset-0 w-full h-full rounded-3xl bg-[#080808] border-2 border-[#D4AF37]/45 overflow-hidden backface-hidden flex flex-col items-center justify-between p-4 sm:p-5">
-                    <div className="w-full flex items-center justify-between z-10">
-                      <span className="rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-[#050505] shadow-md">
-                        #{b.rank} on Chart
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/75 border border-[#D4AF37]/40 px-2.5 py-1 text-xs font-bold text-[#F7DF8B]">
-                        <Star className="size-3.5 fill-current text-[#D4AF37]" />
-                        {b.rating.toFixed(1)}
-                      </span>
-                    </div>
+                {/* Top Pill Bar: Rank, Category Tag, Views Count */}
+                <div className="w-full flex items-center justify-between gap-2 z-10 mb-4">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-[#050505] shadow-md">
+                      #{b.rank} on Chart
+                    </span>
+                    <span className="rounded-full bg-white/10 border border-[#D4AF37]/50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#F7DF8B]">
+                      {b.genre || "Editorial"}
+                    </span>
+                  </div>
 
-                    {/* Book Cover — Dominant, clean realistic presentation */}
-                    <div className="my-auto w-full max-w-[210px] aspect-[2/3] rounded-2xl overflow-hidden border-2 border-[#D4AF37]/50 shadow-[0_20px_45px_rgba(0,0,0,0.85)] group-hover:border-[#F7DF8B] transition-colors">
-                      <img
-                        src={useFallback ? b.fallbackCover : b.coverUrl}
-                        alt={b.title}
-                        onLoad={(e) => {
-                          if ((e.currentTarget as HTMLImageElement).naturalWidth <= 1) {
-                            setFallbackMap((prev) => ({
-                              ...prev,
-                              [b.id]: true,
-                            }));
-                          }
-                        }}
-                        onError={() =>
-                          setFallbackMap((prev) => ({
-                            ...prev,
-                            [b.id]: true,
-                          }))
+                  {/* Real-time Views Badge */}
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-black/80 border border-[#D4AF37]/40 px-3 py-1 text-xs font-bold text-[#F7DF8B] shadow-inner">
+                    <Eye className="size-3.5 text-[#D4AF37]" />
+                    <span>{currentViews.toLocaleString()} Views</span>
+                  </span>
+                </div>
+
+                {/* Floating Book Cover — Dominant realistic presentation */}
+                <div className="my-auto py-2 flex flex-col items-center">
+                  <div className="animate-book-float relative w-full max-w-[210px] aspect-[2/3] rounded-2xl overflow-hidden border-2 border-[#D4AF37]/60 shadow-[0_22px_45px_rgba(0,0,0,0.9)] group-hover:border-[#F7DF8B] transition-transform duration-500">
+                    <img
+                      src={useFallback ? b.fallbackCover : b.coverUrl}
+                      alt={b.title}
+                      onLoad={(e) => {
+                        if ((e.currentTarget as HTMLImageElement).naturalWidth <= 1) {
+                          setFallbackMap((prev) => ({ ...prev, [b.id]: true }));
                         }
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-
-                    <div className="text-center z-10 pt-1">
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F7DF8B] bg-black/60 px-3 py-1 rounded-full border border-[#D4AF37]/30">
-                        <RotateCw className="size-3 text-[#D4AF37]" />
-                        Flip to Read Synopsis &amp; Retailers
-                      </span>
-                    </div>
+                      }}
+                      onError={() =>
+                        setFallbackMap((prev) => ({ ...prev, [b.id]: true }))
+                      }
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
                   </div>
 
-                  {/* BACK OF CARD: Full Synopsis, Metadata & Retailer Links */}
-                  <div className="absolute inset-0 w-full h-full rounded-3xl bg-gradient-to-br from-[#0E0E0E] via-[#17130A] to-[#080808] text-[#FAF8F3] border-2 border-[#D4AF37] p-6 backface-hidden rotate-y-180 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/10">
-                        <span className="rounded-full bg-gold-gradient px-2.5 py-0.5 text-[10px] font-bold text-[#050505]">
-                          #{b.rank} · {b.year} · {b.pages} Pages
-                        </span>
-                        <span className="text-xs text-[#F7DF8B] font-semibold">
-                          ★ {b.rating.toFixed(1)}
-                        </span>
-                      </div>
+                  <h3 className="font-serif-display text-xl font-bold text-[#FAF8F3] text-center mt-5 line-clamp-1">
+                    {b.title}
+                  </h3>
+                </div>
 
-                      <h3 className="font-serif-display text-xl font-bold text-[#FAF8F3] mt-3">
-                        {b.title}
-                      </h3>
-                      <p className="text-xs font-semibold text-[#D4AF37] mt-0.5">
-                        By {b.author} · {b.publisher}
-                      </p>
-
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {b.genres.map((g) => (
-                          <span
-                            key={g}
-                            className="rounded-full bg-white/5 border border-[#D4AF37]/35 px-2.5 py-0.5 text-[10px] font-medium text-[#F7DF8B]"
-                          >
-                            {g}
-                          </span>
-                        ))}
-                      </div>
-
-                      <p className="text-xs text-[#FAF8F3]/85 mt-3.5 leading-relaxed line-clamp-4">
-                        {b.description}
-                      </p>
-                    </div>
-
-                    <div
-                      className="space-y-3 pt-3 border-t border-white/10"
-                      onClick={(e) => e.stopPropagation()}
+                {/* Bottom Row: Author Overview Profile Pill + View Overview CTA Button */}
+                <div className="pt-4 border-t border-white/10 space-y-3 z-10">
+                  <div className="flex items-center justify-between gap-2">
+                    <Link
+                      href={b.authorSlug ? `/authors/${b.authorSlug}` : "/authors"}
+                      className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-[#D4AF37]/40 px-3 py-1.5 text-xs text-[#FAF8F3] hover:bg-[#D4AF37]/20 hover:border-[#F7DF8B] transition-colors"
+                      title="View Author Overview Profile"
                     >
-                      <div className="flex flex-wrap gap-1.5">
-                        <a
-                          href={b.links.amazon}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-gold-gradient px-3 py-1 text-[10px] font-bold text-[#050505] hover:brightness-110"
-                        >
-                          Amazon
-                        </a>
-                        <a
-                          href={b.links.bookshop}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-[#171717] border border-[#D4AF37]/40 px-3 py-1 text-[10px] font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/20"
-                        >
-                          Bookshop.org
-                        </a>
-                        <a
-                          href={b.links.audible}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-[#171717] border border-[#D4AF37]/40 px-3 py-1 text-[10px] font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/20"
-                        >
-                          Audible
-                        </a>
-                        <a
-                          href={b.links.spotify}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-[#171717] border border-[#D4AF37]/40 px-3 py-1 text-[10px] font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/20"
-                        >
-                          Spotify
-                        </a>
-                        <a
-                          href={b.links.goodreads}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-[#171717] border border-[#D4AF37]/40 px-3 py-1 text-[10px] font-semibold text-[#F7DF8B] hover:bg-[#D4AF37]/20"
-                        >
-                          Goodreads
-                        </a>
-                      </div>
+                      <img
+                        src={b.authorAvatar || "/media/avatars/default-portrait.svg"}
+                        alt={b.author}
+                        className="size-5 rounded-full object-cover border border-[#D4AF37]/60"
+                      />
+                      <span className="font-semibold text-xs text-[#F7DF8B] truncate max-w-[140px]">
+                        By {b.author}
+                      </span>
+                    </Link>
 
-                      <div className="flex items-center justify-between text-xs">
-                        <Link
-                          href={b.slug ? `/books/${b.slug}` : "/books"}
-                          className="font-bold text-[#F7DF8B] hover:underline inline-flex items-center gap-1"
-                        >
-                          <BookOpen className="size-3.5 text-[#D4AF37]" />
-                          Read Sample Excerpt →
-                        </Link>
-                      </div>
-                    </div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white/70">
+                      <Star className="size-3 fill-current text-[#D4AF37]" />
+                      {b.rating.toFixed(1)}
+                    </span>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleViewOverview(b)}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gold-gradient py-2.5 px-4 text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
+                  >
+                    <BookOpen className="size-3.5 fill-current" />
+                    <span>View Book Overview</span>
+                    <ExternalLink className="size-3" />
+                  </button>
                 </div>
               </div>
             );
@@ -1405,8 +1476,34 @@ export function PodcastAndHotSeatSection({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {episodes.slice(0, 2).map((ep, idx) => (
+          <div className="grid grid-cols-1 gap-6">
+            {episodes.length === 0 ? (
+              <div className="rounded-2xl bg-[#121212] border border-[#D4AF37]/35 p-8 text-center space-y-3">
+                <Headphones className="size-10 text-[#D4AF37] mx-auto animate-pulse" />
+                <h3 className="font-serif-display text-xl font-bold text-[#FAF8F3]">
+                  LVN Studio Broadcasts &amp; Podcasts
+                </h3>
+                <p className="text-xs text-white/70 max-w-lg mx-auto">
+                  Author podcast episodes and in-depth audio sessions are currently in production. Listen live via our 24/7 radio studio or tune in on Spotify.
+                </p>
+                <div className="pt-2 flex justify-center gap-3">
+                  <Link
+                    href="/live"
+                    className="rounded-full bg-gold-gradient px-5 py-2 text-xs font-bold text-[#050505] hover:brightness-110"
+                  >
+                    Tune into Live Studio Radio
+                  </Link>
+                  <a
+                    href={SPOTIFY_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-[#D4AF37]/50 px-5 py-2 text-xs font-bold text-[#F7DF8B] hover:bg-white/5"
+                  >
+                    Follow on Spotify
+                  </a>
+                </div>
+              </div>
+            ) : episodes.slice(0, 2).map((ep, idx) => (
               <div
                 key={ep.id}
                 className="rounded-2xl bg-[#121212] border border-[#D4AF37]/35 p-6 flex flex-col justify-between gap-4 hover:border-[#F7DF8B] transition-all"
@@ -2167,72 +2264,7 @@ export function MembershipNewsletterPartnersCtaSection() {
 
   return (
     <div className="space-y-20 py-16 sm:py-20">
-      {/* 1. Become a Member */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl bg-white border border-[#D4AF37]/35 p-8 sm:p-12 shadow-md">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#AA7C11]">
-              Membership
-            </p>
-            <h2 className="font-serif-display text-3xl sm:text-4xl font-bold text-[#080808] mt-1">
-              Become a Member of the Network
-            </h2>
-            <p className="text-sm sm:text-base text-neutral-600 mt-2 leading-relaxed">
-              Join a community of authors, publishers, and devoted readers. A
-              free account unlocks book publishing, submission tracking, and
-              priority consideration for on-air features.
-            </p>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl bg-[#FAF8F3] border border-[#D4AF37]/30 p-5">
-              <BookOpen className="size-6 text-[#AA7C11]" />
-              <h3 className="font-serif-display text-lg font-bold text-[#080808] mt-3">
-                Publish Your Book
-              </h3>
-              <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
-                Submit your book to our community shelf with cover art, ISBN,
-                and direct purchase links.
-              </p>
-            </div>
-            <div className="rounded-2xl bg-[#FAF8F3] border border-[#D4AF37]/30 p-5">
-              <Mic2 className="size-6 text-[#AA7C11]" />
-              <h3 className="font-serif-display text-lg font-bold text-[#080808] mt-3">
-                Get On Air
-              </h3>
-              <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
-                Pitch your title for live interviews, readings, and seasonal
-                author showcases.
-              </p>
-            </div>
-            <div className="rounded-2xl bg-[#FAF8F3] border border-[#D4AF37]/30 p-5">
-              <Users className="size-6 text-[#AA7C11]" />
-              <h3 className="font-serif-display text-lg font-bold text-[#080808] mt-3">
-                Join the Community
-              </h3>
-              <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
-                Save favourite books, follow authors, and receive early
-                invitations to live broadcast events.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/auth?mode=register"
-              className="rounded-full bg-[#080808] px-6 py-3 text-xs font-bold text-[#F7DF8B] border border-[#D4AF37]/40 hover:bg-gold-gradient hover:text-[#050505] transition-all"
-            >
-              Create Your Free Account
-            </Link>
-            <Link
-              href="/auth"
-              className="rounded-full border border-[#080808]/25 px-6 py-3 text-xs font-semibold text-[#080808] hover:border-[#D4AF37] transition-colors"
-            >
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Membership section removed per design request */}
 
       {/* 2. Newsletter Split Card */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

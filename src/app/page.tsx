@@ -4,7 +4,6 @@ import {
   AuthorPromoBanner,
   DigitalMagazineShowcaseSection,
   GenreAndFounderSpotlightSection,
-  LiveVideoStageSection,
   MeetOurHostsSection,
   MembershipNewsletterPartnersCtaSection,
   OnTheShelfDirectorySection,
@@ -56,10 +55,7 @@ export default function HomePage() {
       {/* 9. Past broadcasts — animated carousel */}
       <PastBroadcastsSection episodes={broadcasts} />
 
-      {/* 10. Live video stage */}
-      <LiveVideoStageSection />
-
-      {/* 11. Podcast feed & In the Hot Seat */}
+      {/* 10. Podcast feed & In the Hot Seat */}
       <PodcastAndHotSeatSection episodes={broadcasts} />
 
       {/* 12. Digital magazine */}

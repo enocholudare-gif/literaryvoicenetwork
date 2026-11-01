@@ -225,6 +225,18 @@ export function seedDatabase(db: DatabaseSync): void {
       now
     );
 
+    
+    // 9 New Authors for Featured Editorial & Magazine Books
+    insertUser.run("user-author-tony", "tony.rebeiro@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-david", "david.sheldon@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-ayn", "ayn.sullivan@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-kenneth", "kenneth.bliss@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-erica", "erica.elliott@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-stacey", "stacey.horn@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-lynn", "lynn.slaughter@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-graham", "graham.wilson@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-lou", "lou.lipsitz@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+
     // Registered Member / Reader
     insertUser.run(
       "user-member-nadia",
@@ -268,8 +280,8 @@ export function seedDatabase(db: DatabaseSync): void {
         instagram: "https://instagram.com/literaryvoicesnetwork",
         goodreads: "https://goodreads.com",
       }),
-      1,
-      1,
+      0,
+      0,
       now,
       now
     );
@@ -502,6 +514,188 @@ export function seedDatabase(db: DatabaseSync): void {
       now
     );
 
+    
+    // 9 New Author Profiles
+    insertProfile.run(
+      "profile-author-tony",
+      "user-author-tony",
+      "tony-rebeiro",
+      "Tony Rebeiro",
+      null,
+      "Author of AI: An Unlikely War",
+      "Tony Rebeiro is a forward-thinking author exploring the intersection of human civilization, artificial intelligence, and strategic geopolitics.",
+      "/media/avatars/tony-rebeiro.jpg",
+      "/media/banners/editorial-desk.svg",
+      "San Francisco, California",
+      "https://www.amazon.com/dp/B0HFZJ59RF",
+      JSON.stringify(["Editorial", "Science & Technology", "Geopolitics"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B0HFZJ59RF" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-david",
+      "user-author-david",
+      "david-sheldon",
+      "David R. Sheldon",
+      null,
+      "Sommelier & Author of You Can Wine Too",
+      "David R. Sheldon is an author, wine enthusiast, and sommelier whose approachable guide invites readers into the rich sensory world of winemaking and tasting.",
+      "/media/avatars/david-sheldon.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Napa Valley, California",
+      "https://www.amazon.com/dp/B0DXCLXWN6",
+      JSON.stringify(["Editorial", "Wine & Culinary", "Lifestyle"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B0DXCLXWN6" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-ayn",
+      "user-author-ayn",
+      "ayn-cates-sullivan",
+      "Ayn Cates Sullivan, PhD",
+      null,
+      "Award-Winning Mythologist & Author of Legends of the Grail",
+      "Ayn Cates Sullivan, PhD, is an award-winning mythologist, spiritual scholar, and poet whose works bring ancient Celtic legends and Grail mythos alive for modern readers.",
+      "/media/avatars/ayn-cates-sullivan.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Ojai, California",
+      "https://www.amazon.com/dp/B075C3XPPS",
+      JSON.stringify(["Editorial", "Mythology", "Spiritual Literature"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B075C3XPPS" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-kenneth",
+      "user-author-kenneth",
+      "kenneth-bliss",
+      "Kenneth Bliss",
+      null,
+      "Novelist & Author of Canthany Rising",
+      "Kenneth Bliss creates immersive speculative and fantasy epics centered on resilience, honour, and celestial realms.",
+      "/media/avatars/kenneth-bliss.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Seattle, Washington",
+      "https://www.amazon.com/dp/B0GZ598XPX",
+      JSON.stringify(["Editorial", "Fantasy", "Speculative Fiction"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B0GZ598XPX" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-erica",
+      "user-author-erica",
+      "erica-elliott",
+      "Erica M. Elliott, M.D.",
+      null,
+      "Physician, Author & Cross-Cultural Healer",
+      "Erica M. Elliott, M.D., is a physician and memoirist whose profound experiences living with the Navajo and practicing environmental medicine inspired From Doctor to Healer.",
+      "/media/avatars/erica-elliott.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Santa Fe, New Mexico",
+      "https://www.amazon.com/dp/B0FR6KHC3Y",
+      JSON.stringify(["Editorial", "Memoir", "Medicine & Healing"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B0FR6KHC3Y" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-stacey",
+      "user-author-stacey",
+      "stacey-horn",
+      "Dr. Stacey L. Horn",
+      null,
+      "Executive Coach & Author of LEAP: Breaking Leadership Barriers",
+      "Dr. Stacey L. Horn is a leadership coach, strategist, and executive consultant guiding organizations and individuals through transformational breakthroughs.",
+      "/media/avatars/stacey-horn.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Chicago, Illinois",
+      "https://www.amazon.com/dp/B0H8R4381Z",
+      JSON.stringify(["Editorial", "Leadership", "Business & Strategy"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B0H8R4381Z" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-lynn",
+      "user-author-lynn",
+      "lynn-slaughter",
+      "Lynn Slaughter",
+      null,
+      "Award-Winning Mystery & YA Novelist",
+      "Lynn Slaughter is a former professional dancer and award-winning author of compelling mystery fiction and coming-of-age novels, including Missed Cue.",
+      "/media/avatars/lynn-slaughter.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Louisville, Kentucky",
+      "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX",
+      JSON.stringify(["Editorial", "Mystery", "Young Adult"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-graham",
+      "user-author-graham",
+      "graham-wilson",
+      "Graham Wilson",
+      null,
+      "Novelist & Thriller Writer",
+      "Graham Wilson crafts atmospheric, high-stakes psychological thrillers and crime sagas filled with tension, deception, and retribution.",
+      "/media/avatars/graham-wilson.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Sydney, Australia",
+      "https://www.amazon.com/dp/B0HC5KSH8J",
+      JSON.stringify(["Editorial", "Thriller", "Crime Fiction"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/B0HC5KSH8J" }),
+      1,
+      1,
+      now,
+      now
+    );
+
+    insertProfile.run(
+      "profile-author-lou",
+      "user-author-lou",
+      "lou-lipsitz",
+      "Lou Lipsitz",
+      null,
+      "Acclaimed Poet, Psychotherapist & Political Scientist",
+      "Lou Lipsitz was an acclaimed American poet, psychotherapist, and professor of political science at UNC Chapel Hill whose evocative lyricism shines in Seeking the Hook.",
+      "/media/avatars/lou-lipsitz.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Chapel Hill, North Carolina",
+      "https://www.amazon.com/dp/1439238251",
+      JSON.stringify(["Magazine", "Poetry", "Literary Arts"]),
+      JSON.stringify({ amazon: "https://www.amazon.com/dp/1439238251" }),
+      1,
+      1,
+      now,
+      now
+    );
+
     // Member Profile
     insertProfile.run(
       "profile-member-nadia",
@@ -629,7 +823,7 @@ export function seedDatabase(db: DatabaseSync): void {
     // -------------------------------------------------------------------------
     // 5. BOOKS (Including Administrator's Own Published Book + Member/Author Books)
     // -------------------------------------------------------------------------
-    const insertBook = db.prepare(`
+    const insertBookStmt = db.prepare(`
       INSERT INTO books (
         id, slug, author_profile_id, submitted_by_user_id, title, subtitle,
         isbn, description, excerpt, cover_url, genre, secondary_genres_json,
@@ -637,13 +831,390 @@ export function seedDatabase(db: DatabaseSync): void {
         retailer_links_json, manuscript_distribution_authorized, full_manuscript_url,
         is_featured, editorial_recommendation, is_community_member_book,
         status, scheduled_for, published_at, seo_title, seo_description,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        created_at, updated_at, view_count
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
+    const insertBook = {
+      run: (
+        id: any, slug: any, author_profile_id: any, submitted_by_user_id: any, title: any, subtitle: any,
+        isbn: any, description: any, excerpt: any, cover_url: any, genre: any, secondary_genres_json: any,
+        format: any, publisher: any, publication_date: any, page_count: any, language: any,
+        retailer_links_json: any, manuscript_distribution_authorized: any, full_manuscript_url: any,
+        is_featured: any, editorial_recommendation: any, is_community_member_book: any,
+        status: any, scheduled_for: any, published_at: any, seo_title: any, seo_description: any,
+        created_at: any, updated_at: any, view_count: number = 850
+      ) => {
+        return insertBookStmt.run(
+          id, slug, author_profile_id, submitted_by_user_id, title, subtitle,
+          isbn, description, excerpt, cover_url, genre, secondary_genres_json,
+          format, publisher, publication_date, page_count, language,
+          retailer_links_json, manuscript_distribution_authorized, full_manuscript_url,
+          is_featured, editorial_recommendation, is_community_member_book,
+          status, scheduled_for, published_at, seo_title, seo_description,
+          created_at, updated_at, view_count
+        );
+      }
+    };
 
     // =========================================================================
     // FEATURED BESTSELLERS & VERIFIED BOOKS (Match Homepage 3D Shelf & Directory)
     // =========================================================================
+
+    
+    // =========================================================================
+    // FEATURED EDITORIAL & MAGAZINE BOOKS (Requested by LVN Network Board)
+    // =========================================================================
+
+    // Editorial Book 1: AI: An Unlikely War by Tony Rebeiro
+    insertBook.run(
+      "book-ai-an-unlikely-war",
+      "ai-an-unlikely-war",
+      "profile-author-tony",
+      "user-author-tony",
+      "AI: An Unlikely War",
+      "The Battle for the Soul of Human Thought",
+      "978-B0HFZJ59RF",
+      "Tony Rebeiro takes readers into a compelling, high-stakes investigation of human intellect, autonomous systems, and societal evolution. An urgent editorial inquiry into technology and destiny.",
+      "In the silent corridors of algorithmic power, the opening salvos of the twenty-first century were not fired by cannons, but by lines of recursive reasoning.",
+      "/media/covers/the-first.jpg",
+      "Editorial",
+      JSON.stringify(["Science & Technology", "Geopolitics", "Essays & Criticism"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-08-15",
+      340,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B0HFZJ59RF",
+        goodreads: "https://www.goodreads.com/search?q=AI+An+Unlikely+War+Tony+Rebeiro",
+        bookshop: "https://bookshop.org/search?keywords=Tony+Rebeiro",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-31T12:00:00.000Z",
+      "AI: An Unlikely War by Tony Rebeiro | Literary Voices Network",
+      "Discover AI: An Unlikely War by Tony Rebeiro on Literary Voices Network.",
+      now,
+      now,
+      1420
+    );
+
+    // Editorial Book 2: You Can Wine Too by David R. Sheldon
+    insertBook.run(
+      "book-you-can-wine-too",
+      "you-can-wine-too",
+      "profile-author-david",
+      "user-author-david",
+      "You Can Wine Too",
+      "An Unpretentious Guide to the Art of Wine Tasting",
+      "978-B0DXCLXWN6",
+      "David R. Sheldon demystifies the vineyard, cellar, and glass in this vibrant, warm-hearted guide to appreciating wine with joy, nuance, and curiosity.",
+      "Wine begins not in the crystal goblet, but in the soil after rain. Every vintage holds the memories of the sun, the drought, and the hands that gathered the harvest.",
+      "/media/covers/second-image.jpg",
+      "Editorial",
+      JSON.stringify(["Wine & Culinary", "Lifestyle", "Culture"]),
+      "Paperback",
+      "LVN Imprint Editions",
+      "2026-07-20",
+      280,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B0DXCLXWN6",
+        goodreads: "https://www.goodreads.com/search?q=You+Can+Wine+Too+David+Sheldon",
+        bookshop: "https://bookshop.org/search?keywords=David+R+Sheldon",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-30T12:00:00.000Z",
+      "You Can Wine Too by David R. Sheldon | Literary Voices Network",
+      "Read You Can Wine Too by David R. Sheldon on Literary Voices Network.",
+      now,
+      now,
+      1890
+    );
+
+    // Editorial Book 3: Legends of the Grail by Ayn Cates Sullivan, PhD
+    insertBook.run(
+      "book-legends-of-the-grail",
+      "legends-of-the-grail",
+      "profile-author-ayn",
+      "user-author-ayn",
+      "Legends of the Grail",
+      "Stories of Celtic Goddesses & Mystic Archetypes",
+      "978-B075C3XPPS",
+      "Award-winning mythologist Ayn Cates Sullivan, PhD, weaves vivid retellings and profound spiritual insights exploring the sacred feminine and timeless quest of Celtic lore.",
+      "The grail is not a distant golden relic lost in forgotten chapels, but an awakening spark that resides within the chambers of our own living memory.",
+      "/media/covers/third-image.jpg",
+      "Editorial",
+      JSON.stringify(["Mythology", "Spiritual Literature", "Historical Lore"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-06-18",
+      320,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B075C3XPPS",
+        goodreads: "https://www.goodreads.com/search?q=Legends+of+the+Grail+Ayn+Cates+Sullivan",
+        bookshop: "https://bookshop.org/search?keywords=Ayn+Cates+Sullivan",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-29T12:00:00.000Z",
+      "Legends of the Grail by Ayn Cates Sullivan, PhD | Literary Voices Network",
+      "Discover Legends of the Grail by Ayn Cates Sullivan, PhD on Literary Voices Network.",
+      now,
+      now,
+      1640
+    );
+
+    // Editorial Book 4: Canthany Rising by Kenneth Bliss
+    insertBook.run(
+      "book-canthany-rising",
+      "canthany-rising",
+      "profile-author-kenneth",
+      "user-author-kenneth",
+      "Canthany Rising",
+      "Chronicles of the High Realms",
+      "978-B0GZ598XPX",
+      "Kenneth Bliss transports readers to an expansive high-fantasy realm of oathkeepers, fractured alliances, and mystical constellations.",
+      "Above the northern ridge, the towers of Canthany caught the twilight before the valley knew the sun was gone. It was there that our vigils always began.",
+      "/media/covers/fourth-image.jpg",
+      "Editorial",
+      JSON.stringify(["Fantasy", "Speculative Fiction", "Epic Novel"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-05-12",
+      410,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B0GZ598XPX",
+        goodreads: "https://www.goodreads.com/search?q=Canthany+Rising+Kenneth+Bliss",
+        bookshop: "https://bookshop.org/search?keywords=Kenneth+Bliss",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-28T12:00:00.000Z",
+      "Canthany Rising by Kenneth Bliss | Literary Voices Network",
+      "Read Canthany Rising by Kenneth Bliss on Literary Voices Network.",
+      now,
+      now,
+      1210
+    );
+
+    // Editorial Book 5: From Doctor to Healer by Erica M. Elliott, M.D.
+    insertBook.run(
+      "book-from-doctor-to-healer",
+      "from-doctor-to-healer",
+      "profile-author-erica",
+      "user-author-erica",
+      "From Doctor to Healer",
+      "A Cross-Cultural Physician's Odyssey into True Medicine",
+      "978-B0FR6KHC3Y",
+      "Physician and author Erica M. Elliott, M.D., shares an unforgettable memoir detailing her journey from conventional clinical training to deep healing connections across indigenous communities.",
+      "True healing is an act of listening. In the high desert of the Navajo Nation, I learned that a patient's story holds far greater diagnostic truth than any chart.",
+      "/media/covers/fifth-image.jpg",
+      "Editorial",
+      JSON.stringify(["Memoir", "Medicine & Healing", "Biography"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-04-14",
+      350,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B0FR6KHC3Y",
+        goodreads: "https://www.goodreads.com/search?q=From+Doctor+to+Healer+Erica+Elliott",
+        bookshop: "https://bookshop.org/search?keywords=Erica+Elliott",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-27T12:00:00.000Z",
+      "From Doctor to Healer by Erica M. Elliott, M.D. | Literary Voices Network",
+      "Discover From Doctor to Healer by Erica M. Elliott, M.D. on Literary Voices Network.",
+      now,
+      now,
+      1750
+    );
+
+    // Editorial Book 6: LEAP: Breaking Leadership Barriers by Dr. Stacey L. Horn
+    insertBook.run(
+      "book-leap-breaking-leadership-barriers",
+      "leap-breaking-leadership-barriers",
+      "profile-author-stacey",
+      "user-author-stacey",
+      "LEAP: Breaking Leadership Barriers",
+      "Overcoming Inertia and Mastering Executive Influence",
+      "978-B0H8R4381Z",
+      "Dr. Stacey L. Horn presents a masterclass in modern executive resilience, systemic leadership transformation, and overcoming institutional inertia.",
+      "Leadership is not a title bestowed by an organization; it is the deliberate courage to step into ambiguity and create clarity for those who follow.",
+      "/media/covers/sixth-image.jpg",
+      "Editorial",
+      JSON.stringify(["Leadership", "Business Strategy", "Personal Development"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-03-22",
+      290,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B0H8R4381Z",
+        goodreads: "https://www.goodreads.com/search?q=LEAP+Dr+Stacey+Horn",
+        bookshop: "https://bookshop.org/search?keywords=Dr+Stacey+Horn",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-26T12:00:00.000Z",
+      "LEAP: Breaking Leadership Barriers by Dr. Stacey L. Horn | Literary Voices Network",
+      "Read LEAP by Dr. Stacey L. Horn on Literary Voices Network.",
+      now,
+      now,
+      2100
+    );
+
+    // Editorial Book 7: Missed Cue by Lynn Slaughter
+    insertBook.run(
+      "book-missed-cue",
+      "missed-cue",
+      "profile-author-lynn",
+      "user-author-lynn",
+      "Missed Cue",
+      "A Gripping Mystery of Performing Arts and Secrets",
+      "978-B0CB72TDVX",
+      "Award-winning novelist Lynn Slaughter delivers a propulsive backstage thriller set in the competitive theater world, full of rivalry, secrets, and dramatic suspense.",
+      "The velvet curtain rose to silence. But before the first measure echoed through the hall, the missing cue backstage had already sealed our fate.",
+      "/media/covers/seventh-image.jpg",
+      "Editorial",
+      JSON.stringify(["Mystery", "Theater & Arts", "Suspense"]),
+      "Paperback",
+      "LVN Imprint Editions",
+      "2026-02-18",
+      310,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/Missed-Cue-Lynn-Slaughter-ebook/dp/B0CB72TDVX",
+        goodreads: "https://www.goodreads.com/search?q=Missed+Cue+Lynn+Slaughter",
+        bookshop: "https://bookshop.org/search?keywords=Lynn+Slaughter",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-25T12:00:00.000Z",
+      "Missed Cue by Lynn Slaughter | Literary Voices Network",
+      "Discover Missed Cue by Lynn Slaughter on Literary Voices Network.",
+      now,
+      now,
+      1980
+    );
+
+    // Editorial Book 8: Vengeance by Graham Wilson
+    insertBook.run(
+      "book-vengeance",
+      "vengeance",
+      "profile-author-graham",
+      "user-author-graham",
+      "Vengeance",
+      "A Dark Psychological Thriller",
+      "978-B0HC5KSH8J",
+      "Graham Wilson crafts a dark, atmospheric psychological thriller of long-buried betrayals, high stakes, and unrelenting reckoning.",
+      "Some debts cannot be paid in currency or apology; they wait in the shadows of the past until the hour of reckoning inevitably strikes.",
+      "/media/covers/ninth-image.jpg",
+      "Editorial",
+      JSON.stringify(["Thriller", "Crime Fiction", "Psychological Suspense"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-01-10",
+      370,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/B0HC5KSH8J",
+        goodreads: "https://www.goodreads.com/search?q=Vengeance+Graham+Wilson",
+        bookshop: "https://bookshop.org/search?keywords=Graham+Wilson",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-24T12:00:00.000Z",
+      "Vengeance by Graham Wilson | Literary Voices Network",
+      "Read Vengeance by Graham Wilson on Literary Voices Network.",
+      now,
+      now,
+      1530
+    );
+
+    // Magazine Book: Seeking the Hook: New & Selected Poems by Lou Lipsitz
+    insertBook.run(
+      "book-seeking-the-hook",
+      "seeking-the-hook",
+      "profile-author-lou",
+      "user-author-lou",
+      "Seeking the Hook",
+      "New & Selected Poems",
+      "978-1439238257",
+      "Acclaimed poet Lou Lipsitz offers a luminous, honest collection of poetry exploring memory, love, aging, psychotherapy, and the transcendent beauty of daily life.",
+      "The hook is what catches you when you are not paying attention—the sudden turn of phrase, the glimpse of a face across an autumn street, the quiet truth.",
+      "/media/covers/maga1.jpg",
+      "Magazine",
+      JSON.stringify(["Poetry", "Literary Arts", "Contemporary Poetics"]),
+      "Paperback",
+      "LVN Magazine Editions",
+      "2026-09-01",
+      160,
+      "English",
+      JSON.stringify({
+        amazon: "https://www.amazon.com/dp/1439238251",
+        goodreads: "https://www.goodreads.com/search?q=Seeking+the+Hook+Lou+Lipsitz",
+        bookshop: "https://bookshop.org/search?keywords=Lou+Lipsitz",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-10-31T12:00:00.000Z",
+      "Seeking the Hook by Lou Lipsitz | Literary Voices Network",
+      "Discover Seeking the Hook by Lou Lipsitz on Literary Voices Network Magazine.",
+      now,
+      now,
+      1340
+    );
 
     // 1. Pride and Prejudice by Jane Austen
     insertBook.run(
@@ -1532,129 +2103,13 @@ export function seedDatabase(db: DatabaseSync): void {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    insertBroadcast.run(
-      "bc-meridian-ep42",
-      "the-meridian-conversation-ep-42-amara-osei",
-      "The Meridian Conversation",
-      42,
-      "Maritime Archives & Polyphonic Fiction with Amara Osei",
-      "Episode 42 · Hosted by Executive Founder & CEO",
-      "Founding Publisher Executive Founder & CEO welcomes novelist Amara Osei into the LVN studio for an extended conversation on 'The Saltwater Ledger', West African printing presses, and the music of historical prose.",
-      "profile-admin-eleanor",
-      "Executive Founder & CEO",
-      "profile-author-amara",
-      "Amara Osei",
-      "book-saltwater-ledger",
-      "audio",
-      0,
-      "",
-      "/broadcasts/the-meridian-conversation-ep-42-amara-osei",
-      "",
-      "/media/audio/lvn-studio-preview.wav",
-      "LVN Studio",
-      "/media/covers/the-saltwater-ledger.svg",
-      52,
-      "2026-10-19T18:00:00.000Z",
-      "2026-10-19T18:52:00.000Z",
-      "America/New_York",
-      1,
-      "published",
-      now,
-      now
-    );
+    // Removed dummy broadcast bc-meridian-ep42 per request
 
-    insertBroadcast.run(
-      "bc-first-editions-ep18",
-      "first-editions-live-ep-18-julian-thorne",
-      "First Editions Live",
-      18,
-      "Acoustic Architecture & Speculative Form with Julian Thorne",
-      "Episode 18 · Hosted by Marcus Sterling",
-      "Senior Commissioning Editor Marcus Sterling speaks with Julian Thorne about recording vanishing civic interiors and structuring 'Atlas of Quiet Cities'.",
-      "profile-editor-marcus",
-      "Marcus Sterling",
-      "profile-author-julian",
-      "Julian Thorne",
-      "book-atlas-of-quiet-cities",
-      "podcast",
-      0,
-      "",
-      "/broadcasts/first-editions-live-ep-18-julian-thorne",
-      "",
-      "/media/audio/lvn-studio-preview.wav",
-      "LVN Studio",
-      "/media/covers/atlas-of-quiet-cities.svg",
-      46,
-      "2026-10-12T19:00:00.000Z",
-      "2026-10-12T19:46:00.000Z",
-      "Europe/London",
-      1,
-      "published",
-      now,
-      now
-    );
+    // Removed dummy broadcast bc-first-editions-ep18 per request
 
-    insertBroadcast.run(
-      "bc-poetics-table-ep09",
-      "the-translation-table-ep-09-claire-moreau",
-      "The Translation Table",
-      9,
-      "Translating Alpine Dialects & Bilingual Poetics",
-      "Episode 9 · Hosted by Executive Founder & CEO",
-      "Claire Moreau reads in French and English from 'Winter Harmonics' and examines the craft of lyric translation.",
-      "profile-admin-eleanor",
-      "Executive Founder & CEO",
-      "profile-author-claire",
-      "Claire Moreau",
-      "book-winter-harmonics",
-      "audio",
-      0,
-      "",
-      "/broadcasts/the-translation-table-ep-09-claire-moreau",
-      "",
-      "/media/audio/lvn-studio-preview.wav",
-      "LVN Studio",
-      "/media/covers/winter-harmonics.svg",
-      39,
-      "2026-10-04T17:00:00.000Z",
-      "2026-10-04T17:39:00.000Z",
-      "America/New_York",
-      0,
-      "published",
-      now,
-      now
-    );
+    // Removed dummy broadcast bc-poetics-table-ep09 per request
 
-    insertBroadcast.run(
-      "bc-upcoming-nordic-presses",
-      "the-meridian-conversation-ep-43-soren-lindqvist",
-      "The Meridian Conversation",
-      43,
-      "Upcoming Broadcast: Lead Type & Independent Letters with Søren Lindqvist",
-      "Episode 43 · Live Studio Conversation",
-      "Join Executive Founder & CEO and historian Søren Lindqvist for a live studio broadcast exploring how small cooperative printshops transformed modern European literature.",
-      "profile-admin-eleanor",
-      "Executive Founder & CEO",
-      "profile-author-soren",
-      "Søren Lindqvist",
-      "book-republic-of-typesetters",
-      "video",
-      0,
-      "",
-      "",
-      "",
-      "/media/audio/lvn-studio-preview.wav",
-      "LVN Studio",
-      "/media/covers/republic-of-typesetters.svg",
-      60,
-      "2026-11-05T18:00:00.000Z",
-      "2026-11-05T19:00:00.000Z",
-      "America/New_York",
-      1,
-      "scheduled",
-      now,
-      now
-    );
+    // Removed dummy broadcast bc-upcoming-nordic-presses per request
 
     // -------------------------------------------------------------------------
     // 9. LITERARY EVENTS & REGISTRATIONS
