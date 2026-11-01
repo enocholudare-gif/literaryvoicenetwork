@@ -19,11 +19,13 @@ import { getSiteSettings, listBroadcasts } from "@/lib/services/platform";
 import { listPublicArticles, listPublicBooks } from "@/lib/services/publishing";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default function HomePage() {
   const settings = getSiteSettings();
-  const { items: allBooks } = listPublicBooks();
-  const { items: allArticles } = listPublicArticles();
+  const { items: allBooks } = listPublicBooks({ pageSize: 100 });
+  const { items: allArticles } = listPublicArticles({ pageSize: 50 });
   const broadcasts = listBroadcasts();
 
   return (

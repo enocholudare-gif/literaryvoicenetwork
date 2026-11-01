@@ -7,6 +7,8 @@ import { listPublicArticles, listPublicBooks } from "@/lib/services/publishing";
 import type { ArticleType } from "@/lib/db/types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 interface MagazinePageProps {
   searchParams: Promise<{
@@ -34,7 +36,7 @@ export default async function MagazinePage({ searchParams }: MagazinePageProps) 
   });
 
   const issues = listEditorialIssues();
-  const { items: magazineBooks } = listPublicBooks({ genre: "Magazine" });
+  const { items: magazineBooks } = listPublicBooks({ genre: "Magazine", pageSize: 50 });
   const categories = listCategories().filter(
     (c) => c.category_scope === "magazine" || c.category_scope === "both"
   );

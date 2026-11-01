@@ -14,6 +14,39 @@ const FALLBACK_COVER = "/media/covers/pride-and-prejudice.png";
 export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
+  const [displayList, setDisplayList] = useState<Book[]>(books);
+
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const res = await fetch("/api/publishing?scope=public-books&pageSize=20", { cache: "no-store" });
+        const data = await res.json();
+        let apiBooks: Book[] = data.items || [];
+        try {
+          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
+          }
+        } catch {}
+        if (apiBooks.length > 0) {
+          setDisplayList(apiBooks.slice(0, 4));
+        }
+      } catch {
+        try {
+          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            setDisplayList([...stored, ...books].slice(0, 4));
+          }
+        } catch {}
+      }
+    };
+
+    fetchLatest();
+
+    const handleCustomPub = () => fetchLatest();
+    window.addEventListener("lvn-book-published", handleCustomPub);
+    return () => window.removeEventListener("lvn-book-published", handleCustomPub);
+  }, [books]);
 
   useEffect(() => {
     const el = ref.current;
@@ -68,7 +101,7 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
-          {books.map((book, i) => (
+          {displayList.map((book, i) => (
             <div
               key={book.id}
               className="transition-all duration-700 ease-out"

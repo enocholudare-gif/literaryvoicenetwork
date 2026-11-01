@@ -6,6 +6,8 @@ import { listPublicBooks } from "@/lib/services/publishing";
 import type { BookFormat } from "@/lib/db/types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 interface BooksPageProps {
   searchParams: Promise<{
@@ -31,7 +33,7 @@ export default async function BooksDirectoryPage({ searchParams }: BooksPageProp
     format,
     sortBy,
     page,
-    pageSize: 12,
+    pageSize: 48,
   });
 
   const formats = ["All", "Hardcover", "Paperback", "eBook", "Audiobook", "Multi-format"];

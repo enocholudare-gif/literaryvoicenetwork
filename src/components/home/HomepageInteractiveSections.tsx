@@ -1101,13 +1101,48 @@ export function LiveVideoStageSection() {
 /* 7. TRENDING BOOKS ON THE NETWORK — 3D FLIP CARDS                           */
 /* -------------------------------------------------------------------------- */
 export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
+  const [liveDbBooks, setLiveDbBooks] = useState<Book[]>(dbBooks);
+
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const res = await fetch("/api/publishing?scope=public-books&pageSize=100", { cache: "no-store" });
+        const data = await res.json();
+        let apiBooks: Book[] = data.items || [];
+        try {
+          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
+          }
+        } catch {}
+        if (apiBooks.length > 0) {
+          setLiveDbBooks(apiBooks);
+        }
+      } catch {
+        try {
+          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            setLiveDbBooks((prev) => [...stored, ...prev.filter((p) => !stored.some((s) => s.id === p.id))]);
+          }
+        } catch {}
+      }
+    };
+
+    fetchLatest();
+
+    const handleCustomPub = () => fetchLatest();
+    window.addEventListener("lvn-book-published", handleCustomPub);
+    return () => window.removeEventListener("lvn-book-published", handleCustomPub);
+  }, []);
+
+  const currentDbBooks = liveDbBooks.length > 0 ? liveDbBooks : dbBooks;
   const mergedPool: TrendingNetworkBook[] = [
-    ...dbBooks.map((b, idx) => ({
+    ...currentDbBooks.map((b, idx) => ({
       id: b.id,
       rank: idx + 1,
       title: b.title,
       author: b.author_name || "LVN Author",
-      authorSlug: b.author_slug || "",
+      authorSlug: b.author_slug || (b.author_name ? b.author_name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : ""),
       authorAvatar: b.author_avatar || "/media/avatars/default-portrait.svg",
       slug: b.slug,
       genre: b.genre || "Editorial",
@@ -1119,7 +1154,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
       year: b.publication_date ? Number(b.publication_date.slice(0, 4)) || 2026 : 2026,
       pages: b.page_count || 320,
       genres: [b.genre, ...(b.secondary_genres || [])],
-      description: b.description || "",
+      description: b.description || "A featured title on the Literary Voices Network.",
       links: {
         amazon: b.retailer_links?.amazon || ("https://www.amazon.com/s?k=" + encodeURIComponent(b.title)),
         goodreads: b.retailer_links?.goodreads || ("https://www.goodreads.com/search?q=" + encodeURIComponent(b.title)),
@@ -1129,7 +1164,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
       },
     })),
     ...TRENDING_BOOKS_POOL,
-  ].filter((v, i, a) => a.findIndex((t) => t.title === v.title) === i).map((b, i) => ({ ...b, rank: i + 1 }));
+  ].filter((v, i, a) => a.findIndex((t) => t.title.toLowerCase() === v.title.toLowerCase()) === i).map((b, i) => ({ ...b, rank: i + 1 }));
 
   const [books, setBooks] = useState<TrendingNetworkBook[]>(
     mergedPool.slice(0, 6)
@@ -1139,12 +1174,14 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
   const [selectedBookForOverview, setSelectedBookForOverview] = useState<TrendingNetworkBook | null>(null);
 
   useEffect(() => {
+    const pool = mergedPool.length > 0 ? mergedPool : TRENDING_BOOKS_POOL;
+    setBooks(pool.slice(0, 6));
     const initViews: Record<string, number> = {};
-    mergedPool.forEach((b) => {
+    pool.forEach((b) => {
       initViews[b.id] = b.viewCount || 1200;
     });
-    setViewsMap(initViews);
-  }, [dbBooks]);
+    setViewsMap((prev) => ({ ...initViews, ...prev }));
+  }, [liveDbBooks.length, dbBooks.length]);
 
   const handleShuffle = () => {
     const pool = mergedPool.length > 0 ? mergedPool : TRENDING_BOOKS_POOL;
@@ -1452,8 +1489,43 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
 export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [query, setQuery] = useState("");
+  const [liveBooks, setLiveBooks] = useState<Book[]>(books);
 
-  const filtered = books.filter((b) => {
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const res = await fetch("/api/publishing?scope=public-books&pageSize=100", { cache: "no-store" });
+        const data = await res.json();
+        let apiBooks: Book[] = data.items || [];
+        try {
+          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
+          }
+        } catch {}
+        if (apiBooks.length > 0) {
+          setLiveBooks(apiBooks);
+        }
+      } catch {
+        try {
+          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            setLiveBooks([...stored, ...books]);
+          }
+        } catch {}
+      }
+    };
+
+    fetchLatest();
+
+    const handleCustomPub = () => fetchLatest();
+    window.addEventListener("lvn-book-published", handleCustomPub);
+    return () => window.removeEventListener("lvn-book-published", handleCustomPub);
+  }, [books]);
+
+  const activeBooks = liveBooks.length > 0 ? liveBooks : books;
+
+  const filtered = activeBooks.filter((b) => {
     const matchesGenre =
       selectedGenre === "All" ||
       b.genre.toLowerCase().includes(selectedGenre.toLowerCase());
@@ -1464,7 +1536,7 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
     return matchesGenre && matchesQuery;
   });
 
-  const displayBooks = (filtered.length > 0 ? filtered : books).slice(0, 5);
+  const displayBooks = (filtered.length > 0 ? filtered : activeBooks).slice(0, 5);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

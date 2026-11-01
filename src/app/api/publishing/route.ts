@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           (searchParams.get("sortBy") as "newest" | "title" | "editorial") ||
           "newest",
         page: Number(searchParams.get("page") || 1),
-        pageSize: Number(searchParams.get("pageSize") || 12),
+        pageSize: Number(searchParams.get("pageSize") || 100),
       });
       return NextResponse.json({ ok: true, ...data });
     }
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         articleType: (searchParams.get("articleType") as never) || undefined,
         categorySlug: searchParams.get("categorySlug") || undefined,
         page: Number(searchParams.get("page") || 1),
-        pageSize: Number(searchParams.get("pageSize") || 12),
+        pageSize: Number(searchParams.get("pageSize") || 100),
       });
       return NextResponse.json({ ok: true, ...data });
     }
