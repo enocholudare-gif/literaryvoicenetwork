@@ -70,10 +70,11 @@ export default function PublishPage() {
             title: title.trim(),
             subtitle: subtitle.trim(),
             authorName: authorName.trim(),
+            authorAvatar: authorAvatar.trim(),
             genre: category,
             format: format,
             coverUrl: coverUrl.trim() || "/media/covers/the-first.jpg",
-            description: description.trim(),
+            description: description.trim() || "A new submission awaiting editorial review on the Literary Voices Network.",
             retailerLinks: {
               amazon: bookLink.trim(),
               goodreads: goodreadsLink.trim(),

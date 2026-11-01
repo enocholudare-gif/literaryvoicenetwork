@@ -1136,6 +1136,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
   );
   const [viewsMap, setViewsMap] = useState<Record<string, number>>({});
   const [fallbackMap, setFallbackMap] = useState<Record<string, boolean>>({});
+  const [selectedBookForOverview, setSelectedBookForOverview] = useState<TrendingNetworkBook | null>(null);
 
   useEffect(() => {
     const initViews: Record<string, number> = {};
@@ -1154,7 +1155,11 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
     setBooks(shuffled);
   };
 
-  const handleViewOverview = (b: TrendingNetworkBook) => {
+  const handleOpenOverview = (b: TrendingNetworkBook) => {
+    setSelectedBookForOverview(b);
+  };
+
+  const handleProceedToAmazon = (b: TrendingNetworkBook) => {
     // Increment view count locally
     setViewsMap((prev) => ({
       ...prev,
@@ -1188,7 +1193,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
   };
 
   return (
-    <section className="bg-[#F3EFE4] border-y border-[#D4AF37]/30 py-20">
+    <section className="bg-[#F3EFE4] border-y border-[#D4AF37]/30 py-20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
           <div>
@@ -1241,8 +1246,11 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
                   </span>
                 </div>
 
-                {/* Floating Book Cover — Dominant realistic presentation */}
-                <div className="my-auto py-2 flex flex-col items-center">
+                {/* Floating Book Cover — Click to open overview modal */}
+                <div 
+                  onClick={() => handleOpenOverview(b)}
+                  className="my-auto py-2 flex flex-col items-center cursor-pointer"
+                >
                   <div className="animate-book-float relative w-full max-w-[210px] aspect-[2/3] rounded-2xl overflow-hidden border-2 border-[#D4AF37]/60 shadow-[0_22px_45px_rgba(0,0,0,0.9)] group-hover:border-[#F7DF8B] transition-transform duration-500">
                     <img
                       src={useFallback ? b.fallbackCover : b.coverUrl}
@@ -1260,7 +1268,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
                     />
                   </div>
 
-                  <h3 className="font-serif-display text-xl font-bold text-[#FAF8F3] text-center mt-5 line-clamp-1">
+                  <h3 className="font-serif-display text-xl font-bold text-[#FAF8F3] text-center mt-5 line-clamp-1 group-hover:text-[#F7DF8B] transition-colors">
                     {b.title}
                   </h3>
                 </div>
@@ -1291,7 +1299,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
 
                   <button
                     type="button"
-                    onClick={() => handleViewOverview(b)}
+                    onClick={() => handleOpenOverview(b)}
                     className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gold-gradient py-2.5 px-4 text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
                   >
                     <BookOpen className="size-3.5 fill-current" />
@@ -1304,6 +1312,136 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
           })}
         </div>
       </div>
+
+      {/* Book Details & Author Overview Modal */}
+      {selectedBookForOverview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div 
+            className="absolute inset-0" 
+            onClick={() => setSelectedBookForOverview(null)} 
+          />
+
+          <div className="relative w-full max-w-2xl bg-[#0d0d0d] border-2 border-[#D4AF37] rounded-3xl p-6 sm:p-8 shadow-[0_25px_70px_rgba(212,175,55,0.35)] text-[#FAF8F3] overflow-hidden z-10 max-h-[90vh] flex flex-col">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setSelectedBookForOverview(null)}
+              className="absolute top-5 right-5 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-[#F7DF8B] transition-colors cursor-pointer z-20"
+              title="Close Overview"
+            >
+              <X className="size-5" />
+            </button>
+
+            <div className="overflow-y-auto pr-1 space-y-6">
+              {/* Top Badges */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-[#050505] shadow-xs">
+                  #{selectedBookForOverview.rank} on Chart
+                </span>
+                <span className="rounded-full bg-white/10 border border-[#D4AF37]/50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#F7DF8B]">
+                  {selectedBookForOverview.genre || "Editorial"}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/80 border border-[#D4AF37]/40 px-3 py-1 text-xs font-bold text-[#F7DF8B]">
+                  <Eye className="size-3.5 text-[#D4AF37]" />
+                  <span>{(viewsMap[selectedBookForOverview.id] ?? selectedBookForOverview.viewCount ?? 1200).toLocaleString()} Views</span>
+                </span>
+              </div>
+
+              {/* Two Columns: Left Book Cover, Right Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+                {/* Cover */}
+                <div className="sm:col-span-5 flex flex-col items-center">
+                  <div className="relative w-full max-w-[200px] aspect-[2/3] rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-[0_20px_45px_rgba(0,0,0,0.9)] animate-book-float">
+                    <img
+                      src={fallbackMap[selectedBookForOverview.id] ? selectedBookForOverview.fallbackCover : selectedBookForOverview.coverUrl}
+                      alt={selectedBookForOverview.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 text-xs text-neutral-400">
+                    <span className="inline-flex items-center gap-1 text-[#F7DF8B]">
+                      <Star className="size-3.5 fill-current text-[#D4AF37]" />
+                      {selectedBookForOverview.rating.toFixed(1)} Rating
+                    </span>
+                    <span>•</span>
+                    <span>{selectedBookForOverview.pages} Pages</span>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="sm:col-span-7 space-y-4">
+                  <div>
+                    <h3 className="font-serif-display text-2xl sm:text-3xl font-bold text-white leading-tight">
+                      {selectedBookForOverview.title}
+                    </h3>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      Published by {selectedBookForOverview.publisher}
+                    </p>
+                  </div>
+
+                  {/* Author Profile Box with Avatar */}
+                  <div className="p-4 rounded-2xl bg-white/5 border border-[#D4AF37]/40 space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#AA7C11]">
+                      Author Overview
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={selectedBookForOverview.authorAvatar || "/media/avatars/default-portrait.svg"}
+                        alt={selectedBookForOverview.author}
+                        className="size-14 rounded-full object-cover border-2 border-[#D4AF37] shadow-md shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="font-serif font-bold text-base text-[#F7DF8B] truncate">
+                          {selectedBookForOverview.author}
+                        </h4>
+                        <p className="text-xs text-neutral-300">
+                          Featured Network Author &amp; Contributor
+                        </p>
+                        <Link
+                          href={selectedBookForOverview.authorSlug ? `/authors/${selectedBookForOverview.authorSlug}` : "/authors"}
+                          className="text-[11px] font-semibold text-[#D4AF37] hover:underline inline-flex items-center gap-1 mt-0.5"
+                        >
+                          View Author Profile &amp; Works →
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Book Description */}
+                  <div className="space-y-1.5">
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-[#FAF8F3]/80">
+                      Book Synopsis
+                    </h5>
+                    <p className="text-sm text-neutral-300 leading-relaxed font-sans max-h-40 overflow-y-auto pr-1">
+                      {selectedBookForOverview.description || "A featured title on the Literary Voices Network exploring profound literary perspectives."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons: Close and Proceed to Full Overview */}
+              <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedBookForOverview(null)}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-white/20 text-xs font-semibold text-white/80 hover:bg-white/10 cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleProceedToAmazon(selectedBookForOverview)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-lg cursor-pointer"
+                >
+                  <BookOpen className="size-4 fill-current" />
+                  <span>Proceed to Full Overview / Amazon</span>
+                  <ExternalLink className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

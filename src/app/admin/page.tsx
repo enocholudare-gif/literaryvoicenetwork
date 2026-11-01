@@ -46,8 +46,10 @@ import type {
 
 type AdminTab =
   | "books"
-  | "approvals"
+  | "authors"
+  | "articles"
   | "broadcast"
+  | "approvals"
   | "enquiries"
   | "catalog"
   | "settings";
@@ -271,6 +273,9 @@ export default function AdminDashboardPage() {
   const [bkTitle, setBkTitle] = useState("");
   const [bkSubtitle, setBkSubtitle] = useState("");
   const [bkAuthor, setBkAuthor] = useState("");
+  const [bkAuthorAvatar, setBkAuthorAvatar] = useState("/media/avatars/default-portrait.svg");
+  const [bkAuthorBio, setBkAuthorBio] = useState("");
+  const [bkTargetSection, setBkTargetSection] = useState("Editorial Desk");
   const [bkCategory, setBkCategory] = useState("Editorial");
   const [bkFormat, setBkFormat] = useState<BookFormat>("Hardcover");
   const [bkPublisher, setBkPublisher] = useState("LVN Imprint Editions");
@@ -279,8 +284,27 @@ export default function AdminDashboardPage() {
   const [bkExcerpt, setBkExcerpt] = useState("");
   const [bkLink, setBkLink] = useState("");
   const [bkGoodreads, setBkGoodreads] = useState("");
+  const [bkIsFeatured, setBkIsFeatured] = useState(true);
+  const [bkInitialViews, setBkInitialViews] = useState(1450);
 
-  // 2. Step Inside Broadcast State
+  // 2. Author Spotlight State
+  const [spotlightName, setSpotlightName] = useState("");
+  const [spotlightAvatar, setSpotlightAvatar] = useState("/media/avatars/default-portrait.svg");
+  const [spotlightHeadline, setSpotlightHeadline] = useState("");
+  const [spotlightBio, setSpotlightBio] = useState("");
+  const [spotlightLocation, setSpotlightLocation] = useState("");
+  const [spotlightIsFeatured, setSpotlightIsFeatured] = useState(true);
+
+  // 3. Magazine & Articles State
+  const [artTitle, setArtTitle] = useState("");
+  const [artSubtitle, setArtSubtitle] = useState("");
+  const [artCategory, setArtCategory] = useState("Literary Essay");
+  const [artCoverUrl, setArtCoverUrl] = useState("/media/banners/editorial-desk.svg");
+  const [artExcerpt, setArtExcerpt] = useState("");
+  const [artBody, setArtBody] = useState("");
+  const [artAuthor, setArtAuthor] = useState("");
+
+  // 4. Step Inside Broadcast State
   const [broadcastGuestName, setBroadcastGuestName] = useState("");
   const [broadcastGuestTitle, setBroadcastGuestTitle] = useState("Featured Author & Historian");
   const [broadcastGuestBio, setBroadcastGuestBio] = useState("");
@@ -291,7 +315,7 @@ export default function AdminDashboardPage() {
   );
   const [radioProgramme, setRadioProgramme] = useState("LVN Live Studio");
 
-  // 3. Settings Form State
+  // 5. Settings Form State
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newLoginEmail, setNewLoginEmail] = useState("");
@@ -395,12 +419,17 @@ export default function AdminDashboardPage() {
           title: bkTitle.trim(),
           subtitle: bkSubtitle.trim(),
           authorName: bkAuthor.trim() || profile?.display_name || "Author",
+          authorAvatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+          authorBio: bkAuthorBio.trim(),
           genre: bkCategory,
+          section: bkTargetSection,
           format: bkFormat,
-          publisher: bkPublisher.trim(),
+          publisher: bkPublisher.trim() || "LVN Imprint Editions",
           coverUrl: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
-          description: bkSynopsis.trim(),
+          description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
           excerpt: bkExcerpt.trim(),
+          isFeatured: bkIsFeatured,
+          viewCount: Number(bkInitialViews) || 1450,
           retailerLinks: {
             amazon: bkLink.trim(),
             goodreads: bkGoodreads.trim(),
@@ -417,7 +446,7 @@ export default function AdminDashboardPage() {
 
     setBanner({
       type: "success",
-      text: `Book "${bkTitle}" tagged as "${bkCategory}" has been published directly to the main website shelf and library for author "${bkAuthor || "Author"}"!`,
+      text: `Book "${bkTitle}" has been published directly to ${bkTargetSection} and shelf for author "${bkAuthor || "Author"}"!`,
     });
 
     setBkTitle("");
@@ -427,6 +456,87 @@ export default function AdminDashboardPage() {
     setBkExcerpt("");
     setBkLink("");
     setBkGoodreads("");
+    loadData();
+  };
+
+  // 1b. Author Spotlight Handler
+  const handleSaveAuthorSpotlight = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBanner(null);
+
+    const res = await fetch("/api/platform", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "publish-author-spotlight",
+        spotlightData: {
+          displayName: spotlightName.trim(),
+          avatarUrl: spotlightAvatar.trim() || "/media/avatars/default-portrait.svg",
+          headline: spotlightHeadline.trim() || "Featured Network Author & Contributor",
+          bio: spotlightBio.trim() || "Contributing author and literary voice at the Literary Voices Network.",
+          location: spotlightLocation.trim() || "New York",
+          isFeatured: spotlightIsFeatured,
+        },
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setBanner({ type: "error", text: data.error || "Failed to add author spotlight." });
+      return;
+    }
+
+    setBanner({
+      type: "success",
+      text: `Author "${spotlightName}" added to Author Spotlight successfully!`,
+    });
+
+    setSpotlightName("");
+    setSpotlightHeadline("");
+    setSpotlightBio("");
+    setSpotlightLocation("");
+    loadData();
+  };
+
+  // 1c. Magazine & Articles Handler
+  const handlePublishArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBanner(null);
+
+    const res = await fetch("/api/publishing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "create-article",
+        publishImmediately: true,
+        articleData: {
+          title: artTitle.trim(),
+          subtitle: artSubtitle.trim(),
+          articleType: artCategory === "Author Interview" ? "interview" : "essay",
+          coverUrl: artCoverUrl.trim() || "/media/banners/editorial-desk.svg",
+          excerpt: artExcerpt.trim() || "Featured piece on Literary Voices Network.",
+          bodyHtml: artBody.trim() || "<p>Article text content published by Literary Voices Network editorial desk.</p>",
+          sourceAttribution: artAuthor.trim() || "LVN Editorial Staff",
+        },
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setBanner({ type: "error", text: data.error || "Failed to publish article." });
+      return;
+    }
+
+    setBanner({
+      type: "success",
+      text: `Article "${artTitle}" published successfully to ${artCategory}!`,
+    });
+
+    setArtTitle("");
+    setArtSubtitle("");
+    setArtExcerpt("");
+    setArtBody("");
+    setArtAuthor("");
     loadData();
   };
 
@@ -743,7 +853,9 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl border border-[#D4AF37]/30 p-2 shadow-xs">
           <div className="flex overflow-x-auto gap-2 scrollbar-none">
             {[
-              { id: "books" as AdminTab, label: "Publish Book for Author", icon: Plus },
+              { id: "books" as AdminTab, label: "Publish Book (Any Section)", icon: Plus },
+              { id: "authors" as AdminTab, label: "Author Spotlight", icon: Users },
+              { id: "articles" as AdminTab, label: "Magazine & Articles", icon: Newspaper },
               {
                 id: "approvals" as AdminTab,
                 label: `Author Approvals (${pendingSubmissions.length})`,
@@ -800,18 +912,18 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* 1. PUBLISH BOOK FOR AUTHOR TAB */}
+        {/* 1. PUBLISH BOOK (ANY SECTION) TAB */}
         {activeTab === "books" && (
           <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-xs space-y-8">
             <div className="border-b border-neutral-200 pb-4">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#AA7C11] bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-                Author Management
+                Network Publishing Control
               </span>
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#080808] mt-2">
-                Publish Book for Author
+                Publish Book to Any Section
               </h2>
               <p className="text-xs text-neutral-600 mt-1 max-w-2xl">
-                Add and publish any author's book directly to the main website, 3D Interactive Shelf, library, and charts. Set category tags, cover image with visual preview, retail links, and description.
+                Add and publish any author's book directly to the homepage, 3D Floating Shelf, Editorial Desk, Magazine, or Podcast section. Set author picture, category tags, cover image with preview, and description.
               </p>
             </div>
 
@@ -840,29 +952,42 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+              {/* Target Section Placement & Category Dropdown */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#080808]">Author Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={bkAuthor}
-                    onChange={(e) => setBkAuthor(e.target.value)}
-                    placeholder="e.g. Tony Rebeiro"
-                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
-                  />
+                  <label className="text-xs font-bold text-[#080808]">Target Section Placement *</label>
+                  <select
+                    value={bkTargetSection}
+                    onChange={(e) => {
+                      setBkTargetSection(e.target.value);
+                      if (e.target.value.includes("Editorial")) setBkCategory("Editorial");
+                      else if (e.target.value.includes("Magazine")) setBkCategory("Magazine");
+                      else if (e.target.value.includes("Podcast")) setBkCategory("Podcast");
+                    }}
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white font-medium"
+                  >
+                    <option value="Editorial Desk">Editorial Desk (/editorial &amp; Shelf)</option>
+                    <option value="Magazine Shelf">Magazine Shelf (/magazine)</option>
+                    <option value="Podcast & Audio">Podcast &amp; Studio Audio</option>
+                    <option value="Author Spotlight">Author Spotlight Section</option>
+                    <option value="On the Charts">On the Charts · 3D Floating Shelf</option>
+                    <option value="Trending Books">Trending Books</option>
+                    <option value="Recently Added">Recently Added Books</option>
+                    <option value="General Library">General Library (/books)</option>
+                  </select>
                 </div>
+
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#080808]">Category Dropdown *</label>
+                  <label className="text-xs font-bold text-[#080808]">Category Tag *</label>
                   <select
                     value={bkCategory}
                     onChange={(e) => setBkCategory(e.target.value)}
                     className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white font-medium"
                   >
-                    <option value="Editorial">Editorial (Featured Selection)</option>
-                    <option value="Magazine">Magazine (Poetry &amp; Features)</option>
-                    <option value="Podcast">Podcast (On Air Feature)</option>
-                    <option value="Spotlight">Spotlight (Author Feature)</option>
+                    <option value="Editorial">Editorial</option>
+                    <option value="Magazine">Magazine</option>
+                    <option value="Podcast">Podcast</option>
+                    <option value="Spotlight">Spotlight</option>
                     <option value="Literary Fiction">Literary Fiction</option>
                     <option value="Historical Fiction">Historical Fiction</option>
                     <option value="Poetry">Poetry</option>
@@ -871,6 +996,7 @@ export default function AdminDashboardPage() {
                     <option value="Mystery &amp; Thriller">Mystery &amp; Thriller</option>
                   </select>
                 </div>
+
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-[#080808]">Format</label>
                   <select
@@ -887,9 +1013,49 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+              {/* Author Information & Portrait */}
+              <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-4">
+                <p className="text-xs font-bold text-[#AA7C11] uppercase tracking-wider">
+                  Author Profile Information
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[#080808]">Author Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={bkAuthor}
+                      onChange={(e) => setBkAuthor(e.target.value)}
+                      placeholder="e.g. Tony Rebeiro"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[#080808]">Author Role / Headline</label>
+                    <input
+                      type="text"
+                      value={bkAuthorBio}
+                      onChange={(e) => setBkAuthorBio(e.target.value)}
+                      placeholder="e.g. Award-winning Novelist &amp; Essayist"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white"
+                    />
+                  </div>
+                </div>
+
+                <ImageUploadField
+                  label="Author Profile Picture / Portrait (Upload file or URL with live preview)"
+                  value={bkAuthorAvatar}
+                  onChange={setBkAuthorAvatar}
+                  aspect="square"
+                  helperText="Upload the author's portrait photo so their profile image appears next to the book and on their author page."
+                />
+              </div>
+
               {/* Book Cover Image Upload with Live Visual Preview */}
               <ImageUploadField
-                label="Book Cover Image (Upload or URL with live preview)"
+                label="Book Cover Image (Upload or URL with live preview) *"
                 value={bkCoverUrl}
                 onChange={setBkCoverUrl}
                 aspect="book"
@@ -897,19 +1063,18 @@ export default function AdminDashboardPage() {
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#080808]">Book Synopsis / Description *</label>
+                <label className="text-xs font-bold text-[#080808]">Book Synopsis / Description</label>
                 <textarea
                   rows={4}
-                  required
                   value={bkSynopsis}
                   onChange={(e) => setBkSynopsis(e.target.value)}
-                  placeholder="Enter the full book synopsis, critical overview, or jacket copy..."
+                  placeholder="Enter the book synopsis or critical overview (will be visible in the quick overview modal before users click Amazon)..."
                   className="w-full rounded-xl border border-neutral-300 p-3 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2 space-y-1">
                   <label className="text-xs font-bold text-[#080808]">Book Purchase Link (Amazon / Retailer) *</label>
                   <input
                     type="url"
@@ -921,20 +1086,33 @@ export default function AdminDashboardPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#080808]">Goodreads / Review Link (Optional)</label>
+                  <label className="text-xs font-bold text-[#080808]">Starting View Count</label>
                   <input
-                    type="url"
-                    value={bkGoodreads}
-                    onChange={(e) => setBkGoodreads(e.target.value)}
-                    placeholder="https://www.goodreads.com/book/..."
+                    type="number"
+                    value={bkInitialViews}
+                    onChange={(e) => setBkInitialViews(Number(e.target.value))}
+                    placeholder="1450"
                     className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
                   />
                 </div>
               </div>
 
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="bkIsFeatured"
+                  checked={bkIsFeatured}
+                  onChange={(e) => setBkIsFeatured(e.target.checked)}
+                  className="size-4 accent-[#AA7C11] rounded cursor-pointer"
+                />
+                <label htmlFor="bkIsFeatured" className="text-xs font-semibold text-neutral-800 cursor-pointer">
+                  Feature this book prominently on the Homepage, 3D Floating Shelf, and Curated Sections
+                </label>
+              </div>
+
               <div className="pt-4 border-t border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <span className="text-xs text-neutral-500">
-                  When published, this title will immediately appear on the homepage and library tagged as <strong>{bkCategory}</strong>.
+                  When published, this title will immediately appear on the homepage and library tagged as <strong>{bkCategory}</strong> under <strong>{bkTargetSection}</strong>.
                 </span>
                 <button
                   type="submit"
@@ -942,6 +1120,213 @@ export default function AdminDashboardPage() {
                 >
                   <BookOpen className="size-4" />
                   <span>Publish Book for Author</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* 1b. AUTHOR SPOTLIGHT MANAGER TAB */}
+        {activeTab === "authors" && (
+          <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-xs space-y-8">
+            <div className="border-b border-neutral-200 pb-4">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#AA7C11] bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                Spotlight Directory
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#080808] mt-2">
+                Author Spotlight Manager
+              </h2>
+              <p className="text-xs text-neutral-600 mt-1 max-w-2xl">
+                Add and manage authors featured in the Author Spotlight section, homepage banners, and verified contributors directory.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveAuthorSpotlight} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author Display Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={spotlightName}
+                    onChange={(e) => setSpotlightName(e.target.value)}
+                    placeholder="e.g. Tony Rebeiro"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author Headline / Role</label>
+                  <input
+                    type="text"
+                    value={spotlightHeadline}
+                    onChange={(e) => setSpotlightHeadline(e.target.value)}
+                    placeholder="e.g. Award-winning Novelist &amp; Essayist"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <ImageUploadField
+                label="Author Profile Picture / Portrait (Upload file or URL with live preview) *"
+                value={spotlightAvatar}
+                onChange={setSpotlightAvatar}
+                aspect="square"
+                helperText="Upload the author's portrait picture to feature on the Author Spotlight cards and author overview pages."
+              />
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Author Biography</label>
+                <textarea
+                  rows={4}
+                  value={spotlightBio}
+                  onChange={(e) => setSpotlightBio(e.target.value)}
+                  placeholder="Enter author biography, achievements, and background..."
+                  className="w-full rounded-xl border border-neutral-300 p-3 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Location (City / Country)</label>
+                  <input
+                    type="text"
+                    value={spotlightLocation}
+                    onChange={(e) => setSpotlightLocation(e.target.value)}
+                    placeholder="e.g. London, UK"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="spotlightIsFeatured"
+                    checked={spotlightIsFeatured}
+                    onChange={(e) => setSpotlightIsFeatured(e.target.checked)}
+                    className="size-4 accent-[#AA7C11] rounded cursor-pointer"
+                  />
+                  <label htmlFor="spotlightIsFeatured" className="text-xs font-semibold text-neutral-800 cursor-pointer">
+                    Feature prominently in Author Spotlight on Homepage
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-neutral-200 flex justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
+                >
+                  <Users className="size-4" />
+                  <span>Save Author Spotlight</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* 1c. MAGAZINE & ARTICLES MANAGER TAB */}
+        {activeTab === "articles" && (
+          <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-xs space-y-8">
+            <div className="border-b border-neutral-200 pb-4">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#AA7C11] bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                Editorial Publications
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#080808] mt-2">
+                Publish Magazine &amp; Editorial Article
+              </h2>
+              <p className="text-xs text-neutral-600 mt-1 max-w-2xl">
+                Publish essays, author interviews, critiques, and features directly to the Digital Magazine (/magazine) and Editorial Desk (/editorial).
+              </p>
+            </div>
+
+            <form onSubmit={handlePublishArticle} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Article Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={artTitle}
+                    onChange={(e) => setArtTitle(e.target.value)}
+                    placeholder="e.g. The Architecture of Silence: On Lyric Form"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Subtitle (Optional)</label>
+                  <input
+                    type="text"
+                    value={artSubtitle}
+                    onChange={(e) => setArtSubtitle(e.target.value)}
+                    placeholder="e.g. Modernist poetics in an age of automated language"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Category / Type *</label>
+                  <select
+                    value={artCategory}
+                    onChange={(e) => setArtCategory(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white font-medium"
+                  >
+                    <option value="Literary Essay">Literary Essay</option>
+                    <option value="Author Interview">Author Interview</option>
+                    <option value="Cultural Review">Cultural Review</option>
+                    <option value="Poetry Dispatch">Poetry Dispatch</option>
+                    <option value="Critique">Critique &amp; Commentary</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Author / Source Attribution</label>
+                  <input
+                    type="text"
+                    value={artAuthor}
+                    onChange={(e) => setArtAuthor(e.target.value)}
+                    placeholder="e.g. LVN Editorial Desk"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <ImageUploadField
+                label="Article Header Banner Image (Upload file or URL with live preview)"
+                value={artCoverUrl}
+                onChange={setArtCoverUrl}
+                aspect="wide"
+                helperText="Upload wide banner for the article header."
+              />
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Article Excerpt</label>
+                <textarea
+                  rows={2}
+                  value={artExcerpt}
+                  onChange={(e) => setArtExcerpt(e.target.value)}
+                  placeholder="Short excerpt or hook summarizing the article..."
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#080808]">Article Body Content</label>
+                <textarea
+                  rows={6}
+                  value={artBody}
+                  onChange={(e) => setArtBody(e.target.value)}
+                  placeholder="Enter full article text, paragraphs, or markdown..."
+                  className="w-full rounded-xl border border-neutral-300 p-3 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none font-mono"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-neutral-200 flex justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
+                >
+                  <Newspaper className="size-4" />
+                  <span>Publish Article</span>
                 </button>
               </div>
             </form>

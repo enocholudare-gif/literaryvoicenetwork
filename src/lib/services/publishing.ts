@@ -95,74 +95,51 @@ export function validateStatusTransition(
 // =============================================================================
 
 export const BookInputSchema = z.object({
-  title: z.string().min(2, "Book title is required").max(200),
-  subtitle: z.string().max(240).optional().default(""),
-  authorName: z.string().max(160).optional(),
-  authorProfileId: z.string().max(120).optional(),
-  slug: z.string().max(120).optional(),
-  isbn: z.string().max(40).optional().default(""),
-  description: z.string().min(20, "Book description must be at least 20 characters").max(8000),
-  excerpt: z.string().max(6000).optional().default(""),
-  coverUrl: z.string().max(500).optional().default("/media/covers/the-glass-meridian.jpg"),
-  genre: z.string().min(2, "Primary genre is required").max(80),
-  secondaryGenres: z.array(z.string().max(60)).max(6).optional().default([]),
-  format: z
-    .enum(["Hardcover", "Paperback", "eBook", "Audiobook", "Multi-format"])
-    .optional()
-    .default("Hardcover"),
-  publisher: z.string().max(140).optional().default(""),
-  publicationDate: z.string().max(40).optional().default(""),
-  pageCount: z.number().int().positive().max(10000).nullable().optional().default(null),
-  language: z.string().max(60).optional().default("English"),
-  retailerLinks: z
-    .object({
-      amazon: z.string().max(400).optional(),
-      bookshop: z.string().max(400).optional(),
-      barnesAndNoble: z.string().max(400).optional(),
-      goodreads: z.string().max(400).optional(),
-      appleBooks: z.string().max(400).optional(),
-      kobo: z.string().max(400).optional(),
-      audible: z.string().max(400).optional(),
-      spotify: z.string().max(400).optional(),
-      publisherDirect: z.string().max(400).optional(),
-    })
-    .optional()
-    .default({}),
-  seoTitle: z.string().max(180).optional().default(""),
-  seoDescription: z.string().max(320).optional().default(""),
+  title: z.string().min(1, "Book title is required").max(500),
+  subtitle: z.string().max(1000).optional().default(""),
+  authorName: z.string().max(500).optional(),
+  authorAvatar: z.string().max(5000000).optional(),
+  authorBio: z.string().max(20000).optional(),
+  authorHeadline: z.string().max(500).optional(),
+  authorProfileId: z.string().max(200).optional(),
+  slug: z.string().max(250).optional(),
+  isbn: z.string().max(100).optional().default(""),
+  description: z.string().optional().default("A featured literary work on the Literary Voices Network."),
+  excerpt: z.string().optional().default(""),
+  coverUrl: z.string().max(5000000).optional().default("/media/covers/the-first.jpg"),
+  genre: z.string().optional().default("Editorial"),
+  section: z.string().optional().default("Editorial"),
+  secondaryGenres: z.array(z.string()).optional().default([]),
+  format: z.string().optional().default("Hardcover"),
+  publisher: z.string().optional().default("Literary Voices Network"),
+  publicationDate: z.string().optional().default(""),
+  pageCount: z.number().nullable().optional().default(null),
+  language: z.string().optional().default("English"),
+  isFeatured: z.boolean().optional().default(true),
+  editorialRecommendation: z.boolean().optional().default(false),
+  viewCount: z.number().optional(),
+  retailerLinks: z.record(z.string(), z.string().optional()).optional().default({}),
+  seoTitle: z.string().optional().default(""),
+  seoDescription: z.string().optional().default(""),
 });
 
 export const ArticleInputSchema = z.object({
-  title: z.string().min(3, "Title is required").max(220),
-  subtitle: z.string().max(260).optional().default(""),
-  slug: z.string().max(120).optional(),
-  articleType: z
-    .enum([
-      "cover_story",
-      "interview",
-      "review",
-      "essay",
-      "commentary",
-      "resource",
-      "culture",
-      "spotlight",
-      "announcement",
-      "press_release",
-    ])
-    .optional()
-    .default("essay"),
+  title: z.string().min(1, "Title is required").max(500),
+  subtitle: z.string().max(1000).optional().default(""),
+  slug: z.string().max(250).optional(),
+  articleType: z.string().optional().default("essay"),
   categoryId: z.string().nullable().optional().default(null),
   issueId: z.string().nullable().optional().default(null),
   relatedBookId: z.string().nullable().optional().default(null),
   featuredAuthorProfileId: z.string().nullable().optional().default(null),
-  excerpt: z.string().max(1000).optional().default(""),
-  bodyHtml: z.string().min(20, "Article body must be at least 20 characters"),
-  coverUrl: z.string().max(500).optional().default("/media/banners/editorial-desk.svg"),
-  sourceAttribution: z.string().max(160).optional().default("Literary Voices Network Editorial"),
-  mediaContactInfo: z.string().max(240).optional().default(""),
-  tags: z.array(z.string().max(50)).max(10).optional().default([]),
-  seoTitle: z.string().max(180).optional().default(""),
-  seoDescription: z.string().max(320).optional().default(""),
+  excerpt: z.string().max(5000).optional().default(""),
+  bodyHtml: z.string().optional().default("Content coming soon."),
+  coverUrl: z.string().max(5000000).optional().default("/media/banners/editorial-desk.svg"),
+  sourceAttribution: z.string().max(300).optional().default("Literary Voices Network Editorial"),
+  mediaContactInfo: z.string().max(500).optional().default(""),
+  tags: z.array(z.string()).optional().default([]),
+  seoTitle: z.string().optional().default(""),
+  seoDescription: z.string().optional().default(""),
 });
 
 // =============================================================================
@@ -347,7 +324,7 @@ function recordRevisionSnapshot(
 
 export function createBookDraft(
   ctx: AuthenticatedContext,
-  rawInput: z.infer<typeof BookInputSchema>,
+  rawInput: z.input<typeof BookInputSchema>,
   options?: {
     publishImmediately?: boolean;
     scheduledFor?: string | null;
@@ -401,21 +378,46 @@ export function createBookDraft(
         db.prepare(`
           INSERT INTO profiles (
             id, user_id, slug, display_name, pen_name, is_author_profile,
-            avatar_url, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+            avatar_url, bio, headline, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
         `).run(
           authorProfId,
           ctx.user.id,
           authorSlug,
           trimmedName,
           trimmedName,
-          "/media/avatars/default-portrait.svg",
+          parsed.authorAvatar?.trim() || "/media/avatars/default-portrait.svg",
+          parsed.authorBio?.trim() || "",
+          parsed.authorHeadline?.trim() || "Contributing Author",
           now,
           now
         );
         authorProfileId = authorProfId;
       }
     }
+  }
+
+  // Update author profile if avatar, headline, or bio were provided
+  if (parsed.authorAvatar && parsed.authorAvatar.trim()) {
+    db.prepare("UPDATE profiles SET avatar_url = ?, updated_at = ? WHERE id = ?").run(
+      parsed.authorAvatar.trim(),
+      now,
+      authorProfileId
+    );
+  }
+  if (parsed.authorBio && parsed.authorBio.trim()) {
+    db.prepare("UPDATE profiles SET bio = ?, updated_at = ? WHERE id = ?").run(
+      parsed.authorBio.trim(),
+      now,
+      authorProfileId
+    );
+  }
+  if (parsed.authorHeadline && parsed.authorHeadline.trim()) {
+    db.prepare("UPDATE profiles SET headline = ?, updated_at = ? WHERE id = ?").run(
+      parsed.authorHeadline.trim(),
+      now,
+      authorProfileId
+    );
   }
 
   // Ensure the creator's profile is marked as an author profile when they create a book
@@ -429,6 +431,12 @@ export function createBookDraft(
     );
   }
 
+  const rawDesc = parsed.description?.trim();
+  const description = rawDesc && rawDesc.length > 0 ? rawDesc : "A featured literary work on the Literary Voices Network.";
+  const isFeatured = parsed.isFeatured ? 1 : (options?.publishImmediately ? 1 : 0);
+  const editorialRec = parsed.editorialRecommendation ? 1 : 0;
+  const initialViews = parsed.viewCount || Math.floor(Math.random() * 800) + 1150;
+
   db.prepare(`
     INSERT INTO books (
       id, slug, author_profile_id, submitted_by_user_id, title, subtitle,
@@ -437,8 +445,8 @@ export function createBookDraft(
       retailer_links_json, manuscript_distribution_authorized, full_manuscript_url,
       is_featured, editorial_recommendation, is_community_member_book,
       status, scheduled_for, published_at, seo_title, seo_description,
-      created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '', 0, 0, 1, ?, ?, ?, ?, ?, ?, ?)
+      created_at, updated_at, view_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '', ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     slug,
@@ -447,24 +455,27 @@ export function createBookDraft(
     parsed.title.trim(),
     parsed.subtitle.trim(),
     parsed.isbn.trim(),
-    parsed.description.trim(),
+    description,
     parsed.excerpt.trim(),
-    parsed.coverUrl.trim() || "/media/covers/the-glass-meridian.jpg",
-    parsed.genre.trim(),
+    parsed.coverUrl.trim() || "/media/covers/the-first.jpg",
+    parsed.genre.trim() || "Editorial",
     JSON.stringify(parsed.secondaryGenres),
     parsed.format,
-    parsed.publisher.trim(),
+    parsed.publisher.trim() || "Literary Voices Network",
     parsed.publicationDate.trim(),
     parsed.pageCount,
     parsed.language.trim(),
     JSON.stringify(parsed.retailerLinks),
+    isFeatured,
+    editorialRec,
     targetStatus,
     scheduledFor,
     publishedAt,
     parsed.seoTitle.trim() || `${parsed.title.trim()} | Literary Voices Network`,
-    parsed.seoDescription.trim() || parsed.description.trim().slice(0, 160),
+    parsed.seoDescription.trim() || description.slice(0, 160),
     now,
-    now
+    now,
+    initialViews
   );
 
   recordRevisionSnapshot(
@@ -779,7 +790,7 @@ export function authorizeManuscriptDistribution(
 
 export function createArticleDraft(
   ctx: AuthenticatedContext,
-  rawInput: z.infer<typeof ArticleInputSchema>,
+  rawInput: z.input<typeof ArticleInputSchema>,
   options?: {
     publishImmediately?: boolean;
     scheduledFor?: string | null;
