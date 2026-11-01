@@ -5,6 +5,8 @@ import { AuthorCard } from "@/components/ui/Cards";
 import { listPublicAuthors } from "@/lib/services/platform";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 interface AuthorsPageProps {
   searchParams: Promise<{

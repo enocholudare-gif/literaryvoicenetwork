@@ -21,7 +21,7 @@ import type {
 import type { AuthenticatedContext } from "./auth";
 import { mapProfileRow, requireRole } from "./auth";
 import { listPublicArticles, listPublicBooks } from "./publishing";
-import { createNotification, recordAuditLog } from "./notifications";
+import { createNotification, getAdminNotificationEmail, recordAuditLog, sendDirectEmail } from "./notifications";
 
 // =============================================================================
 // 1. PUBLIC AUTHORS DIRECTORY & AUTHOR PROFILES
@@ -1366,25 +1366,104 @@ export function createEnquiry(
   );
 
   const adminUser = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string } | undefined;
-  const emailSetting = db.prepare("SELECT setting_value_json FROM site_settings WHERE setting_key = 'editorialEmail'").get() as { setting_value_json: string } | undefined;
-  let targetAdminEmail = "enquiry@literaryvoicenetwork.org";
-  if (emailSetting && emailSetting.setting_value_json) {
-    try {
-      targetAdminEmail = JSON.parse(emailSetting.setting_value_json);
-    } catch {
-      targetAdminEmail = emailSetting.setting_value_json;
-    }
-  }
+  const targetAdminEmail = getAdminNotificationEmail();
 
-  if (adminUser && parsed.enquiryType !== "newsletter") {
-    void createNotification({
-      userId: adminUser.id,
-      type: "enquiry_received",
-      title: parsed.subject.trim() || `New ${parsed.enquiryType} Enquiry from ${parsed.name.trim()}`,
-      message: parsed.message.trim(),
-      linkUrl: "/admin",
-      recipientEmail: targetAdminEmail,
+  if (parsed.enquiryType !== "newsletter") {
+    // 1. Send live email notification to Admin Gmail (perrycreativity@gmail.com)
+    void sendDirectEmail({
+      to: targetAdminEmail,
+      replyTo: parsed.email.trim(),
+      subject: `[LVN Contact Us] ${parsed.subject.trim() || parsed.enquiryType} — ${parsed.name.trim()}`,
+      text: [
+        `New contact enquiry received on Literary Voices Network:`,
+        `----------------------------------------------------`,
+        `Sender Name: ${parsed.name.trim() || "Anonymous Reader"}`,
+        `Sender Email: ${parsed.email.trim()}`,
+        `Organization: ${parsed.organization.trim() || "N/A"}`,
+        `Enquiry Category: ${parsed.enquiryType}`,
+        `Subject: ${parsed.subject.trim()}`,
+        `Date/Time: ${now}`,
+        `----------------------------------------------------`,
+        `Message:`,
+        parsed.message.trim(),
+        `----------------------------------------------------`,
+        `Review in Admin Portal: ${process.env.NEXT_PUBLIC_APP_URL || "https://www.literaryvoicenetwork.org"}/admin`,
+      ].join("\n"),
+      html: `
+        <div style="font-family: Georgia, serif; max-width: 620px; margin: 0 auto; padding: 32px; background: #080808; color: #FAF8F3; border: 1px solid #D4AF37; border-radius: 16px;">
+          <div style="border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 16px; margin-bottom: 24px;">
+            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #D4AF37; font-weight: bold;">Literary Voices Network · Contact Form Submission</span>
+            <h2 style="color: #F7DF8B; margin: 8px 0 0 0; font-size: 22px;">${parsed.subject.trim() || "New Contact Message"}</h2>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; color: #FAF8F3;">
+            <tr><td style="padding: 6px 0; color: #D4AF37; width: 120px; font-weight: bold;">Sender:</td><td>${parsed.name.trim() || "Reader"}</td></tr>
+            <tr><td style="padding: 6px 0; color: #D4AF37; font-weight: bold;">Email:</td><td><a href="mailto:${parsed.email.trim()}" style="color: #F7DF8B;">${parsed.email.trim()}</a></td></tr>
+            <tr><td style="padding: 6px 0; color: #D4AF37; font-weight: bold;">Organization:</td><td>${parsed.organization.trim() || "Independent"}</td></tr>
+            <tr><td style="padding: 6px 0; color: #D4AF37; font-weight: bold;">Category:</td><td>${parsed.enquiryType}</td></tr>
+          </table>
+          <div style="background: rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 16px; margin: 20px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.7; color: #FAF8F3; white-space: pre-wrap;">${parsed.message.trim()}</div>
+          <p style="margin-top: 24px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.literaryvoicenetwork.org"}/admin" style="display: inline-block; padding: 12px 24px; background: #D4AF37; color: #080808; font-weight: bold; text-decoration: none; border-radius: 999px; font-size: 13px;">View Message in Admin Portal →</a>
+          </p>
+        </div>
+      `,
     });
+
+    // 2. Send instant confirmation receipt to the sender
+    if (parsed.email && parsed.email.includes("@") && parsed.email.toLowerCase() !== targetAdminEmail.toLowerCase()) {
+      void sendDirectEmail({
+        to: parsed.email.trim(),
+        subject: `We have received your message: ${parsed.subject.trim() || "Literary Voices Network Enquiry"}`,
+        text: [
+          `Dear ${parsed.name.trim() || "Reader"},`,
+          ``,
+          `Thank you for reaching out to Literary Voices Network. We have received your inquiry:`,
+          `Subject: ${parsed.subject.trim() || parsed.enquiryType}`,
+          ``,
+          `Our editorial and communications desk has been notified and will review your message promptly.`,
+          ``,
+          `Your Message Summary:`,
+          `----------------------------------------------------`,
+          parsed.message.trim(),
+          `----------------------------------------------------`,
+          ``,
+          `Warm regards,`,
+          `Literary Voices Network Editorial Team`,
+          `https://www.literaryvoicenetwork.org`,
+        ].join("\n"),
+        html: `
+          <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #080808; color: #FAF8F3; border: 1px solid #D4AF37; border-radius: 16px;">
+            <div style="border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 16px; margin-bottom: 24px;">
+              <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #D4AF37; font-weight: bold;">Literary Voices Network</span>
+              <h2 style="color: #F7DF8B; margin: 8px 0 0 0; font-size: 22px;">Message Received</h2>
+            </div>
+            <p style="font-size: 15px; line-height: 1.6; color: #FAF8F3;">Dear ${parsed.name.trim() || "Reader"},</p>
+            <p style="font-size: 14px; line-height: 1.7; color: rgba(250,248,243,0.85);">
+              Thank you for reaching out to Literary Voices Network. We have received your inquiry regarding <strong>"${parsed.subject.trim() || parsed.enquiryType}"</strong>.
+            </p>
+            <p style="font-size: 14px; line-height: 1.7; color: rgba(250,248,243,0.85);">
+              Our editorial and communications desk will review your correspondence and respond to you as soon as possible.
+            </p>
+            <div style="background: rgba(255,255,255,0.05); border-left: 3px solid #D4AF37; padding: 14px; margin: 20px 0; font-size: 13px; line-height: 1.6; color: rgba(250,248,243,0.8); white-space: pre-wrap;">${parsed.message.trim()}</div>
+            <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: rgba(250,248,243,0.5);">
+              Literary Voices Network · <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://www.literaryvoicenetwork.org"}" style="color: #D4AF37; text-decoration: none;">www.literaryvoicenetwork.org</a>
+            </div>
+          </div>
+        `,
+      });
+    }
+
+    // 3. Record in-app notification for admin
+    if (adminUser) {
+      void createNotification({
+        userId: adminUser.id,
+        type: "enquiry_received",
+        title: parsed.subject.trim() || `New ${parsed.enquiryType} Enquiry from ${parsed.name.trim()}`,
+        message: parsed.message.trim(),
+        linkUrl: "/admin",
+        recipientEmail: targetAdminEmail,
+      });
+    }
   }
 
   return {

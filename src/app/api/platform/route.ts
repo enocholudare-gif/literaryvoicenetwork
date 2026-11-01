@@ -34,7 +34,12 @@ import {
   upsertEvent,
   getSiteSettings,
 } from "@/lib/services/platform";
-import { listAuditLogs } from "@/lib/services/notifications";
+import {
+  listAuditLogs,
+  getSmtpConfig,
+  saveSmtpSettings,
+  sendTestSmtpEmail,
+} from "@/lib/services/notifications";
 import { listMediaAssets } from "@/lib/services/media";
 
 export async function GET(request: NextRequest) {
@@ -79,6 +84,15 @@ export async function GET(request: NextRequest) {
     if (scope === "admin-overview") {
       const metrics = getAdminDashboardMetrics(session);
       const isAdmin = session.user.role === "admin";
+      const smtpRaw = getSmtpConfig();
+      const smtpConfig = {
+        host: smtpRaw.host,
+        port: smtpRaw.port,
+        user: smtpRaw.user,
+        hasPass: Boolean(smtpRaw.pass),
+        from: smtpRaw.from,
+        adminEmail: smtpRaw.adminEmail,
+      };
       return NextResponse.json({
         ok: true,
         metrics,
@@ -87,6 +101,7 @@ export async function GET(request: NextRequest) {
         enquiries: listEnquiries(session),
         homepageSections: listHomepageSections(true),
         settings: getSiteSettings(),
+        smtpConfig,
         auditLogs: isAdmin ? listAuditLogs(100) : [],
         mediaAssets: listMediaAssets(session),
         broadcasts: listBroadcasts({ status: "all" }),
@@ -249,6 +264,28 @@ export async function POST(request: NextRequest) {
     if (action === "publish-author-spotlight") {
       const spotlight = upsertAuthorSpotlight(authSession, body.spotlightData);
       return NextResponse.json({ ok: true, spotlight });
+    }
+
+    if (action === "update-smtp-settings") {
+      saveSmtpSettings(body.smtpSettings || {});
+      const updatedConfig = getSmtpConfig();
+      return NextResponse.json({
+        ok: true,
+        smtpConfig: {
+          host: updatedConfig.host,
+          port: updatedConfig.port,
+          user: updatedConfig.user,
+          hasPass: Boolean(updatedConfig.pass),
+          from: updatedConfig.from,
+          adminEmail: updatedConfig.adminEmail,
+        },
+      });
+    }
+
+    if (action === "test-smtp") {
+      const targetEmail = String(body.targetEmail || "").trim();
+      const testRes = await sendTestSmtpEmail(targetEmail);
+      return NextResponse.json(testRes);
     }
 
     return NextResponse.json(

@@ -57,14 +57,14 @@ export function initializeSchema(db: DatabaseSync): void {
     "CREATE TABLE IF NOT EXISTS book_reviews (id TEXT PRIMARY KEY, book_id TEXT NOT NULL REFERENCES books(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, user_name TEXT NOT NULL, user_avatar TEXT NOT NULL DEFAULT '/media/avatars/default-portrait.svg', rating INTEGER NOT NULL, headline TEXT NOT NULL DEFAULT '', content TEXT NOT NULL, created_at TEXT NOT NULL);"
   );
 
-  // Ensure Admin login email is perrycreativity@gmail.com and official email is enquiry@literarynetwork.org
+  // Ensure Admin login email and official email is perrycreativity@gmail.com
   try {
     db.exec("UPDATE users SET email = 'perrycreativity@gmail.com' WHERE role = 'admin';");
     db.exec(
       "UPDATE profiles SET display_name = 'Executive Founder & CEO' WHERE user_id = (SELECT id FROM users WHERE role = 'admin');"
     );
     db.exec(
-      "UPDATE site_settings SET setting_value_json = '\"enquiry@literarynetwork.org\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
+      "UPDATE site_settings SET setting_value_json = '\"perrycreativity@gmail.com\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
     );
   } catch {
     // ignore if tables are not yet seeded
@@ -109,7 +109,7 @@ export function getDb(): DatabaseSync {
       "UPDATE profiles SET display_name = 'Executive Founder & CEO' WHERE user_id = (SELECT id FROM users WHERE role = 'admin');"
     );
     db.exec(
-      "UPDATE site_settings SET setting_value_json = '\"enquiry@literarynetwork.org\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
+      "UPDATE site_settings SET setting_value_json = '\"perrycreativity@gmail.com\"' WHERE setting_key IN ('editorialEmail', 'pressEmail', 'partnershipsEmail');"
     );
   } catch {
     // ignore

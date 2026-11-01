@@ -17,7 +17,12 @@ import {
   estimateReadingTimeMinutes,
   sanitizeRichTextHtml,
 } from "../security/sanitize";
-import { createNotification, recordAuditLog } from "./notifications";
+import {
+  createNotification,
+  getAdminNotificationEmail,
+  recordAuditLog,
+  sendDirectEmail,
+} from "./notifications";
 
 // =============================================================================
 // 1. PUBLICATION LIFECYCLE STATE MACHINE
@@ -681,17 +686,9 @@ export async function submitBookForReview(
     recipientEmail: ctx.user.email,
   });
 
-  // Notify Administrator & dispatch email alert to enquiry@literaryvoicenetwork.org (or configured admin receiving email)
+  // Notify Administrator & dispatch email alert to target Admin Gmail (perrycreativity@gmail.com)
   const adminUser = db.prepare("SELECT id, email FROM users WHERE role = 'admin' LIMIT 1").get() as { id: string; email: string } | undefined;
-  const emailSetting = db.prepare("SELECT setting_value_json FROM site_settings WHERE setting_key = 'editorialEmail'").get() as { setting_value_json: string } | undefined;
-  let targetAdminEmail = "enquiry@literaryvoicenetwork.org";
-  if (emailSetting && emailSetting.setting_value_json) {
-    try {
-      targetAdminEmail = JSON.parse(emailSetting.setting_value_json);
-    } catch {
-      targetAdminEmail = emailSetting.setting_value_json;
-    }
-  }
+  const targetAdminEmail = getAdminNotificationEmail();
 
   const mailBodyText = [
     `To: ${targetAdminEmail}`,
@@ -709,6 +706,37 @@ export async function submitBookForReview(
     "----------------------------------------",
     "Log in to the Admin Console (/admin -> Moderation Queue) to Approve & Publish this book.",
   ].join("\n");
+
+  // Send direct email via SMTP to admin Gmail
+  void sendDirectEmail({
+    to: targetAdminEmail,
+    replyTo: ctx.user.email,
+    subject: `[Admin Approval Required] New Book Submitted: "${existing.title}" by ${ctx.profile.display_name}`,
+    text: mailBodyText,
+  });
+
+  // Send confirmation email to submitting author
+  if (ctx.user.email && ctx.user.email.includes("@")) {
+    void sendDirectEmail({
+      to: ctx.user.email,
+      subject: `Book Submitted for Approval: "${existing.title}"`,
+      text: [
+        `Dear ${ctx.profile.display_name},`,
+        ``,
+        `Your book listing "${existing.title}" has been submitted for review on Literary Voices Network.`,
+        `Our editorial team will evaluate your submission and notify you as soon as it is approved and published.`,
+        ``,
+        `Title: ${existing.title}`,
+        `Genre: ${existing.genre}`,
+        `Status: Pending Admin Approval`,
+        ``,
+        `You can track the review status at: ${process.env.NEXT_PUBLIC_APP_URL || "https://www.literaryvoicenetwork.org"}/dashboard?tab=books`,
+        ``,
+        `Warm regards,`,
+        `Literary Voices Network Editorial Desk`,
+      ].join("\n"),
+    });
+  }
 
   if (adminUser) {
     await createNotification({
@@ -1230,6 +1258,10 @@ export async function moderateOrTransitionContent(
       ctx.user.id
     );
 
+    const authorUser = db.prepare("SELECT email FROM users WHERE id = ?").get(book.submitted_by_user_id) as { email: string } | undefined;
+    const targetAdminEmail = getAdminNotificationEmail();
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.literaryvoicenetwork.org";
+
     await createNotification({
       userId: book.submitted_by_user_id,
       type: `book_${input.nextStatus}`,
@@ -1241,6 +1273,55 @@ export async function moderateOrTransitionContent(
         input.nextStatus === "published"
           ? `/books/${book.slug}`
           : "/dashboard?tab=books",
+      recipientEmail: authorUser?.email,
+    });
+
+    // Send email alert to Author on approval/publishing/revision
+    if (authorUser?.email && authorUser.email.includes("@")) {
+      const isPublished = input.nextStatus === "published";
+      const isApproved = input.nextStatus === "approved";
+      const isRevision = input.nextStatus === "draft" || input.nextStatus === "revision_requested";
+
+      const subject = isPublished
+        ? `🎉 Congratulations! Your book "${book.title}" is now PUBLISHED on Literary Voices Network`
+        : isApproved
+        ? `Your book "${book.title}" has been APPROVED on Literary Voices Network`
+        : isRevision
+        ? `Editorial Revisions Requested: "${book.title}"`
+        : `Status Update on Your Book: "${book.title}" (${input.nextStatus.toUpperCase()})`;
+
+      const liveLink = `${appUrl}/books/${book.slug}`;
+      const statusText = [
+        `Dear Author,`,
+        ``,
+        isPublished
+          ? `We are delighted to share that your book listing "${book.title}" has been reviewed, approved, and officially PUBLISHED on Literary Voices Network!`
+          : isApproved
+          ? `Your book listing "${book.title}" has been approved by the editorial desk and will appear live shortly.`
+          : isRevision
+          ? `The editorial desk has reviewed "${book.title}" and requested some updates before publication.`
+          : `Your book listing "${book.title}" has been transitioned to status: ${input.nextStatus}.`,
+        ``,
+        input.authorFeedback?.trim() ? `Editorial Desk Feedback:\n"${input.authorFeedback.trim()}"\n` : ``,
+        isPublished ? `View your live book listing: ${liveLink}` : `Check your author dashboard: ${appUrl}/dashboard?tab=books`,
+        ``,
+        `Warm regards,`,
+        `The Editorial & Publishing Desk`,
+        `Literary Voices Network`,
+      ].filter(Boolean).join("\n");
+
+      void sendDirectEmail({
+        to: authorUser.email,
+        subject,
+        text: statusText,
+      });
+    }
+
+    // Also notify Admin Gmail of the moderation action
+    void sendDirectEmail({
+      to: targetAdminEmail,
+      subject: `[LVN Moderation Notice] Book "${book.title}" transitioned to ${input.nextStatus.toUpperCase()}`,
+      text: `Admin/Editor ${ctx.profile.display_name} has updated book "${book.title}" to ${input.nextStatus.toUpperCase()}.\nAuthor: ${authorUser?.email || "N/A"}\nFeedback: ${input.authorFeedback?.trim() || "None"}\nTimestamp: ${now}`,
     });
 
     recordAuditLog({
@@ -1351,6 +1432,10 @@ export async function moderateOrTransitionContent(
       ctx.user.id
     );
 
+    const articleAuthorUser = db.prepare("SELECT email FROM users WHERE id = ?").get(article.created_by_user_id) as { email: string } | undefined;
+    const targetAdminEmail = getAdminNotificationEmail();
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.literaryvoicenetwork.org";
+
     await createNotification({
       userId: article.created_by_user_id,
       type: `article_${input.nextStatus}`,
@@ -1362,6 +1447,55 @@ export async function moderateOrTransitionContent(
         input.nextStatus === "published"
           ? `/magazine/${article.slug}`
           : "/dashboard?tab=publications",
+      recipientEmail: articleAuthorUser?.email,
+    });
+
+    // Send email alert to Author on article approval/publishing/revision
+    if (articleAuthorUser?.email && articleAuthorUser.email.includes("@")) {
+      const isPublished = input.nextStatus === "published";
+      const isApproved = input.nextStatus === "approved";
+      const isRevision = input.nextStatus === "draft" || input.nextStatus === "revision_requested";
+
+      const subject = isPublished
+        ? `🎉 Congratulations! Your article "${article.title}" is now PUBLISHED on Literary Voices Network`
+        : isApproved
+        ? `Your article "${article.title}" has been APPROVED on Literary Voices Network`
+        : isRevision
+        ? `Editorial Revisions Requested: "${article.title}"`
+        : `Status Update on Your Submission: "${article.title}" (${input.nextStatus.toUpperCase()})`;
+
+      const liveLink = `${appUrl}/magazine/${article.slug}`;
+      const statusText = [
+        `Dear Author,`,
+        ``,
+        isPublished
+          ? `We are pleased to inform you that your piece "${article.title}" has been published in the LVN Digital Magazine!`
+          : isApproved
+          ? `Your piece "${article.title}" has been approved by the editorial desk and queued for release.`
+          : isRevision
+          ? `The editorial board has reviewed "${article.title}" and requested some updates.`
+          : `Your submission "${article.title}" has been transitioned to status: ${input.nextStatus}.`,
+        ``,
+        input.authorFeedback?.trim() ? `Editorial Desk Feedback:\n"${input.authorFeedback.trim()}"\n` : ``,
+        isPublished ? `Read it live: ${liveLink}` : `Check your dashboard: ${appUrl}/dashboard?tab=publications`,
+        ``,
+        `Warm regards,`,
+        `The Editorial & Publishing Desk`,
+        `Literary Voices Network`,
+      ].filter(Boolean).join("\n");
+
+      void sendDirectEmail({
+        to: articleAuthorUser.email,
+        subject,
+        text: statusText,
+      });
+    }
+
+    // Also notify Admin Gmail of the article moderation action
+    void sendDirectEmail({
+      to: targetAdminEmail,
+      subject: `[LVN Moderation Notice] Article "${article.title}" transitioned to ${input.nextStatus.toUpperCase()}`,
+      text: `Admin/Editor ${ctx.profile.display_name} updated article "${article.title}" to ${input.nextStatus.toUpperCase()}.\nAuthor: ${articleAuthorUser?.email || "N/A"}\nFeedback: ${input.authorFeedback?.trim() || "None"}\nTimestamp: ${now}`,
     });
 
     recordAuditLog({

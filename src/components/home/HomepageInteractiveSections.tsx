@@ -384,28 +384,6 @@ const HOSTS_DATA = [
     delay: "500ms",
     bio: "Curates weekly author interviews, reading room serializations, and emerging voice spotlights across the network.",
   },
-  {
-    id: "host-4",
-    name: "Director of Digital Media & Technology",
-    role: "Digital Platform, Streaming & Innovation Lead",
-    show: "LVN Digital & Podcast Studio",
-    slug: "",
-    photo: "/media/team/digital.jpg",
-    avatar: "/media/team/digital.jpg",
-    delay: "750ms",
-    bio: "Leads the LVN digital infrastructure — streaming platforms, audiobook distribution, digital magazine, and emerging technology integrations.",
-  },
-  {
-    id: "host-5",
-    name: "Social Media Manager",
-    role: "Social Media & Community Engagement Manager",
-    show: "LVN Social & Reader Community",
-    slug: "",
-    photo: "/media/team/social.jpg",
-    avatar: "/media/team/social.jpg",
-    delay: "1000ms",
-    bio: "Leads social media strategy, digital campaigns, author spotlights, and global reader community engagement across Literary Voices Network's channels.",
-  },
 ];
 
 const UPCOMING_BROADCASTS = [
@@ -570,20 +548,47 @@ export function AuthorPromoBanner() {
 /* 2. STEP INSIDE THE BROADCAST (INTRO VIDEO SHOWCASE)                        */
 /* -------------------------------------------------------------------------- */
 export function StepInsideBroadcastSection() {
+  const [videoUrl, setVideoUrl] = useState(INTRO_VIDEO_URL);
+  const [guestName, setGuestName] = useState("");
+  const [guestBio, setGuestBio] = useState("");
+
+  useEffect(() => {
+    const syncBroadcast = () => {
+      try {
+        const stored = localStorage.getItem("lvn_custom_broadcast");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.videoUrl) setVideoUrl(parsed.videoUrl);
+          if (parsed.guestName) setGuestName(parsed.guestName);
+          if (parsed.guestBio) setGuestBio(parsed.guestBio);
+        }
+      } catch {}
+    };
+
+    syncBroadcast();
+    window.addEventListener("lvn-broadcast-updated", syncBroadcast);
+    return () => window.removeEventListener("lvn-broadcast-updated", syncBroadcast);
+  }, []);
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         <div className="lg:col-span-5 space-y-4">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#AA7C11]">
-            Welcome to LVN
-          </p>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-gradient text-[#050505]">
+              <Radio className="size-3" />
+              Live Studio Feed
+            </span>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#AA7C11]">
+              Welcome to LVN
+            </p>
+          </div>
           <h2 className="font-serif-display text-3xl sm:text-4xl font-bold text-[#080808] leading-tight">
-            Step Inside the Broadcast
+            {guestName ? `Step Inside with ${guestName}` : "Step Inside the Broadcast"}
           </h2>
           <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-            Take a short look at who we are — the voices, the books, and the
-            conversations that bring readers and authors together across the
-            world.
+            {guestBio ||
+              "Take a short look at who we are — the voices, the books, and the conversations that bring readers and authors together across the world."}
           </p>
           <div className="pt-2 flex flex-wrap gap-3">
             <Link
@@ -605,14 +610,15 @@ export function StepInsideBroadcastSection() {
         <div className="lg:col-span-7">
           <div className="relative rounded-3xl overflow-hidden bg-[#050505] border-2 border-[#D4AF37]/45 shadow-[0_20px_50px_rgba(0,0,0,0.3)] aspect-video">
             <video
+              key={videoUrl}
               controls
               playsInline
               preload="metadata"
               poster="/media/lvn-hero-poster.svg"
-              src={INTRO_VIDEO_URL}
+              src={videoUrl}
               className="w-full h-full object-cover"
             >
-              <source src={INTRO_VIDEO_URL} type="video/mp4" />
+              <source src={videoUrl} type="video/mp4" />
             </video>
           </div>
         </div>

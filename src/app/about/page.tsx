@@ -33,18 +33,6 @@ const LEADERSHIP = [
     focus: "Author Interviews & Weekly Programming",
     bio: "Curates the weekly broadcast lineup, books author interviews and readings, and spotlights emerging voices across every show on the network.",
   },
-  {
-    photo: "/media/team/digital.jpg",
-    title: "Director of Digital Media & Technology",
-    focus: "Digital Platform, Streaming & Innovation",
-    bio: "Leads the LVN digital infrastructure — from the streaming broadcast platform and audiobook distribution to the digital magazine, website, and emerging technology integrations.",
-  },
-  {
-    photo: "/media/team/social.jpg",
-    title: "Social Media Manager",
-    focus: "Social Strategy, Community & Digital Audience",
-    bio: "Leads social media strategy, digital campaigns, author spotlights, and global reader community engagement across Literary Voices Network's social channels.",
-  },
 ];
 
 const PILLARS = [

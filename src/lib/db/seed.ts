@@ -25,9 +25,9 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsMap = {
   logoText: "Literary Voices Network",
   primaryColorHex: "#080808",
   accentColorHex: "#D4AF37",
-  editorialEmail: "enquiry@literarynetwork.org",
-  pressEmail: "enquiry@literarynetwork.org",
-  partnershipsEmail: "enquiry@literarynetwork.org",
+  editorialEmail: "perrycreativity@gmail.com",
+  pressEmail: "perrycreativity@gmail.com",
+  partnershipsEmail: "perrycreativity@gmail.com",
   memberPublishingEnabled: true,
   liveBroadcastActive: false,
   seoDefaultTitle:

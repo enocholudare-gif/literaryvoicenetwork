@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Award,
+  AlertCircle,
   BookOpen,
+  Check,
   CheckCircle2,
   Clock,
   ExternalLink,
   Eye,
+  EyeOff,
   Feather,
   Headphones,
   Image as ImageIcon,
@@ -18,11 +21,13 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  MailCheck,
   Mic2,
   Newspaper,
   Plus,
   Radio,
   Send,
+  Server,
   Settings,
   ShieldCheck,
   Trash2,
@@ -319,7 +324,17 @@ export default function AdminDashboardPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newLoginEmail, setNewLoginEmail] = useState("");
-  const [receivingEmail, setReceivingEmail] = useState("enquiry@literaryvoicenetwork.org");
+  const [receivingEmail, setReceivingEmail] = useState("perrycreativity@gmail.com");
+
+  // SMTP & Gmail Gateway State
+  const [smtpHost, setSmtpHost] = useState("smtp.gmail.com");
+  const [smtpPort, setSmtpPort] = useState(465);
+  const [smtpUser, setSmtpUser] = useState("perrycreativity@gmail.com");
+  const [smtpPass, setSmtpPass] = useState("");
+  const [hasSmtpPass, setHasSmtpPass] = useState(false);
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [smtpTestLoading, setSmtpTestLoading] = useState(false);
+  const [smtpTestResult, setSmtpTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -356,6 +371,13 @@ export default function AdminDashboardPage() {
         setSettings(admData.settings || null);
         if (admData.settings?.editorialEmail) {
           setReceivingEmail(admData.settings.editorialEmail);
+        }
+        if (admData.smtpConfig) {
+          if (admData.smtpConfig.host) setSmtpHost(admData.smtpConfig.host);
+          if (admData.smtpConfig.port) setSmtpPort(Number(admData.smtpConfig.port));
+          if (admData.smtpConfig.user) setSmtpUser(admData.smtpConfig.user);
+          setHasSmtpPass(Boolean(admData.smtpConfig.hasPass));
+          if (admData.smtpConfig.adminEmail) setReceivingEmail(admData.smtpConfig.adminEmail);
         }
         if (admData.settings?.liveBroadcastActive !== undefined) {
           setRadioIsLive(Boolean(admData.settings.liveBroadcastActive));
@@ -634,6 +656,16 @@ export default function AdminDashboardPage() {
       return;
     }
 
+    try {
+      localStorage.setItem("lvn_custom_broadcast", JSON.stringify({
+        guestName: broadcastGuestName.trim(),
+        guestBio: broadcastGuestBio.trim(),
+        videoUrl: broadcastVideoUrl.trim(),
+        programme: radioProgramme,
+      }));
+      window.dispatchEvent(new CustomEvent("lvn-broadcast-updated"));
+    } catch {}
+
     setBanner({
       type: "success",
       text: `Broadcast guest "${broadcastGuestName}" and video settings saved!`,
@@ -697,6 +729,80 @@ export default function AdminDashboardPage() {
       text: `Notification & correspondence email set to ${receivingEmail.trim()}!`,
     });
     loadData();
+  };
+
+  // 6. Save SMTP Settings
+  const handleSaveSmtpSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBanner(null);
+    setSmtpTestResult(null);
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update-smtp-settings",
+          smtpSettings: {
+            host: smtpHost.trim(),
+            port: Number(smtpPort),
+            user: smtpUser.trim(),
+            pass: smtpPass.trim() || undefined,
+            adminEmail: receivingEmail.trim() || smtpUser.trim(),
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to update SMTP settings." });
+        return;
+      }
+      setBanner({
+        type: "success",
+        text: "SMTP Gateway settings saved! Gmail notifications are configured.",
+      });
+      if (smtpPass) {
+        setHasSmtpPass(true);
+        setSmtpPass("");
+      }
+      loadData();
+    } catch {
+      setBanner({ type: "error", text: "Error saving SMTP settings." });
+    }
+  };
+
+  // 7. Test SMTP Connection
+  const handleTestSmtpConnection = async () => {
+    setSmtpTestLoading(true);
+    setSmtpTestResult(null);
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "test-smtp",
+          targetEmail: receivingEmail.trim() || smtpUser.trim() || "perrycreativity@gmail.com",
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setSmtpTestResult({
+          ok: true,
+          message: data.message || `Test email dispatched successfully to ${receivingEmail || "perrycreativity@gmail.com"}!`,
+        });
+      } else {
+        setSmtpTestResult({
+          ok: false,
+          message: data.error || "Failed to deliver test email.",
+        });
+      }
+    } catch (err: any) {
+      setSmtpTestResult({
+        ok: false,
+        message: err?.message || "Network error while testing SMTP connection.",
+      });
+    } finally {
+      setSmtpTestLoading(false);
+    }
   };
 
   if (loading) {
@@ -1807,6 +1913,174 @@ export default function AdminDashboardPage() {
                 >
                   Save Receiving Email
                 </button>
+              </form>
+            </div>
+
+            {/* Gmail & SMTP Delivery Gateway */}
+            <div className="md:col-span-2 p-6 sm:p-8 rounded-3xl bg-white border border-[#D4AF37]/35 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 pb-4">
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-[#080808] flex items-center gap-2">
+                    <Server className="size-5 text-[#AA7C11]" />
+                    Gmail &amp; SMTP Live Notification Gateway
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Connect your Gmail account via SMTP to automatically send live notifications for contact inquiries, author book submissions, and moderation approvals.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {hasSmtpPass ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">
+                      <CheckCircle2 className="size-3.5 text-emerald-600" />
+                      Live SMTP Ready
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-800">
+                      <AlertCircle className="size-3.5 text-amber-600" />
+                      App Password Needed
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {smtpTestResult && (
+                <div
+                  className={`p-4 rounded-2xl text-xs flex items-start gap-3 border ${
+                    smtpTestResult.ok
+                      ? "bg-emerald-50 text-emerald-900 border-emerald-200"
+                      : "bg-red-50 text-red-900 border-red-200"
+                  }`}
+                >
+                  {smtpTestResult.ok ? (
+                    <MailCheck className="size-5 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="size-5 text-red-600 shrink-0 mt-0.5" />
+                  )}
+                  <div className="space-y-1">
+                    <p className="font-bold">{smtpTestResult.ok ? "SMTP Verified!" : "SMTP Verification Error"}</p>
+                    <p className="font-sans leading-relaxed">{smtpTestResult.message}</p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveSmtpSettings} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-[#080808]">Gmail / SMTP Account Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={smtpUser}
+                      onChange={(e) => setSmtpUser(e.target.value)}
+                      placeholder="perrycreativity@gmail.com"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                    />
+                    <p className="text-[11px] text-neutral-500">The Gmail account sending outgoing alerts</p>
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-[#080808]">Gmail App Password (16 characters)</label>
+                      <button
+                        type="button"
+                        onClick={() => setShowSmtpPass(!showSmtpPass)}
+                        className="text-[11px] text-[#AA7C11] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        {showSmtpPass ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
+                        {showSmtpPass ? "Hide" : "Show"}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showSmtpPass ? "text" : "password"}
+                        value={smtpPass}
+                        onChange={(e) => setSmtpPass(e.target.value)}
+                        placeholder={hasSmtpPass ? "•••••••••••••••• (App Password Saved)" : "e.g. abcd efgh ijkl mnop"}
+                        className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-[11px] text-neutral-500">
+                      Generated at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#AA7C11] underline">Google Account &gt; Security &gt; App Passwords</a>
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[#080808]">SMTP Server Host</label>
+                    <input
+                      type="text"
+                      required
+                      value={smtpHost}
+                      onChange={(e) => setSmtpHost(e.target.value)}
+                      placeholder="smtp.gmail.com"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-[#080808]">Port (SSL: 465 / TLS: 587)</label>
+                    <input
+                      type="number"
+                      required
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(Number(e.target.value))}
+                      placeholder="465"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-[#080808]">Admin Notification Destination</label>
+                    <input
+                      type="email"
+                      required
+                      value={receivingEmail}
+                      onChange={(e) => setReceivingEmail(e.target.value)}
+                      placeholder="perrycreativity@gmail.com"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                    />
+                    <p className="text-[11px] text-neutral-500">Where contact forms and new book submission notices arrive</p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#FAF8F3] border border-neutral-200 text-xs text-neutral-700 space-y-1.5">
+                  <p className="font-bold text-[#080808] flex items-center gap-1.5">
+                    <Check className="size-4 text-[#AA7C11]" />
+                    How to configure your Gmail App Password in 3 quick steps:
+                  </p>
+                  <ol className="list-decimal pl-5 space-y-1 text-xs text-neutral-600">
+                    <li>Go to <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-[#AA7C11] underline">Google Account Security</a> and make sure <strong>2-Step Verification</strong> is ON.</li>
+                    <li>Search or scroll to <strong>App Passwords</strong> (or visit <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#AA7C11] underline">myaccount.google.com/apppasswords</a>).</li>
+                    <li>Name your app password (e.g. <em>LVN Website</em>), click <strong>Create</strong>, and copy the 16-letter code into the box above.</li>
+                  </ol>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer"
+                  >
+                    Save SMTP Gateway Settings
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={smtpTestLoading}
+                    onClick={handleTestSmtpConnection}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#080808] text-xs font-bold text-[#F7DF8B] hover:bg-neutral-800 disabled:opacity-50 shadow-xs cursor-pointer transition-colors"
+                  >
+                    {smtpTestLoading ? (
+                      <>
+                        <ShieldCheck className="size-3.5 animate-spin text-[#D4AF37]" />
+                        Dispatching Test Email...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="size-3.5 text-[#D4AF37]" />
+                        Send Test Email to {receivingEmail || "Gmail"}
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
             </div>
           </div>
