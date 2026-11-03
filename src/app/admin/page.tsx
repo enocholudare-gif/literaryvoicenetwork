@@ -292,6 +292,10 @@ export default function AdminDashboardPage() {
   const [bkIsFeatured, setBkIsFeatured] = useState(true);
   const [bkInitialViews, setBkInitialViews] = useState(1450);
 
+  // Catalog State
+  const [catalogSearch, setCatalogSearch] = useState("");
+  const [catalogCategory, setCatalogCategory] = useState("All");
+
   // 2. Author Spotlight State
   const [spotlightName, setSpotlightName] = useState("");
   const [spotlightAvatar, setSpotlightAvatar] = useState("/media/avatars/default-portrait.svg");
@@ -509,6 +513,48 @@ export default function AdminDashboardPage() {
     setBkLink("");
     setBkGoodreads("");
     loadData();
+  };
+
+  // 1a. Delete Book from Catalog
+  const handleDeleteBook = async (book: Book) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${book.title}" from the network catalog?`)) {
+      return;
+    }
+    setBanner(null);
+    try {
+      const res = await fetch("/api/publishing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-book",
+          bookId: book.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to delete book." });
+        return;
+      }
+
+      setAllBooks((prev) => prev.filter((b) => b.id !== book.id));
+
+      // Remove from localStorage custom published books if present
+      try {
+        const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+        const filtered = stored.filter(
+          (b: any) => b.id !== book.id && b.slug !== book.slug && b.title !== book.title
+        );
+        localStorage.setItem("lvn_custom_published_books", JSON.stringify(filtered));
+        window.dispatchEvent(new CustomEvent("lvn-book-published"));
+      } catch {}
+
+      setBanner({
+        type: "success",
+        text: `Book "${book.title}" has been deleted from the catalog.`,
+      });
+    } catch {
+      setBanner({ type: "error", text: "Network error while deleting book." });
+    }
   };
 
   // 1b. Author Spotlight Handler
@@ -1777,63 +1823,128 @@ export default function AdminDashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-[#080808]">
-                  Published Books Catalog
+                  Published Books Catalog ({allBooks.length})
                 </h2>
                 <p className="text-xs text-[#080808]/70">
-                  Every active book listing on the network with its category tag and live view count.
+                  Every active book listing on the network with its category tag, live view count, and deletion management.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveTab("books")}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 cursor-pointer shrink-0"
               >
                 <Plus className="size-3.5" />
                 Add Another Book
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allBooks.map((b) => (
-                <div
-                  key={b.id}
-                  className="p-5 rounded-2xl bg-white border border-neutral-200 shadow-xs flex gap-4 items-start"
-                >
-                  <img
-                    src={b.cover_url || "/media/covers/the-first.jpg"}
-                    alt={b.title}
-                    className="w-16 h-24 object-cover rounded-xl border border-neutral-200 shrink-0 shadow-xs"
-                  />
-                  <div className="space-y-1 flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="rounded-full bg-gold-gradient px-2 py-0.5 text-[9px] font-bold text-[#050505]">
-                        {b.genre}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-neutral-600">
-                        <Eye className="size-3 text-[#AA7C11]" />
-                        {(b.view_count || 1200).toLocaleString()}
-                      </span>
-                    </div>
-
-                    <h3 className="font-serif text-base font-bold text-[#080808] truncate">
-                      {b.title}
-                    </h3>
-                    <p className="text-xs text-neutral-600 truncate">
-                      By {b.author_name || "Author"}
-                    </p>
-
-                    <div className="pt-2 flex gap-2">
-                      <Link
-                        href={`/books/${b.slug}`}
-                        className="text-[11px] font-bold text-[#AA7C11] hover:underline"
-                      >
-                        View Page →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 p-3 rounded-2xl bg-white border border-neutral-200 shadow-xs">
+              <input
+                type="search"
+                placeholder="Search catalog by title, author, or genre..."
+                value={catalogSearch}
+                onChange={(e) => setCatalogSearch(e.target.value)}
+                className="flex-1 rounded-xl border border-neutral-300 px-3.5 py-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+              />
+              <select
+                value={catalogCategory}
+                onChange={(e) => setCatalogCategory(e.target.value)}
+                aria-label="Filter catalog by category"
+                className="rounded-xl border border-neutral-300 px-3.5 py-2 text-xs text-[#080808] bg-white focus:border-[#D4AF37] focus:outline-none shrink-0"
+              >
+                <option value="All">All Categories</option>
+                <option value="Editorial">Editorial</option>
+                <option value="Magazine">Magazine</option>
+                <option value="Spotlight">Spotlight</option>
+                <option value="Podcast">Podcast</option>
+                <option value="Literary Fiction">Literary Fiction</option>
+                <option value="Historical Fiction">Historical Fiction</option>
+                <option value="Poetry">Poetry</option>
+                <option value="Translation">Translation</option>
+              </select>
             </div>
+
+            {(() => {
+              const filteredCatalog = allBooks.filter((b) => {
+                const matchSearch =
+                  !catalogSearch ||
+                  b.title.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                  (b.author_name || "").toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                  (b.genre || "").toLowerCase().includes(catalogSearch.toLowerCase());
+                const matchCategory =
+                  catalogCategory === "All" ||
+                  (b.genre || "").toLowerCase() === catalogCategory.toLowerCase();
+                return matchSearch && matchCategory;
+              });
+
+              if (filteredCatalog.length === 0) {
+                return (
+                  <div className="p-12 text-center rounded-2xl bg-white border border-neutral-200 space-y-2">
+                    <p className="font-serif text-lg font-bold text-[#080808]">No books match your filter</p>
+                    <p className="text-xs text-neutral-500">Try adjusting your search query or category filter above.</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCatalog.map((b) => (
+                    <div
+                      key={b.id}
+                      className="p-5 rounded-2xl bg-white border border-neutral-200 shadow-xs flex gap-4 items-start hover:border-[#D4AF37]/50 transition-all"
+                    >
+                      <img
+                        src={b.cover_url || "/media/covers/the-first.jpg"}
+                        alt={b.title}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/media/covers/the-first.jpg";
+                        }}
+                        className="w-16 h-24 object-cover rounded-xl border border-neutral-200 shrink-0 shadow-xs"
+                      />
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="rounded-full bg-gold-gradient px-2 py-0.5 text-[9px] font-bold text-[#050505]">
+                            {b.genre}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-neutral-600">
+                            <Eye className="size-3 text-[#AA7C11]" />
+                            {(b.view_count || 1200).toLocaleString()}
+                          </span>
+                        </div>
+
+                        <h3 className="font-serif text-base font-bold text-[#080808] truncate" title={b.title}>
+                          {b.title}
+                        </h3>
+                        <p className="text-xs text-neutral-600 truncate">
+                          By {b.author_name || "Author"}
+                        </p>
+
+                        <div className="pt-2 flex items-center justify-between border-t border-neutral-100 mt-2">
+                          <Link
+                            href={`/books/${b.slug}`}
+                            target="_blank"
+                            className="text-[11px] font-bold text-[#AA7C11] hover:underline"
+                          >
+                            View Page →
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBook(b)}
+                            title={`Delete "${b.title}" from catalog`}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 hover:text-white hover:bg-red-600 px-2.5 py-1 rounded-lg border border-red-200 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="size-3" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 

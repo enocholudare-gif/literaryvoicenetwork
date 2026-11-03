@@ -118,11 +118,23 @@ export const BookInputSchema = z.object({
   format: z.string().optional().default("Hardcover"),
   publisher: z.string().optional().default("Literary Voices Network"),
   publicationDate: z.string().optional().default(""),
-  pageCount: z.number().nullable().optional().default(null),
+  pageCount: z.union([z.number(), z.string()]).nullable().optional().transform((val) => {
+    if (typeof val === "string") {
+      const num = parseInt(val, 10);
+      return isNaN(num) ? null : num;
+    }
+    return val ?? null;
+  }),
   language: z.string().optional().default("English"),
-  isFeatured: z.boolean().optional().default(true),
-  editorialRecommendation: z.boolean().optional().default(false),
-  viewCount: z.number().optional(),
+  isFeatured: z.union([z.boolean(), z.number(), z.string()]).optional().transform((val) => Boolean(val)),
+  editorialRecommendation: z.union([z.boolean(), z.number(), z.string()]).optional().transform((val) => Boolean(val)),
+  viewCount: z.union([z.number(), z.string()]).optional().transform((val) => {
+    if (typeof val === "string") {
+      const num = parseInt(val, 10);
+      return isNaN(num) ? 1450 : num;
+    }
+    return val ?? 1450;
+  }),
   retailerLinks: z.record(z.string(), z.string().optional()).optional().default({}),
   seoTitle: z.string().optional().default(""),
   seoDescription: z.string().optional().default(""),
@@ -370,20 +382,28 @@ export function createBookDraft(
       } else {
         const authorProfId = generateId();
         const authorSlug = generateUniqueSlug("profiles", trimmedName);
+        const authorUserId = `user-author-${authorProfId.slice(0, 8)}`;
+
+        db.prepare(`
+          INSERT OR IGNORE INTO users (id, email, password_hash, role, email_verified, account_status, created_at, updated_at)
+          VALUES (?, ?, 'N/A', 'author', 1, 'active', ?, ?)
+        `).run(authorUserId, `${authorSlug}@literaryvoicenetwork.org`, now, now);
+
         db.prepare(`
           INSERT INTO profiles (
-            id, user_id, slug, display_name, pen_name, is_author_profile,
-            avatar_url, bio, headline, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+            id, user_id, slug, display_name, pen_name, headline, bio, avatar_url,
+            banner_url, location, website_url, genres_json, social_links_json,
+            is_author_profile, is_featured, is_public, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', '[]', '{}', 1, 1, 1, ?, ?)
         `).run(
           authorProfId,
-          ctx.user.id,
+          authorUserId,
           authorSlug,
           trimmedName,
           trimmedName,
-          parsed.authorAvatar?.trim() || "/media/avatars/default-portrait.svg",
-          parsed.authorBio?.trim() || "",
           parsed.authorHeadline?.trim() || "Contributing Author",
+          parsed.authorBio?.trim() || "Contributing author on Literary Voices Network.",
+          parsed.authorAvatar?.trim() || "/media/avatars/default-portrait.svg",
           now,
           now
         );
@@ -618,6 +638,48 @@ export function updateBook(
   );
 
   return getBookByIdInternal(bookId)!;
+}
+
+export function deleteBook(
+  ctx: AuthenticatedContext,
+  bookId: string
+): boolean {
+  requireRole(ctx, ["admin", "editor", "author", "member"]);
+  const db = getDb();
+  const existing = getBookByIdInternal(bookId);
+  if (!existing) {
+    throw new Error("NOT_FOUND: Book not found.");
+  }
+
+  // Only admin, editor, or original submitting author may delete
+  const isOwner = existing.submitted_by_user_id === ctx.user.id;
+  const isPrivileged = ctx.user.role === "admin" || ctx.user.role === "editor";
+  if (!isOwner && !isPrivileged) {
+    throw new Error("FORBIDDEN: You do not have permission to delete this book.");
+  }
+
+  try {
+    db.prepare("DELETE FROM submissions WHERE entity_type = 'book' AND entity_id = ?").run(bookId);
+    db.prepare("DELETE FROM book_reviews WHERE book_id = ?").run(bookId);
+    db.prepare("DELETE FROM content_revisions WHERE entity_type = 'book' AND entity_id = ?").run(bookId);
+  } catch {}
+
+  const result = db.prepare("DELETE FROM books WHERE id = ?").run(bookId);
+
+  recordAuditLog({
+    actorUserId: ctx.user.id,
+    actorRole: ctx.user.role,
+    action: "DELETE_BOOK",
+    entityType: "book",
+    entityId: bookId,
+    summary: `${ctx.profile.display_name} deleted book "${existing.title}"`,
+    metadata: {
+      deletedBookTitle: existing.title,
+      slug: existing.slug,
+    },
+  });
+
+  return result.changes > 0;
 }
 
 export async function submitBookForReview(
