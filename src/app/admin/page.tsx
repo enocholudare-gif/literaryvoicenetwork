@@ -1747,7 +1747,7 @@ export default function AdminDashboardPage() {
                   Reader &amp; Author Correspondence
                 </h2>
                 <p className="text-xs text-[#080808]/70">
-                  Messages submitted from the website Contact page directly to <strong>enquiry@literaryvoicenetwork.org</strong>.
+                  Messages submitted from the website Contact page dispatched directly to <strong>{receivingEmail}</strong> and your Admin Inbox.
                 </p>
               </div>
               <span className="rounded-full bg-emerald-100 border border-emerald-300 px-3 py-1 text-xs font-bold text-emerald-900">
