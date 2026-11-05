@@ -5,6 +5,7 @@ import {
   authorizeManuscriptDistribution,
   createArticleDraft,
   createBookDraft,
+  deleteArticle,
   deleteBook,
   incrementBookView,
   listAllArticlesForStaff,
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
 
     let session = await getCurrentSession();
-    if (!session && (action === "create-book" || action === "submit-book" || action === "create-article" || action === "delete-book")) {
+    if (!session && (action === "create-book" || action === "submit-book" || action === "create-article" || action === "delete-book" || action === "delete-article")) {
       const db = getDb();
       const adminUser = db.prepare("SELECT * FROM users WHERE role = 'admin' LIMIT 1").get() as any;
       if (adminUser) {
@@ -287,6 +288,15 @@ export async function POST(request: NextRequest) {
       }
       deleteBook(session, bookId);
       return NextResponse.json({ ok: true, deletedBookId: bookId });
+    }
+
+    if (action === "delete-article") {
+      const articleId = String(body.articleId || "").trim();
+      if (!articleId) {
+        return NextResponse.json({ ok: false, error: "Missing articleId" }, { status: 400 });
+      }
+      deleteArticle(session, articleId);
+      return NextResponse.json({ ok: true, deletedArticleId: articleId });
     }
 
     return NextResponse.json(

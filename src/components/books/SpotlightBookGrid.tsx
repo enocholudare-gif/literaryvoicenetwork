@@ -51,7 +51,34 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
     return () => window.removeEventListener("lvn-book-published", syncBooks);
   }, [initialBooks]);
 
-  if (books.length === 0) return null;
+  if (books.length === 0) {
+    return (
+      <section className="rounded-3xl bg-white border border-[#D4AF37]/35 p-8 sm:p-12 shadow-sm text-center space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-[#080808] border border-[#D4AF37]/40 flex items-center justify-center mx-auto shadow-sm">
+          <Award className="size-7 text-[#D4AF37]" />
+        </div>
+        <div className="space-y-1.5">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-gradient text-[#050505]">
+            Curated Network Spotlight
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#080808]">
+            Author Spotlight &amp; Featured Works
+          </h2>
+          <p className="text-sm text-neutral-600 max-w-xl mx-auto leading-relaxed">
+            The Literary Voices Network spotlight features distinguished authors, debut novelists, and official volumes curated by our editorial desk.
+          </p>
+        </div>
+        <div className="pt-3">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-sm"
+          >
+            Curate Spotlight in Admin Console
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-3xl bg-white border border-[#D4AF37]/35 p-6 sm:p-8 shadow-sm space-y-6">

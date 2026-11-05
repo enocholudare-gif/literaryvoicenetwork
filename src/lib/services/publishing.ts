@@ -682,6 +682,46 @@ export function deleteBook(
   return result.changes > 0;
 }
 
+export function deleteArticle(
+  ctx: AuthenticatedContext,
+  articleId: string
+): boolean {
+  requireRole(ctx, ["admin", "editor", "author", "member"]);
+  const db = getDb();
+  const existing = getArticleByIdInternal(articleId);
+  if (!existing) {
+    throw new Error("NOT_FOUND: Article not found.");
+  }
+
+  const isOwner = existing.created_by_user_id === ctx.user.id;
+  const isPrivileged = ctx.user.role === "admin" || ctx.user.role === "editor";
+  if (!isOwner && !isPrivileged) {
+    throw new Error("FORBIDDEN: You do not have permission to delete this article.");
+  }
+
+  try {
+    db.prepare("DELETE FROM submissions WHERE entity_type = 'article' AND entity_id = ?").run(articleId);
+    db.prepare("DELETE FROM content_revisions WHERE entity_type = 'article' AND entity_id = ?").run(articleId);
+  } catch {}
+
+  const result = db.prepare("DELETE FROM articles WHERE id = ?").run(articleId);
+
+  recordAuditLog({
+    actorUserId: ctx.user.id,
+    actorRole: ctx.user.role,
+    action: "DELETE_ARTICLE",
+    entityType: "article",
+    entityId: articleId,
+    summary: `${ctx.profile.display_name} deleted article "${existing.title}"`,
+    metadata: {
+      deletedArticleTitle: existing.title,
+      slug: existing.slug,
+    },
+  });
+
+  return result.changes > 0;
+}
+
 export async function submitBookForReview(
   ctx: AuthenticatedContext,
   bookId: string,

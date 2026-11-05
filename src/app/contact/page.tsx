@@ -21,25 +21,47 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const res = await fetch("/api/platform", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "create-enquiry",
-        enquiryData: {
-          enquiryType: "contact",
-          name,
-          email,
-          subject,
-          message,
-        },
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || "Failed to send message.");
-    } else {
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create-enquiry",
+          enquiryData: {
+            enquiryType: "contact",
+            name,
+            email,
+            subject,
+            message,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to send message.");
+        return;
+      }
+
+      const newEnquiry = data.enquiry || {
+        id: "enq-" + Date.now(),
+        enquiry_type: "contact",
+        name,
+        email,
+        subject: subject || "Website Contact Correspondence",
+        message,
+        status: "new",
+        created_at: new Date().toISOString(),
+      };
+
+      try {
+        const stored = JSON.parse(localStorage.getItem("lvn_custom_enquiries") || "[]");
+        localStorage.setItem("lvn_custom_enquiries", JSON.stringify([newEnquiry, ...stored]));
+        window.dispatchEvent(new CustomEvent("lvn-new-enquiry", { detail: newEnquiry }));
+      } catch {}
+
       setSubmitted(true);
+    } catch {
+      setError("Network connection error. Please try again.");
     }
   };
 

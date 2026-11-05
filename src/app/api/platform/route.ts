@@ -3,6 +3,9 @@ import { getCurrentSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import {
   createEnquiry,
+  deleteAuthorProfile,
+  deleteBroadcast,
+  deleteEnquiry,
   getAdminDashboardMetrics,
   globalSearch,
   listAllPitchesForStaff,
@@ -264,6 +267,21 @@ export async function POST(request: NextRequest) {
     if (action === "publish-author-spotlight") {
       const spotlight = upsertAuthorSpotlight(authSession, body.spotlightData);
       return NextResponse.json({ ok: true, spotlight });
+    }
+
+    if (action === "delete-enquiry") {
+      deleteEnquiry(authSession, String(body.enquiryId || ""));
+      return NextResponse.json({ ok: true, deletedEnquiryId: body.enquiryId });
+    }
+
+    if (action === "delete-broadcast") {
+      deleteBroadcast(authSession, String(body.broadcastId || ""));
+      return NextResponse.json({ ok: true, deletedBroadcastId: body.broadcastId });
+    }
+
+    if (action === "delete-author") {
+      deleteAuthorProfile(authSession, String(body.authorId || body.profileId || ""));
+      return NextResponse.json({ ok: true, deletedAuthorId: body.authorId || body.profileId });
     }
 
     if (action === "update-smtp-settings") {

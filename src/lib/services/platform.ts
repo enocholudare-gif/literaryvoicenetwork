@@ -1526,6 +1526,36 @@ export function updateEnquiryStatus(
   return listEnquiries(ctx).find((e) => e.id === enquiryId)!;
 }
 
+export function deleteEnquiry(
+  ctx: AuthenticatedContext,
+  enquiryId: string
+): boolean {
+  requireRole(ctx, ["editor", "admin"]);
+  const db = getDb();
+  const result = db.prepare("DELETE FROM enquiries WHERE id = ?").run(enquiryId);
+  return result.changes > 0;
+}
+
+export function deleteBroadcast(
+  ctx: AuthenticatedContext,
+  broadcastId: string
+): boolean {
+  requireRole(ctx, ["editor", "admin"]);
+  const db = getDb();
+  const result = db.prepare("DELETE FROM broadcasts WHERE id = ?").run(broadcastId);
+  return result.changes > 0;
+}
+
+export function deleteAuthorProfile(
+  ctx: AuthenticatedContext,
+  profileId: string
+): boolean {
+  requireRole(ctx, ["admin"]);
+  const db = getDb();
+  const result = db.prepare("DELETE FROM profiles WHERE id = ? AND id != ?").run(profileId, ctx.profile.id);
+  return result.changes > 0;
+}
+
 // =============================================================================
 // 7. GLOBAL SEARCH & ADMIN METRICS / USER MANAGEMENT
 // =============================================================================

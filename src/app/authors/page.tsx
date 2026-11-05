@@ -1,8 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import { Award, Feather, Search, Users } from "lucide-react";
-import { AuthorCard } from "@/components/ui/Cards";
 import { SpotlightBookGrid } from "@/components/books/SpotlightBookGrid";
+import { SpotlightAuthorsDirectory } from "@/components/authors/SpotlightAuthorsDirectory";
 import { listPublicAuthors } from "@/lib/services/platform";
 import { listPublicBooks } from "@/lib/services/publishing";
 
@@ -22,7 +22,14 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
   const search = params.q || "";
   const genre = params.genre || "All";
 
-  const authors = listPublicAuthors({ search, genre });
+  // Filter out seed mock profiles so only real authors added or published appear
+  const allAuthors = listPublicAuthors({ search, genre });
+  const realAuthors = allAuthors.filter(
+    (a) =>
+      !a.id.startsWith("profile-") &&
+      !["claire-moreau", "amara-osei", "ayn-cates-sullivan", "caro-claire-burke", "charlotte-mcconaghy", "david-sheldon", "stacey-horn", "erica-elliott", "graham-wilson", "jane-austen", "julian-thorne", "kathryn-stockett", "kenneth-bliss", "lou-lipsitz", "lynn-slaughter", "marie-benedict", "soren-lindqvist", "tayari-jones", "tony-rebeiro", "marcus-sterling", "eleanor-vance"].includes(a.slug)
+  );
+
   const { items: spotlightBooks } = listPublicBooks({ genre: "Spotlight", pageSize: 50 });
 
   const genres = [
@@ -47,18 +54,18 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
                 Voices of the Network
               </span>
               <h1 className="mt-2 font-serif text-3xl sm:text-5xl font-bold text-white">
-                Author & Contributor Directory
+                Author &amp; Contributor Directory
               </h1>
               <p className="mt-2.5 text-sm sm:text-base text-[#FAF8F3]/80 max-w-2xl">
                 Discover novelists, poets, translators, literary critics, and editorial contributors publishing original work on Literary Voices Network.
               </p>
             </div>
             <Link
-              href="/auth?mode=register"
+              href="/admin"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-xs hover:bg-[#F7DF8B] transition-colors"
             >
               <Award className="w-4 h-4" />
-              Create Author Profile
+              Manage Author Spotlight
             </Link>
           </div>
 
@@ -105,42 +112,11 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
 
       {/* Main Directory & Spotlight Showcase */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-        {!search && genre === "All" && (
-          <SpotlightBookGrid initialBooks={spotlightBooks} />
-        )}
+        {/* Spotlight Books Grid */}
+        <SpotlightBookGrid initialBooks={spotlightBooks} />
 
-        {/* Authors Grid */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-serif text-2xl font-bold text-[#080808]">
-              Verified Network Authors ({authors.length})
-            </h2>
-          </div>
-
-          {authors.length === 0 ? (
-          <div className="rounded-2xl bg-white border border-[#080808]/10 p-12 text-center space-y-3">
-            <Feather className="w-10 h-10 text-[#D4AF37] mx-auto" />
-            <h2 className="font-serif text-2xl font-bold text-[#080808]">
-              No matching author profiles found
-            </h2>
-            <p className="text-sm text-[#080808]/70">
-              Try clearing your filter criteria to browse all verified LVN authors.
-            </p>
-            <Link
-              href="/authors"
-              className="inline-flex items-center px-4 py-2 rounded-xl bg-[#080808] text-white text-xs font-semibold"
-            >
-              Reset Filters
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {authors.map((author) => (
-              <AuthorCard key={author.id} author={author} />
-            ))}
-          </div>
-        )}
-        </section>
+        {/* Spotlight Authors Directory (Dynamic from DB & LocalStorage) */}
+        <SpotlightAuthorsDirectory initialAuthors={realAuthors} />
       </div>
     </div>
   );

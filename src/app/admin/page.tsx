@@ -10,6 +10,7 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Copy,
   ExternalLink,
   Eye,
   EyeOff,
@@ -247,7 +248,8 @@ function ImageUploadField({
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>("books");
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [user, setUser] = useState<Omit<UserModel, "password_hash"> | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -291,6 +293,7 @@ export default function AdminDashboardPage() {
   const [bkGoodreads, setBkGoodreads] = useState("");
   const [bkIsFeatured, setBkIsFeatured] = useState(true);
   const [bkInitialViews, setBkInitialViews] = useState(1450);
+  const [isPublishingBook, setIsPublishingBook] = useState(false);
 
   // Catalog State
   const [catalogSearch, setCatalogSearch] = useState("");
@@ -303,6 +306,8 @@ export default function AdminDashboardPage() {
   const [spotlightBio, setSpotlightBio] = useState("");
   const [spotlightLocation, setSpotlightLocation] = useState("");
   const [spotlightIsFeatured, setSpotlightIsFeatured] = useState(true);
+  const [isPublishingAuthor, setIsPublishingAuthor] = useState(false);
+  const [customSpotlightAuthors, setCustomSpotlightAuthors] = useState<any[]>([]);
 
   // 3. Magazine & Articles State
   const [artTitle, setArtTitle] = useState("");
@@ -312,6 +317,7 @@ export default function AdminDashboardPage() {
   const [artExcerpt, setArtExcerpt] = useState("");
   const [artBody, setArtBody] = useState("");
   const [artAuthor, setArtAuthor] = useState("");
+  const [isPublishingArticle, setIsPublishingArticle] = useState(false);
 
   // 4. Step Inside Broadcast State
   const [broadcastGuestName, setBroadcastGuestName] = useState("");
@@ -323,32 +329,29 @@ export default function AdminDashboardPage() {
     "https://videotourl.com/videos/1792770791367-b8ab28bf-7cd3-46ef-8bf5-cba07b6375bb.mp4"
   );
   const [radioProgramme, setRadioProgramme] = useState("LVN Live Studio");
+  const [isSavingBroadcast, setIsSavingBroadcast] = useState(false);
 
-  // 5. Settings Form State
+  // 5. Inbox & Inquiries State
+  const [copiedEmailId, setCopiedEmailId] = useState<string | null>(null);
+  const [inboxFilter, setInboxFilter] = useState<string>("all");
+  const [inboxSearch, setInboxSearch] = useState<string>("");
+
+  // 6. Settings Form State
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newLoginEmail, setNewLoginEmail] = useState("");
-  const [receivingEmail, setReceivingEmail] = useState("perrycreativity@gmail.com");
+  const [receivingEmail, setReceivingEmail] = useState("enquiry@literaryvoicenetwork.org");
 
-  // SMTP & Gmail Gateway State
-  const [smtpHost, setSmtpHost] = useState("smtp.gmail.com");
-  const [smtpPort, setSmtpPort] = useState(465);
-  const [smtpUser, setSmtpUser] = useState("perrycreativity@gmail.com");
-  const [smtpPass, setSmtpPass] = useState("");
-  const [hasSmtpPass, setHasSmtpPass] = useState(false);
-  const [showSmtpPass, setShowSmtpPass] = useState(false);
-  const [smtpTestLoading, setSmtpTestLoading] = useState(false);
-  const [smtpTestResult, setSmtpTestResult] = useState<{ ok: boolean; message: string } | null>(null);
-
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setIsRefreshing(true);
     try {
       const authRes = await fetch("/api/auth");
       const authData = await authRes.json();
 
       if (!authData.authenticated || authData.user?.role !== "admin") {
         setIsAuthenticatedAdmin(false);
-        setLoading(false);
+        setInitialLoading(false);
+        setIsRefreshing(false);
         return;
       }
       setIsAuthenticatedAdmin(true);
@@ -364,33 +367,47 @@ export default function AdminDashboardPage() {
       const modData = await modRes.json();
       if (modData.ok) {
         setSubmissions(modData.submissions || []);
-        setAllBooks(modData.books || []);
+        let bks: Book[] = modData.books || [];
+        try {
+          const stored: Book[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          if (stored.length > 0) {
+            bks = [...stored, ...bks.filter(b => !stored.some(s => s.id === b.id || s.title === b.title))];
+          }
+        } catch {}
+        setAllBooks(bks);
         setAllArticles(modData.articles || []);
       }
 
       const admData = await admRes.json();
       if (admData.ok) {
         setBroadcasts(admData.broadcasts || []);
-        setEnquiries(admData.enquiries || []);
+        let enqs: Enquiry[] = admData.enquiries || [];
+        try {
+          const storedEnqs: Enquiry[] = JSON.parse(localStorage.getItem("lvn_custom_enquiries") || "[]");
+          if (storedEnqs.length > 0) {
+            enqs = [...storedEnqs, ...enqs.filter(e => !storedEnqs.some(s => s.id === e.id))];
+          }
+        } catch {}
+        setEnquiries(enqs);
         setSettings(admData.settings || null);
         if (admData.settings?.editorialEmail) {
           setReceivingEmail(admData.settings.editorialEmail);
-        }
-        if (admData.smtpConfig) {
-          if (admData.smtpConfig.host) setSmtpHost(admData.smtpConfig.host);
-          if (admData.smtpConfig.port) setSmtpPort(Number(admData.smtpConfig.port));
-          if (admData.smtpConfig.user) setSmtpUser(admData.smtpConfig.user);
-          setHasSmtpPass(Boolean(admData.smtpConfig.hasPass));
-          if (admData.smtpConfig.adminEmail) setReceivingEmail(admData.smtpConfig.adminEmail);
         }
         if (admData.settings?.liveBroadcastActive !== undefined) {
           setRadioIsLive(Boolean(admData.settings.liveBroadcastActive));
         }
       }
+
+      // Load custom spotlight authors from localStorage
+      try {
+        const storedAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
+        setCustomSpotlightAuthors(storedAuths);
+      } catch {}
     } catch (err) {
       console.error("Error loading admin data:", err);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -434,94 +451,124 @@ export default function AdminDashboardPage() {
   const handlePublishBookForAuthor = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
-
-    const res = await fetch("/api/publishing", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "create-book",
-        publishImmediately: true,
-        bookData: {
-          title: bkTitle.trim(),
-          subtitle: bkSubtitle.trim(),
-          authorName: bkAuthor.trim() || profile?.display_name || "Author",
-          authorAvatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
-          authorBio: bkAuthorBio.trim(),
-          genre: bkCategory,
-          section: bkTargetSection,
-          format: bkFormat,
-          publisher: bkPublisher.trim() || "LVN Imprint Editions",
-          coverUrl: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
-          description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
-          excerpt: bkExcerpt.trim(),
-          isFeatured: bkIsFeatured,
-          viewCount: Number(bkInitialViews) || 1450,
-          retailerLinks: {
-            amazon: bkLink.trim(),
-            goodreads: bkGoodreads.trim(),
-          },
-        },
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Failed to publish book." });
-      return;
-    }
-
-    const savedBook = data.book
-      ? {
-          ...data.book,
-          genre: bkCategory,
-          section: bkTargetSection,
-          author_name: bkAuthor.trim() || data.book.author_name || profile?.display_name || "Author",
-          author_avatar: bkAuthorAvatar.trim() || data.book.author_avatar || "/media/avatars/default-portrait.svg",
-        }
-      : {
-          id: "pub-" + Date.now(),
-          slug: (bkTitle.trim() || "book").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-          title: bkTitle.trim(),
-          subtitle: bkSubtitle.trim(),
-          author_name: bkAuthor.trim() || profile?.display_name || "Author",
-          author_avatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
-          author_headline: bkAuthorBio.trim(),
-          author_slug: (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-          genre: bkCategory,
-          section: bkTargetSection,
-          cover_url: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
-          description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
-          status: "published",
-          is_featured: bkIsFeatured ? 1 : 0,
-          view_count: Number(bkInitialViews) || 1450,
-          retailer_links: {
-            amazon: bkLink.trim(),
-            goodreads: bkGoodreads.trim(),
-          },
-          published_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        };
+    setIsPublishingBook(true);
 
     try {
-      const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-      const updated = [savedBook, ...stored.filter((x: any) => x.id !== savedBook.id && x.title !== savedBook.title)];
-      localStorage.setItem("lvn_custom_published_books", JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent("lvn-book-published", { detail: savedBook }));
-    } catch {}
+      const res = await fetch("/api/publishing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create-book",
+          publishImmediately: true,
+          bookData: {
+            title: bkTitle.trim(),
+            subtitle: bkSubtitle.trim(),
+            authorName: bkAuthor.trim() || profile?.display_name || "Author",
+            authorAvatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+            authorBio: bkAuthorBio.trim(),
+            genre: bkCategory,
+            section: bkTargetSection,
+            format: bkFormat,
+            publisher: bkPublisher.trim() || "LVN Imprint Editions",
+            coverUrl: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
+            description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
+            excerpt: bkExcerpt.trim(),
+            isFeatured: bkIsFeatured,
+            viewCount: Number(bkInitialViews) || 1450,
+            retailerLinks: {
+              amazon: bkLink.trim(),
+              goodreads: bkGoodreads.trim(),
+            },
+          },
+        }),
+      });
 
-    setBanner({
-      type: "success",
-      text: `Book "${bkTitle}" has been published directly to ${bkTargetSection} and shelf for author "${bkAuthor || "Author"}"!`,
-    });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to publish book." });
+        setIsPublishingBook(false);
+        return;
+      }
 
-    setBkTitle("");
-    setBkSubtitle("");
-    setBkAuthor("");
-    setBkSynopsis("");
-    setBkExcerpt("");
-    setBkLink("");
-    setBkGoodreads("");
-    loadData();
+      const savedBook = data.book
+        ? {
+            ...data.book,
+            genre: bkCategory,
+            section: bkTargetSection,
+            author_name: bkAuthor.trim() || data.book.author_name || profile?.display_name || "Author",
+            author_avatar: bkAuthorAvatar.trim() || data.book.author_avatar || "/media/avatars/default-portrait.svg",
+          }
+        : {
+            id: "pub-" + Date.now(),
+            slug: (bkTitle.trim() || "book").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+            title: bkTitle.trim(),
+            subtitle: bkSubtitle.trim(),
+            author_name: bkAuthor.trim() || profile?.display_name || "Author",
+            author_avatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+            author_headline: bkAuthorBio.trim(),
+            author_slug: (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+            genre: bkCategory,
+            section: bkTargetSection,
+            cover_url: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
+            description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
+            status: "published",
+            is_featured: bkIsFeatured ? 1 : 0,
+            view_count: Number(bkInitialViews) || 1450,
+            retailer_links: {
+              amazon: bkLink.trim(),
+              goodreads: bkGoodreads.trim(),
+            },
+            published_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+          };
+
+      try {
+        const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+        const updated = [savedBook, ...stored.filter((x: any) => x.id !== savedBook.id && x.title !== savedBook.title)];
+        localStorage.setItem("lvn_custom_published_books", JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent("lvn-book-published", { detail: savedBook }));
+      } catch {}
+
+      // If category is Spotlight or section is Author Spotlight, also add to custom spotlight authors
+      if (bkCategory === "Spotlight" || bkTargetSection.includes("Spotlight")) {
+        try {
+          const authObj = {
+            id: "auth-" + (savedBook.author_slug || Date.now()),
+            slug: savedBook.author_slug || (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+            display_name: bkAuthor.trim() || "Featured Author",
+            headline: bkAuthorBio.trim() || "Spotlight Author",
+            bio: bkSynopsis.trim() || "Spotlight author on Literary Voices Network.",
+            avatar_url: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+            book_count: 1,
+            is_featured: 1,
+          };
+          const curAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
+          const nextAuths = [authObj, ...curAuths.filter((a: any) => a.slug !== authObj.slug)];
+          localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(nextAuths));
+          setCustomSpotlightAuthors(nextAuths);
+        } catch {}
+      }
+
+      setAllBooks((prev) => [savedBook, ...prev.filter((b) => b.id !== savedBook.id)]);
+
+      setBanner({
+        type: "success",
+        text: `Book "${bkTitle}" published successfully to ${bkTargetSection} (${bkCategory})!`,
+      });
+
+      setBkTitle("");
+      setBkSubtitle("");
+      setBkAuthor("");
+      setBkSynopsis("");
+      setBkExcerpt("");
+      setBkLink("");
+      setBkGoodreads("");
+      void loadData(true);
+    } catch (err: any) {
+      setBanner({ type: "error", text: "Error publishing book: " + (err?.message || "Please check connection.") });
+    } finally {
+      setIsPublishingBook(false);
+    }
   };
 
   // 1a. Delete Book from Catalog
@@ -547,7 +594,6 @@ export default function AdminDashboardPage() {
 
       setAllBooks((prev) => prev.filter((b) => b.id !== book.id));
 
-      // Remove from localStorage custom published books if present
       try {
         const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
         const filtered = stored.filter(
@@ -570,81 +616,187 @@ export default function AdminDashboardPage() {
   const handleSaveAuthorSpotlight = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
+    setIsPublishingAuthor(true);
 
-    const res = await fetch("/api/platform", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "publish-author-spotlight",
-        spotlightData: {
-          displayName: spotlightName.trim(),
-          avatarUrl: spotlightAvatar.trim() || "/media/avatars/default-portrait.svg",
-          headline: spotlightHeadline.trim() || "Featured Network Author & Contributor",
-          bio: spotlightBio.trim() || "Contributing author and literary voice at the Literary Voices Network.",
-          location: spotlightLocation.trim() || "New York",
-          isFeatured: spotlightIsFeatured,
-        },
-      }),
-    });
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "publish-author-spotlight",
+          spotlightData: {
+            displayName: spotlightName.trim(),
+            avatarUrl: spotlightAvatar.trim() || "/media/avatars/default-portrait.svg",
+            headline: spotlightHeadline.trim() || "Featured Network Author & Contributor",
+            bio: spotlightBio.trim() || "Contributing author and literary voice at the Literary Voices Network.",
+            location: spotlightLocation.trim() || "New York",
+            isFeatured: spotlightIsFeatured,
+          },
+        }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Failed to add author spotlight." });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to add author spotlight." });
+        return;
+      }
+
+      const authObj = {
+        id: data.spotlight?.id || "auth-" + Date.now(),
+        slug: data.spotlight?.slug || spotlightName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        display_name: spotlightName.trim(),
+        headline: spotlightHeadline.trim() || "Featured Author",
+        bio: spotlightBio.trim() || "Contributing author at LVN.",
+        avatar_url: spotlightAvatar.trim() || "/media/avatars/default-portrait.svg",
+        book_count: 1,
+        is_featured: 1,
+      };
+
+      try {
+        const curAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
+        const nextAuths = [authObj, ...curAuths.filter((a: any) => a.slug !== authObj.slug)];
+        localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(nextAuths));
+        setCustomSpotlightAuthors(nextAuths);
+        window.dispatchEvent(new CustomEvent("lvn-book-published"));
+      } catch {}
+
+      setBanner({
+        type: "success",
+        text: `Author "${spotlightName}" added to Author Spotlight successfully!`,
+      });
+
+      setSpotlightName("");
+      setSpotlightHeadline("");
+      setSpotlightBio("");
+      setSpotlightLocation("");
+      void loadData(true);
+    } catch {
+      setBanner({ type: "error", text: "Network error saving author spotlight." });
+    } finally {
+      setIsPublishingAuthor(false);
+    }
+  };
+
+  // 1ba. Delete Author from Spotlight
+  const handleDeleteAuthor = async (authorId: string, authorName: string) => {
+    if (!window.confirm(`Are you sure you want to remove "${authorName}" from the author spotlight?`)) {
       return;
     }
+    setBanner(null);
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-author",
+          authorId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to remove author." });
+        return;
+      }
 
-    setBanner({
-      type: "success",
-      text: `Author "${spotlightName}" added to Author Spotlight successfully!`,
-    });
+      try {
+        const stored = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
+        const filtered = stored.filter((a: any) => a.id !== authorId && a.display_name !== authorName);
+        localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(filtered));
+        setCustomSpotlightAuthors(filtered);
+        window.dispatchEvent(new CustomEvent("lvn-book-published"));
+      } catch {}
 
-    setSpotlightName("");
-    setSpotlightHeadline("");
-    setSpotlightBio("");
-    setSpotlightLocation("");
-    loadData();
+      setBanner({
+        type: "success",
+        text: `Author "${authorName}" removed from spotlight.`,
+      });
+      void loadData(true);
+    } catch {
+      setBanner({ type: "error", text: "Network error while removing author." });
+    }
   };
 
   // 1c. Magazine & Articles Handler
   const handlePublishArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
+    setIsPublishingArticle(true);
 
-    const res = await fetch("/api/publishing", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "create-article",
-        publishImmediately: true,
-        articleData: {
-          title: artTitle.trim(),
-          subtitle: artSubtitle.trim(),
-          articleType: artCategory === "Author Interview" ? "interview" : "essay",
-          coverUrl: artCoverUrl.trim() || "/media/banners/editorial-desk.svg",
-          excerpt: artExcerpt.trim() || "Featured piece on Literary Voices Network.",
-          bodyHtml: artBody.trim() || "<p>Article text content published by Literary Voices Network editorial desk.</p>",
-          sourceAttribution: artAuthor.trim() || "LVN Editorial Staff",
-        },
-      }),
-    });
+    try {
+      const res = await fetch("/api/publishing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create-article",
+          publishImmediately: true,
+          articleData: {
+            title: artTitle.trim(),
+            subtitle: artSubtitle.trim(),
+            articleType: artCategory === "Author Interview" ? "interview" : "essay",
+            coverUrl: artCoverUrl.trim() || "/media/banners/editorial-desk.svg",
+            excerpt: artExcerpt.trim() || "Featured piece on Literary Voices Network.",
+            bodyHtml: artBody.trim() || "<p>Article text content published by Literary Voices Network editorial desk.</p>",
+            sourceAttribution: artAuthor.trim() || "LVN Editorial Staff",
+          },
+        }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Failed to publish article." });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to publish article." });
+        return;
+      }
+
+      if (data.article) {
+        setAllArticles((prev) => [data.article, ...prev.filter((a) => a.id !== data.article.id)]);
+      }
+
+      setBanner({
+        type: "success",
+        text: `Article "${artTitle}" published successfully to ${artCategory}!`,
+      });
+
+      setArtTitle("");
+      setArtSubtitle("");
+      setArtExcerpt("");
+      setArtBody("");
+      setArtAuthor("");
+      void loadData(true);
+    } catch {
+      setBanner({ type: "error", text: "Network error publishing article." });
+    } finally {
+      setIsPublishingArticle(false);
+    }
+  };
+
+  // 1ca. Delete Article Handler
+  const handleDeleteArticle = async (articleId: string, articleTitle: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete article "${articleTitle}"?`)) {
       return;
     }
-
-    setBanner({
-      type: "success",
-      text: `Article "${artTitle}" published successfully to ${artCategory}!`,
-    });
-
-    setArtTitle("");
-    setArtSubtitle("");
-    setArtExcerpt("");
-    setArtBody("");
-    setArtAuthor("");
-    loadData();
+    setBanner(null);
+    try {
+      const res = await fetch("/api/publishing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-article",
+          articleId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to delete article." });
+        return;
+      }
+      setAllArticles((prev) => prev.filter((a) => a.id !== articleId));
+      setBanner({
+        type: "success",
+        text: `Article "${articleTitle}" has been permanently deleted.`,
+      });
+    } catch {
+      setBanner({ type: "error", text: "Network error while deleting article." });
+    }
   };
 
   // 2. Author Moderation Approval Handler
@@ -655,80 +807,165 @@ export default function AdminDashboardPage() {
     authorFeedback = ""
   ) => {
     setBanner(null);
-    const res = await fetch("/api/publishing", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "moderate-or-transition",
-        entityType,
-        entityId,
-        nextStatus,
-        authorFeedback,
-        isFeatured: true,
-        editorialRecommendation: true,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Approval update failed." });
-      return;
+    try {
+      const res = await fetch("/api/publishing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "moderate-or-transition",
+          entityType,
+          entityId,
+          nextStatus,
+          authorFeedback,
+          isFeatured: true,
+          editorialRecommendation: true,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Approval update failed." });
+        return;
+      }
+      setBanner({
+        type: "success",
+        text: `Submission updated to "${nextStatus}" successfully!`,
+      });
+      setSelectedSub(null);
+      void loadData(true);
+    } catch {
+      setBanner({ type: "error", text: "Network error while updating submission." });
     }
-    setBanner({
-      type: "success",
-      text: `Submission updated to "${nextStatus}" successfully!`,
-    });
-    setSelectedSub(null);
-    loadData();
   };
 
   // 3. Step Inside Broadcast & Video Update
   const handleSaveBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
-
-    const res = await fetch("/api/platform", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "upsert-broadcast",
-        broadcastData: {
-          programmeName: radioProgramme,
-          episodeNumber: 44,
-          title: `Step Inside the Broadcast with ${broadcastGuestName || "Studio Guest"}`,
-          hostName: profile?.display_name || "Executive Founder & CEO",
-          guestName: broadcastGuestName.trim(),
-          broadcastType: "video",
-          replayUrl: broadcastVideoUrl.trim(),
-          description: broadcastGuestBio.trim(),
-          status: "published",
-        },
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      setBanner({ type: "error", text: data.error || "Failed to update broadcast settings." });
-      return;
-    }
+    setIsSavingBroadcast(true);
 
     try {
-      localStorage.setItem("lvn_custom_broadcast", JSON.stringify({
-        guestName: broadcastGuestName.trim(),
-        guestBio: broadcastGuestBio.trim(),
-        videoUrl: broadcastVideoUrl.trim(),
-        programme: radioProgramme,
-      }));
-      window.dispatchEvent(new CustomEvent("lvn-broadcast-updated"));
-    } catch {}
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "upsert-broadcast",
+          broadcastData: {
+            programmeName: radioProgramme,
+            episodeNumber: 44,
+            title: `Step Inside the Broadcast with ${broadcastGuestName || "Studio Guest"}`,
+            hostName: profile?.display_name || "Executive Founder & CEO",
+            guestName: broadcastGuestName.trim(),
+            broadcastType: "video",
+            replayUrl: broadcastVideoUrl.trim(),
+            description: broadcastGuestBio.trim(),
+            status: "published",
+          },
+        }),
+      });
 
-    setBanner({
-      type: "success",
-      text: `Broadcast guest "${broadcastGuestName}" and video settings saved!`,
-    });
-    loadData();
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to update broadcast settings." });
+        return;
+      }
+
+      try {
+        localStorage.setItem("lvn_custom_broadcast", JSON.stringify({
+          guestName: broadcastGuestName.trim(),
+          guestBio: broadcastGuestBio.trim(),
+          videoUrl: broadcastVideoUrl.trim(),
+          programme: radioProgramme,
+        }));
+        window.dispatchEvent(new CustomEvent("lvn-broadcast-updated"));
+      } catch {}
+
+      setBanner({
+        type: "success",
+        text: `Broadcast guest "${broadcastGuestName}" and video settings saved!`,
+      });
+      void loadData(true);
+    } catch {
+      setBanner({ type: "error", text: "Network error saving broadcast." });
+    } finally {
+      setIsSavingBroadcast(false);
+    }
   };
 
-  // 4. Change Password
+  // 3a. Delete Broadcast
+  const handleDeleteBroadcast = async (broadcastId: string, broadcastTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete broadcast "${broadcastTitle}"?`)) {
+      return;
+    }
+    setBanner(null);
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-broadcast",
+          broadcastId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to delete broadcast." });
+        return;
+      }
+      setBroadcasts((prev) => prev.filter((b) => b.id !== broadcastId));
+      setBanner({
+        type: "success",
+        text: `Broadcast "${broadcastTitle}" has been deleted.`,
+      });
+    } catch {
+      setBanner({ type: "error", text: "Network error while deleting broadcast." });
+    }
+  };
+
+  // 4. Delete Enquiry from Inbox
+  const handleDeleteEnquiry = async (enquiryId: string) => {
+    if (!window.confirm("Are you sure you want to permanently delete this message from the inbox?")) {
+      return;
+    }
+    setBanner(null);
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-enquiry",
+          enquiryId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBanner({ type: "error", text: data.error || "Failed to delete message." });
+        return;
+      }
+      setEnquiries((prev) => prev.filter((e) => e.id !== enquiryId));
+      try {
+        const stored = JSON.parse(localStorage.getItem("lvn_custom_enquiries") || "[]");
+        const filtered = stored.filter((e: any) => e.id !== enquiryId);
+        localStorage.setItem("lvn_custom_enquiries", JSON.stringify(filtered));
+      } catch {}
+      setBanner({
+        type: "success",
+        text: "Message removed from inbox.",
+      });
+    } catch {
+      setBanner({ type: "error", text: "Network error while deleting message." });
+    }
+  };
+
+  // 5. Copy Email Helper
+  const handleCopyEmail = (email: string, id: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(email);
+      setCopiedEmailId(id);
+      setTimeout(() => setCopiedEmailId(null), 2500);
+    }
+  };
+
+  // 6. Change Password
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -758,7 +995,7 @@ export default function AdminDashboardPage() {
     setConfirmPassword("");
   };
 
-  // 5. Update Receiving Email
+  // 7. Update Receiving Email
   const handleUpdateReceivingEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setBanner(null);
@@ -781,86 +1018,12 @@ export default function AdminDashboardPage() {
     }
     setBanner({
       type: "success",
-      text: `Notification & correspondence email set to ${receivingEmail.trim()}!`,
+      text: `Official correspondence and contact email updated to ${receivingEmail.trim()}!`,
     });
-    loadData();
+    void loadData(true);
   };
 
-  // 6. Save SMTP Settings
-  const handleSaveSmtpSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBanner(null);
-    setSmtpTestResult(null);
-    try {
-      const res = await fetch("/api/platform", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update-smtp-settings",
-          smtpSettings: {
-            host: smtpHost.trim(),
-            port: Number(smtpPort),
-            user: smtpUser.trim(),
-            pass: smtpPass.trim() || undefined,
-            adminEmail: receivingEmail.trim() || smtpUser.trim(),
-          },
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setBanner({ type: "error", text: data.error || "Failed to update SMTP settings." });
-        return;
-      }
-      setBanner({
-        type: "success",
-        text: "SMTP Gateway settings saved! Gmail notifications are configured.",
-      });
-      if (smtpPass) {
-        setHasSmtpPass(true);
-        setSmtpPass("");
-      }
-      loadData();
-    } catch {
-      setBanner({ type: "error", text: "Error saving SMTP settings." });
-    }
-  };
-
-  // 7. Test SMTP Connection
-  const handleTestSmtpConnection = async () => {
-    setSmtpTestLoading(true);
-    setSmtpTestResult(null);
-    try {
-      const res = await fetch("/api/platform", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "test-smtp",
-          targetEmail: receivingEmail.trim() || smtpUser.trim() || "perrycreativity@gmail.com",
-        }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setSmtpTestResult({
-          ok: true,
-          message: data.message || `Test email dispatched successfully to ${receivingEmail || "perrycreativity@gmail.com"}!`,
-        });
-      } else {
-        setSmtpTestResult({
-          ok: false,
-          message: data.error || "Failed to deliver test email.",
-        });
-      }
-    } catch (err: any) {
-      setSmtpTestResult({
-        ok: false,
-        message: err?.message || "Network error while testing SMTP connection.",
-      });
-    } finally {
-      setSmtpTestLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="min-h-screen bg-[#FAF8F3] flex items-center justify-center p-12 text-sm text-[#080808]">
         <div className="flex items-center gap-3">
@@ -1044,19 +1207,19 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl border border-[#D4AF37]/30 p-2 shadow-xs">
           <div className="flex overflow-x-auto gap-2 scrollbar-none">
             {[
-              { id: "books" as AdminTab, label: "Publish Book (Any Section)", icon: Plus },
-              { id: "authors" as AdminTab, label: "Author Spotlight", icon: Users },
-              { id: "articles" as AdminTab, label: "Magazine & Articles", icon: Newspaper },
+              { id: "books" as AdminTab, label: "Publish Book", icon: Plus },
+              { id: "authors" as AdminTab, label: `Author Spotlight (${customSpotlightAuthors.length})`, icon: Users },
+              { id: "enquiries" as AdminTab, label: `Inbox & Messages (${enquiries.length})`, icon: Mail, highlight: enquiries.length > 0 },
+              { id: "catalog" as AdminTab, label: `Catalog & Library (${allBooks.length})`, icon: Layers },
+              { id: "articles" as AdminTab, label: `Magazine & Essays (${allArticles.length})`, icon: Newspaper },
               {
                 id: "approvals" as AdminTab,
                 label: `Author Approvals (${pendingSubmissions.length})`,
                 icon: ShieldCheck,
                 highlight: pendingSubmissions.length > 0,
               },
-              { id: "broadcast" as AdminTab, label: "Step Inside Broadcast", icon: Video },
-              { id: "enquiries" as AdminTab, label: `Enquiries (${enquiries.length})`, icon: Mail },
-              { id: "catalog" as AdminTab, label: `Catalog (${allBooks.length})`, icon: Layers },
-              { id: "settings" as AdminTab, label: "Settings & Security", icon: Settings },
+              { id: "broadcast" as AdminTab, label: "Studio Broadcast", icon: Video },
+              { id: "settings" as AdminTab, label: "Settings & Profile", icon: Settings },
             ].map((tab) => {
               const Icon = tab.icon;
               const isSelected = activeTab === tab.id;
@@ -1150,17 +1313,19 @@ export default function AdminDashboardPage() {
                   <select
                     value={bkTargetSection}
                     onChange={(e) => {
-                      setBkTargetSection(e.target.value);
-                      if (e.target.value.includes("Editorial")) setBkCategory("Editorial");
-                      else if (e.target.value.includes("Magazine")) setBkCategory("Magazine");
-                      else if (e.target.value.includes("Podcast")) setBkCategory("Podcast");
+                      const val = e.target.value;
+                      setBkTargetSection(val);
+                      if (val.includes("Editorial")) setBkCategory("Editorial");
+                      else if (val.includes("Magazine")) setBkCategory("Magazine");
+                      else if (val.includes("Podcast")) setBkCategory("Podcast");
+                      else if (val.includes("Spotlight")) setBkCategory("Spotlight");
                     }}
                     className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white font-medium"
                   >
                     <option value="Editorial Desk">Editorial Desk (/editorial &amp; Shelf)</option>
                     <option value="Magazine Shelf">Magazine Shelf (/magazine)</option>
-                    <option value="Podcast & Audio">Podcast &amp; Studio Audio</option>
-                    <option value="Author Spotlight">Author Spotlight Section</option>
+                    <option value="Podcast & Audio">Podcast &amp; Studio Audio (/podcast)</option>
+                    <option value="Author Spotlight">Author Spotlight Section (/authors)</option>
                     <option value="On the Charts">On the Charts · 3D Floating Shelf</option>
                     <option value="Trending Books">Trending Books</option>
                     <option value="Recently Added">Recently Added Books</option>
@@ -1172,7 +1337,14 @@ export default function AdminDashboardPage() {
                   <label className="text-xs font-bold text-[#080808]">Category Tag *</label>
                   <select
                     value={bkCategory}
-                    onChange={(e) => setBkCategory(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBkCategory(val);
+                      if (val === "Editorial") setBkTargetSection("Editorial Desk");
+                      else if (val === "Magazine") setBkTargetSection("Magazine Shelf");
+                      else if (val === "Podcast") setBkTargetSection("Podcast & Audio");
+                      else if (val === "Spotlight") setBkTargetSection("Author Spotlight");
+                    }}
                     className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none bg-white font-medium"
                   >
                     <option value="Editorial">Editorial</option>
@@ -1307,10 +1479,20 @@ export default function AdminDashboardPage() {
                 </span>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer shrink-0"
+                  disabled={isPublishingBook}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md cursor-pointer shrink-0"
                 >
-                  <BookOpen className="size-4" />
-                  <span>Publish Book for Author</span>
+                  {isPublishingBook ? (
+                    <>
+                      <ShieldCheck className="size-4 animate-spin text-[#050505]" />
+                      <span>Publishing &amp; Distributing Book...</span>
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="size-4" />
+                      <span>Publish Book for Author</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1404,13 +1586,74 @@ export default function AdminDashboardPage() {
               <div className="pt-4 border-t border-neutral-200 flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
+                  disabled={isPublishingAuthor}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 disabled:opacity-60 transition-all shadow-md cursor-pointer"
                 >
-                  <Users className="size-4" />
-                  <span>Save Author Spotlight</span>
+                  {isPublishingAuthor ? (
+                    <>
+                      <ShieldCheck className="size-4 animate-spin text-[#050505]" />
+                      <span>Saving Spotlight...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Users className="size-4" />
+                      <span>Save Author Spotlight</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
+
+            {/* List of Current Spotlight Authors with Delete */}
+            <div className="pt-6 border-t border-neutral-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-lg font-bold text-[#080808]">
+                  Current Spotlight Authors ({customSpotlightAuthors.length})
+                </h3>
+                <span className="text-xs text-neutral-500">
+                  Visible under /authors and homepage spotlight
+                </span>
+              </div>
+
+              {customSpotlightAuthors.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-500">
+                  No custom spotlight authors added yet. Use the form above to add an author into the spotlight.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {customSpotlightAuthors.map((ca: any) => (
+                    <div
+                      key={ca.id || ca.slug}
+                      className="p-4 rounded-2xl bg-[#FAF8F3] border border-neutral-200 flex items-center justify-between gap-3 shadow-xs"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={ca.avatar_url || "/media/avatars/default-portrait.svg"}
+                          alt={ca.display_name}
+                          className="size-11 rounded-full object-cover border border-[#D4AF37]/50 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-serif text-sm font-bold text-[#080808] truncate">
+                            {ca.display_name}
+                          </p>
+                          <p className="text-[11px] text-neutral-500 truncate">
+                            {ca.headline || "Spotlight Author"}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAuthor(ca.id, ca.display_name)}
+                        className="p-2 rounded-xl text-red-600 hover:bg-red-50 border border-red-200 transition-colors cursor-pointer shrink-0"
+                        title={`Remove "${ca.display_name}" from spotlight`}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1514,13 +1757,84 @@ export default function AdminDashboardPage() {
               <div className="pt-4 border-t border-neutral-200 flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
+                  disabled={isPublishingArticle}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 disabled:opacity-60 transition-all shadow-md cursor-pointer"
                 >
-                  <Newspaper className="size-4" />
-                  <span>Publish Article</span>
+                  {isPublishingArticle ? (
+                    <>
+                      <ShieldCheck className="size-4 animate-spin text-[#050505]" />
+                      <span>Publishing Article...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Newspaper className="size-4" />
+                      <span>Publish Article</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
+
+            {/* List of Published Articles with Delete */}
+            <div className="pt-6 border-t border-neutral-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-lg font-bold text-[#080808]">
+                  Published Articles &amp; Essays ({allArticles.length})
+                </h3>
+                <span className="text-xs text-neutral-500">
+                  Featured on /magazine
+                </span>
+              </div>
+
+              {allArticles.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-500">
+                  No articles published yet. Use the form above to publish an article or essay.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {allArticles.map((art) => (
+                    <div
+                      key={art.id}
+                      className="p-4 rounded-2xl bg-[#FAF8F3] border border-neutral-200 flex items-center justify-between gap-3 shadow-xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-800">
+                            {art.article_type}
+                          </span>
+                          <span className="text-[10px] text-neutral-500">
+                            {art.published_at ? new Date(art.published_at).toLocaleDateString() : "Draft"}
+                          </span>
+                        </div>
+                        <h4 className="font-serif text-sm font-bold text-[#080808] truncate">
+                          {art.title}
+                        </h4>
+                        <p className="text-[11px] text-neutral-500 truncate">
+                          By {art.author_name || "LVN Staff"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                          href={`/magazine/${art.slug}`}
+                          target="_blank"
+                          className="px-3 py-1.5 rounded-xl border border-neutral-300 text-[11px] font-bold text-neutral-700 hover:bg-neutral-100 transition-colors"
+                        >
+                          View
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteArticle(art.id, art.title)}
+                          className="p-2 rounded-xl text-red-600 hover:bg-red-50 border border-red-200 transition-colors cursor-pointer"
+                          title={`Delete "${art.title}"`}
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1738,91 +2052,233 @@ export default function AdminDashboardPage() {
               <div className="pt-4 border-t border-neutral-200 flex justify-end">
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-md cursor-pointer"
+                  disabled={isSavingBroadcast}
+                  className="px-6 py-3 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 disabled:opacity-60 shadow-md cursor-pointer transition-all"
                 >
-                  Save Broadcast Settings
+                  {isSavingBroadcast ? "Saving Broadcast Settings..." : "Save Broadcast Settings"}
                 </button>
               </div>
             </form>
+
+            {/* List of Existing Studio Broadcasts with Delete */}
+            <div className="pt-6 border-t border-neutral-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-lg font-bold text-[#080808]">
+                  Existing Broadcasts &amp; Episodes ({broadcasts.length})
+                </h3>
+                <span className="text-xs text-neutral-500">
+                  Featured on /broadcasts and homepage studio player
+                </span>
+              </div>
+
+              {broadcasts.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-500">
+                  No broadcasts recorded yet. Use the form above to add an episode.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {broadcasts.map((bc) => (
+                    <div
+                      key={bc.id}
+                      className="p-4 rounded-2xl bg-[#FAF8F3] border border-neutral-200 flex items-center justify-between gap-3 shadow-xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-800">
+                            {bc.programme_name || "Live Studio"}
+                          </span>
+                          {bc.episode_number && (
+                            <span className="text-[10px] text-[#AA7C11] font-semibold">
+                              Ep. {bc.episode_number}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-serif text-sm font-bold text-[#080808] truncate">
+                          {bc.title}
+                        </h4>
+                        <p className="text-[11px] text-neutral-500 truncate">
+                          Guest: {bc.guest_name || "N/A"} · Host: {bc.host_name || "LVN Host"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                          href={`/broadcasts/${bc.slug}`}
+                          target="_blank"
+                          className="px-3 py-1.5 rounded-xl border border-neutral-300 text-[11px] font-bold text-neutral-700 hover:bg-neutral-100 transition-colors"
+                        >
+                          View
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBroadcast(bc.id, bc.title)}
+                          className="p-2 rounded-xl text-red-600 hover:bg-red-50 border border-red-200 transition-colors cursor-pointer"
+                          title={`Delete "${bc.title}"`}
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* 4. CORRESPONDENCE & ENQUIRIES TAB */}
+        {/* 4. CORRESPONDENCE & INBOX TAB */}
         {activeTab === "enquiries" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-[#080808]">
-                  Reader &amp; Author Correspondence
+                  Messages &amp; Inquiries Inbox
                 </h2>
                 <p className="text-xs text-[#080808]/70">
-                  Messages submitted from the website Contact page dispatched directly to <strong>{receivingEmail}</strong> and your Admin Inbox.
+                  Direct correspondence from website contact forms. Click <strong>Reply via Email</strong> to answer correspondents directly using your email client.
                 </p>
               </div>
-              <span className="rounded-full bg-emerald-100 border border-emerald-300 px-3 py-1 text-xs font-bold text-emerald-900">
-                {enquiries.length} Total Messages
+              <span className="rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1 text-xs font-bold text-emerald-900 shrink-0">
+                {enquiries.length} {enquiries.length === 1 ? "Message" : "Messages"} Received
               </span>
             </div>
 
-            {enquiries.length === 0 ? (
-              <div className="p-12 text-center rounded-3xl border border-neutral-200 bg-white space-y-3">
-                <Mail className="size-12 text-[#D4AF37] mx-auto" />
-                <h3 className="font-serif text-lg font-bold text-[#080808]">
-                  No Correspondence Yet
-                </h3>
-                <p className="text-xs text-neutral-500 max-w-md mx-auto">
-                  When readers or authors send enquiries via the /contact page, their messages and email addresses will appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {enquiries.map((enq) => (
-                  <div
-                    key={enq.id}
-                    className="p-5 rounded-2xl bg-white border border-neutral-200 shadow-xs space-y-3"
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 p-3 rounded-2xl bg-white border border-neutral-200 shadow-xs">
+              <input
+                type="search"
+                placeholder="Search messages by sender name, email, or content..."
+                value={inboxSearch}
+                onChange={(e) => setInboxSearch(e.target.value)}
+                className="flex-1 rounded-xl border border-neutral-300 px-3.5 py-2 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+              />
+              <div className="flex overflow-x-auto gap-1.5 shrink-0">
+                {["all", "contact", "author_pitch", "founder_spotlight", "newsletter"].map((filterKey) => (
+                  <button
+                    key={filterKey}
+                    type="button"
+                    onClick={() => setInboxFilter(filterKey)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer capitalize ${
+                      inboxFilter === filterKey
+                        ? "bg-[#080808] text-[#F7DF8B]"
+                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                    }`}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-[#080808]">
-                          {enq.name}
-                        </span>
-                        <a
-                          href={`mailto:${enq.email}`}
-                          className="text-xs text-[#AA7C11] hover:underline"
-                        >
-                          &lt;{enq.email}&gt;
-                        </a>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
-                          {enq.enquiry_type}
-                        </span>
-                        <span className="text-[11px] text-neutral-400">
-                          {new Date(enq.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <h4 className="font-serif text-base font-bold text-[#080808]">
-                      {enq.subject || "No Subject"}
-                    </h4>
-
-                    <p className="text-xs text-neutral-700 leading-relaxed whitespace-pre-wrap bg-neutral-50 p-3 rounded-xl border border-neutral-100">
-                      {enq.message}
-                    </p>
-
-                    <div className="flex justify-end gap-2 pt-1">
-                      <a
-                        href={`mailto:${enq.email}?subject=Re: ${encodeURIComponent(enq.subject || "LVN Correspondence")}`}
-                        className="px-3.5 py-1.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110"
-                      >
-                        Reply via Email
-                      </a>
-                    </div>
-                  </div>
+                    {filterKey === "all" ? "All Inquiries" : filterKey.replace("_", " ")}
+                  </button>
                 ))}
               </div>
-            )}
+            </div>
+
+            {(() => {
+              const filteredEnquiries = enquiries.filter((enq) => {
+                const matchFilter = inboxFilter === "all" || enq.enquiry_type === inboxFilter;
+                const matchSearch =
+                  !inboxSearch ||
+                  enq.name.toLowerCase().includes(inboxSearch.toLowerCase()) ||
+                  enq.email.toLowerCase().includes(inboxSearch.toLowerCase()) ||
+                  (enq.subject || "").toLowerCase().includes(inboxSearch.toLowerCase()) ||
+                  (enq.message || "").toLowerCase().includes(inboxSearch.toLowerCase());
+                return matchFilter && matchSearch;
+              });
+
+              if (filteredEnquiries.length === 0) {
+                return (
+                  <div className="p-12 text-center rounded-3xl border border-neutral-200 bg-white space-y-3">
+                    <Mail className="size-12 text-[#D4AF37] mx-auto" />
+                    <h3 className="font-serif text-lg font-bold text-[#080808]">
+                      No Messages Found
+                    </h3>
+                    <p className="text-xs text-neutral-500 max-w-md mx-auto">
+                      When readers or authors send enquiries via the /contact page, their messages and email addresses will appear here.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {filteredEnquiries.map((enq) => (
+                    <div
+                      key={enq.id}
+                      className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-xs space-y-4 hover:border-[#D4AF37]/50 transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100 pb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-serif text-base font-bold text-[#080808]">
+                            {enq.name}
+                          </span>
+                          <span className="text-xs text-[#AA7C11] font-mono">
+                            &lt;{enq.email}&gt;
+                          </span>
+                          {enq.organization && (
+                            <span className="text-[11px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">
+                              {enq.organization}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[10px] uppercase font-bold px-2.5 py-1 rounded-full bg-gold-gradient text-[#050505]">
+                            {enq.enquiry_type || "Contact"}
+                          </span>
+                          <span className="text-[11px] text-neutral-500">
+                            {new Date(enq.created_at).toLocaleDateString()} at {new Date(enq.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h4 className="font-serif text-lg font-bold text-[#080808]">
+                        {enq.subject || "No Subject"}
+                      </h4>
+
+                      <div className="text-xs text-neutral-800 leading-relaxed whitespace-pre-wrap bg-[#FAF8F3] p-4 rounded-xl border border-neutral-200">
+                        {enq.message}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyEmail(enq.email, enq.id)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-300 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer"
+                          >
+                            {copiedEmailId === enq.id ? (
+                              <>
+                                <Check className="size-3.5 text-emerald-600" />
+                                <span className="text-emerald-700 font-bold">Email Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="size-3.5 text-neutral-500" />
+                                <span>Copy Email</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEnquiry(enq.id)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Delete this message"
+                          >
+                            <Trash2 className="size-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+
+                        <a
+                          href={`mailto:${enq.email}?subject=Re: ${encodeURIComponent(enq.subject || "Literary Voices Network Correspondence")}&body=Dear ${encodeURIComponent(enq.name)},%0D%0A%0D%0AThank you for contacting Literary Voices Network.%0D%0A%0D%0A`}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer"
+                        >
+                          <Mail className="size-3.5" />
+                          <span>Reply via Email</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -2036,172 +2492,94 @@ export default function AdminDashboardPage() {
               </form>
             </div>
 
-            {/* Gmail & SMTP Delivery Gateway */}
-            <div className="md:col-span-2 p-6 sm:p-8 rounded-3xl bg-white border border-[#D4AF37]/35 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 pb-4">
+            {/* Live Radio Stream Broadcast Settings */}
+            <div className="md:col-span-2 p-6 sm:p-8 rounded-3xl bg-white border border-[#D4AF37]/35 shadow-xs space-y-5">
+              <div className="border-b border-neutral-100 pb-3 flex items-center justify-between">
                 <div>
                   <h3 className="font-serif text-xl font-bold text-[#080808] flex items-center gap-2">
-                    <Server className="size-5 text-[#AA7C11]" />
-                    Gmail &amp; SMTP Live Notification Gateway
+                    <Radio className="size-5 text-[#AA7C11]" />
+                    Live Radio Studio Broadcast Feed
                   </h3>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Connect your Gmail account via SMTP to automatically send live notifications for contact inquiries, author book submissions, and moderation approvals.
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    Configure the live stream running on the site header and live radio player.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {hasSmtpPass ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">
-                      <CheckCircle2 className="size-3.5 text-emerald-600" />
-                      Live SMTP Ready
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-800">
-                      <AlertCircle className="size-3.5 text-amber-600" />
-                      App Password Needed
-                    </span>
-                  )}
+                  <span className={`size-3 rounded-full ${radioIsLive ? "bg-emerald-500 animate-pulse" : "bg-neutral-300"}`} />
+                  <span className="text-xs font-bold text-neutral-700">
+                    {radioIsLive ? "Radio is Live" : "Radio Offline"}
+                  </span>
                 </div>
               </div>
 
-              {smtpTestResult && (
-                <div
-                  className={`p-4 rounded-2xl text-xs flex items-start gap-3 border ${
-                    smtpTestResult.ok
-                      ? "bg-emerald-50 text-emerald-900 border-emerald-200"
-                      : "bg-red-50 text-red-900 border-red-200"
-                  }`}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="text-xs font-bold text-[#080808]">Stream Audio / Video URL</label>
+                  <input
+                    type="url"
+                    value={radioStreamUrl}
+                    onChange={(e) => setRadioStreamUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#080808]">Programme Name</label>
+                  <input
+                    type="text"
+                    value={radioProgramme}
+                    onChange={(e) => setRadioProgramme(e.target.value)}
+                    placeholder="LVN Live Studio"
+                    className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+                <div className="flex items-center gap-3 pt-6">
+                  <input
+                    type="checkbox"
+                    id="radioIsLiveToggle"
+                    checked={radioIsLive}
+                    onChange={(e) => setRadioIsLive(e.target.checked)}
+                    className="size-4 accent-[#AA7C11] rounded cursor-pointer"
+                  />
+                  <label htmlFor="radioIsLiveToggle" className="text-xs font-semibold text-neutral-800 cursor-pointer">
+                    Enable Live Streaming Player for Visitors
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setBanner(null);
+                    try {
+                      const res = await fetch("/api/platform", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          action: "upsert-live-radio",
+                          liveRadioData: {
+                            isLive: radioIsLive,
+                            streamUrl: radioStreamUrl,
+                            programmeName: radioProgramme,
+                          },
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.ok) {
+                        setBanner({ type: "success", text: "Live Radio settings updated successfully!" });
+                      } else {
+                        setBanner({ type: "error", text: data.error || "Failed to update radio stream." });
+                      }
+                    } catch {
+                      setBanner({ type: "error", text: "Network error saving radio stream." });
+                    }
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer"
                 >
-                  {smtpTestResult.ok ? (
-                    <MailCheck className="size-5 text-emerald-600 shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="size-5 text-red-600 shrink-0 mt-0.5" />
-                  )}
-                  <div className="space-y-1">
-                    <p className="font-bold">{smtpTestResult.ok ? "SMTP Verified!" : "SMTP Verification Error"}</p>
-                    <p className="font-sans leading-relaxed">{smtpTestResult.message}</p>
-                  </div>
-                </div>
-              )}
-
-              <form onSubmit={handleSaveSmtpSettings} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-bold text-[#080808]">Gmail / SMTP Account Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={smtpUser}
-                      onChange={(e) => setSmtpUser(e.target.value)}
-                      placeholder="perrycreativity@gmail.com"
-                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
-                    />
-                    <p className="text-[11px] text-neutral-500">The Gmail account sending outgoing alerts</p>
-                  </div>
-
-                  <div className="space-y-1 sm:col-span-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-[#080808]">Gmail App Password (16 characters)</label>
-                      <button
-                        type="button"
-                        onClick={() => setShowSmtpPass(!showSmtpPass)}
-                        className="text-[11px] text-[#AA7C11] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        {showSmtpPass ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
-                        {showSmtpPass ? "Hide" : "Show"}
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <input
-                        type={showSmtpPass ? "text" : "password"}
-                        value={smtpPass}
-                        onChange={(e) => setSmtpPass(e.target.value)}
-                        placeholder={hasSmtpPass ? "•••••••••••••••• (App Password Saved)" : "e.g. abcd efgh ijkl mnop"}
-                        className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
-                      />
-                    </div>
-                    <p className="text-[11px] text-neutral-500">
-                      Generated at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#AA7C11] underline">Google Account &gt; Security &gt; App Passwords</a>
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#080808]">SMTP Server Host</label>
-                    <input
-                      type="text"
-                      required
-                      value={smtpHost}
-                      onChange={(e) => setSmtpHost(e.target.value)}
-                      placeholder="smtp.gmail.com"
-                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#080808]">Port (SSL: 465 / TLS: 587)</label>
-                    <input
-                      type="number"
-                      required
-                      value={smtpPort}
-                      onChange={(e) => setSmtpPort(Number(e.target.value))}
-                      placeholder="465"
-                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-bold text-[#080808]">Admin Notification Destination</label>
-                    <input
-                      type="email"
-                      required
-                      value={receivingEmail}
-                      onChange={(e) => setReceivingEmail(e.target.value)}
-                      placeholder="perrycreativity@gmail.com"
-                      className="w-full rounded-xl border border-neutral-300 p-2.5 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
-                    />
-                    <p className="text-[11px] text-neutral-500">Where contact forms and new book submission notices arrive</p>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#FAF8F3] border border-neutral-200 text-xs text-neutral-700 space-y-1.5">
-                  <p className="font-bold text-[#080808] flex items-center gap-1.5">
-                    <Check className="size-4 text-[#AA7C11]" />
-                    How to configure your Gmail App Password in 3 quick steps:
-                  </p>
-                  <ol className="list-decimal pl-5 space-y-1 text-xs text-neutral-600">
-                    <li>Go to <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-[#AA7C11] underline">Google Account Security</a> and make sure <strong>2-Step Verification</strong> is ON.</li>
-                    <li>Search or scroll to <strong>App Passwords</strong> (or visit <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#AA7C11] underline">myaccount.google.com/apppasswords</a>).</li>
-                    <li>Name your app password (e.g. <em>LVN Website</em>), click <strong>Create</strong>, and copy the 16-letter code into the box above.</li>
-                  </ol>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer"
-                  >
-                    Save SMTP Gateway Settings
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={smtpTestLoading}
-                    onClick={handleTestSmtpConnection}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#080808] text-xs font-bold text-[#F7DF8B] hover:bg-neutral-800 disabled:opacity-50 shadow-xs cursor-pointer transition-colors"
-                  >
-                    {smtpTestLoading ? (
-                      <>
-                        <ShieldCheck className="size-3.5 animate-spin text-[#D4AF37]" />
-                        Dispatching Test Email...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="size-3.5 text-[#D4AF37]" />
-                        Send Test Email to {receivingEmail || "Gmail"}
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
+                  Save Live Stream Settings
+                </button>
+              </div>
             </div>
           </div>
         )}
