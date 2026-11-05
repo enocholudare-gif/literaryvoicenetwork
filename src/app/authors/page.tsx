@@ -2,7 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { Award, Feather, Search, Users } from "lucide-react";
 import { AuthorCard } from "@/components/ui/Cards";
+import { SpotlightBookGrid } from "@/components/books/SpotlightBookGrid";
 import { listPublicAuthors } from "@/lib/services/platform";
+import { listPublicBooks } from "@/lib/services/publishing";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -21,6 +23,7 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
   const genre = params.genre || "All";
 
   const authors = listPublicAuthors({ search, genre });
+  const { items: spotlightBooks } = listPublicBooks({ genre: "Spotlight", pageSize: 50 });
 
   const genres = [
     "All",
@@ -100,9 +103,21 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
         </div>
       </section>
 
-      {/* Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {authors.length === 0 ? (
+      {/* Main Directory & Spotlight Showcase */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        {!search && genre === "All" && (
+          <SpotlightBookGrid initialBooks={spotlightBooks} />
+        )}
+
+        {/* Authors Grid */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-serif text-2xl font-bold text-[#080808]">
+              Verified Network Authors ({authors.length})
+            </h2>
+          </div>
+
+          {authors.length === 0 ? (
           <div className="rounded-2xl bg-white border border-[#080808]/10 p-12 text-center space-y-3">
             <Feather className="w-10 h-10 text-[#D4AF37] mx-auto" />
             <h2 className="font-serif text-2xl font-bold text-[#080808]">
@@ -125,7 +140,8 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
             ))}
           </div>
         )}
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

@@ -26,7 +26,9 @@ export function EditorialBookGrid({ initialBooks }: { initialBooks: Book[] }) {
           localStorage.getItem("lvn_custom_published_books") || "[]"
         );
         const editorialCustom = stored.filter(
-          (b) => !b.genre || b.genre.toLowerCase() === "editorial"
+          (b) =>
+            (b.genre && b.genre.toLowerCase() === "editorial") ||
+            (b.section && b.section.toLowerCase().includes("editorial"))
         );
         if (editorialCustom.length > 0) {
           merged = [

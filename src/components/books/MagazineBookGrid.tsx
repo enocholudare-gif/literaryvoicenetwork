@@ -26,7 +26,9 @@ export function MagazineBookGrid({ initialBooks }: { initialBooks: Book[] }) {
           localStorage.getItem("lvn_custom_published_books") || "[]"
         );
         const magazineCustom = stored.filter(
-          (b) => b.genre && b.genre.toLowerCase() === "magazine"
+          (b) =>
+            (b.genre && b.genre.toLowerCase() === "magazine") ||
+            (b.section && b.section.toLowerCase().includes("magazine"))
         );
         if (magazineCustom.length > 0) {
           merged = [

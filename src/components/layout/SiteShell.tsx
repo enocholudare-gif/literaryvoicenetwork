@@ -289,7 +289,7 @@ export function SiteShell({
     {
       id: "podcast",
       label: "Podcast",
-      href: "/broadcasts",
+      href: "/podcast",
     },
     {
       id: "audiobooks",

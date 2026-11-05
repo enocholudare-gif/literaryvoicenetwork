@@ -2,9 +2,13 @@ import React from "react";
 import Link from "next/link";
 import { Headphones, Mic2, Radio, Search } from "lucide-react";
 import { BroadcastCard } from "@/components/ui/Cards";
+import { PodcastBookGrid } from "@/components/books/PodcastBookGrid";
 import { listBroadcasts } from "@/lib/services/platform";
+import { listPublicBooks } from "@/lib/services/publishing";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 interface BroadcastsPageProps {
   searchParams: Promise<{
@@ -24,6 +28,11 @@ export default async function BroadcastsArchivePage({ searchParams }: Broadcasts
     search,
     broadcastType,
     status,
+  });
+
+  const { items: podcastBooks } = listPublicBooks({
+    genre: "Podcast",
+    pageSize: 50,
   });
 
   return (
@@ -93,8 +102,21 @@ export default async function BroadcastsArchivePage({ searchParams }: Broadcasts
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {broadcasts.length === 0 ? (
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        {!search && (
+          <PodcastBookGrid
+            initialBooks={podcastBooks}
+            theme="light"
+            title="Books &amp; Audio Featured on LVN Podcasts"
+            subtitle="Explore published literary works and author audio editions spotlighted across our podcast network."
+          />
+        )}
+
+        <div>
+          <h2 className="font-serif text-2xl font-bold text-[#080808] mb-6">
+            Broadcast &amp; Podcast Episodes
+          </h2>
+          {broadcasts.length === 0 ? (
           <div className="rounded-2xl bg-white border border-[#080808]/10 p-12 text-center space-y-3">
             <Mic2 className="w-10 h-10 text-[#D4AF37] mx-auto" />
             <h2 className="font-serif text-2xl font-bold text-[#080808]">
@@ -114,6 +136,7 @@ export default async function BroadcastsArchivePage({ searchParams }: Broadcasts
             ))}
           </div>
         )}
+        </div>
       </section>
     </div>
   );

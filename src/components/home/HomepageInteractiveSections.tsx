@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Award, Bell, BookOpen, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Eye, Feather, Globe, Headphones, MapPin, Mic2, Pause, Play, Radio, RefreshCw, RotateCw, Search, Star, Users, Video, X } from "lucide-react";
 import { useAudioPlayer } from "../layout/AudioPlayerContext";
+import { PodcastBookGrid } from "@/components/books/PodcastBookGrid";
 import type { Article, Book, Broadcast } from "@/lib/db/types";
 
 const INTRO_VIDEO_URL = "/media/hero-video.mp4";
@@ -1774,6 +1775,11 @@ export function PodcastAndHotSeatSection({
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Books Tagged Podcast or Audio */}
+          <div className="mt-12">
+            <PodcastBookGrid theme="dark" />
           </div>
         </div>
 

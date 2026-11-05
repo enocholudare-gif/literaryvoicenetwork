@@ -470,28 +470,37 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    const savedBook = data.book || {
-      id: "pub-" + Date.now(),
-      slug: (bkTitle.trim() || "book").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      title: bkTitle.trim(),
-      subtitle: bkSubtitle.trim(),
-      author_name: bkAuthor.trim() || profile?.display_name || "Author",
-      author_avatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
-      author_headline: bkAuthorBio.trim(),
-      author_slug: (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      genre: bkCategory,
-      cover_url: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
-      description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
-      status: "published",
-      is_featured: bkIsFeatured ? 1 : 0,
-      view_count: Number(bkInitialViews) || 1450,
-      retailer_links: {
-        amazon: bkLink.trim(),
-        goodreads: bkGoodreads.trim(),
-      },
-      published_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-    };
+    const savedBook = data.book
+      ? {
+          ...data.book,
+          genre: bkCategory,
+          section: bkTargetSection,
+          author_name: bkAuthor.trim() || data.book.author_name || profile?.display_name || "Author",
+          author_avatar: bkAuthorAvatar.trim() || data.book.author_avatar || "/media/avatars/default-portrait.svg",
+        }
+      : {
+          id: "pub-" + Date.now(),
+          slug: (bkTitle.trim() || "book").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+          title: bkTitle.trim(),
+          subtitle: bkSubtitle.trim(),
+          author_name: bkAuthor.trim() || profile?.display_name || "Author",
+          author_avatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+          author_headline: bkAuthorBio.trim(),
+          author_slug: (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+          genre: bkCategory,
+          section: bkTargetSection,
+          cover_url: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
+          description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
+          status: "published",
+          is_featured: bkIsFeatured ? 1 : 0,
+          view_count: Number(bkInitialViews) || 1450,
+          retailer_links: {
+            amazon: bkLink.trim(),
+            goodreads: bkGoodreads.trim(),
+          },
+          published_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        };
 
     try {
       const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
