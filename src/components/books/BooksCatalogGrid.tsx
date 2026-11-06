@@ -70,3 +70,4 @@ export function BooksCatalogGrid({ initialBooks = [] }: { initialBooks?: Book[] 
     </div>
   );
 }
+

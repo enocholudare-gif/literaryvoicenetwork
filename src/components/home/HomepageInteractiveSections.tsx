@@ -248,32 +248,7 @@ const TRENDING_BOOKS_POOL: TrendingNetworkBook[] = [
       bookshop: "https://www.amazon.com/dp/B0HC5KSH8J",
     },
   },
-  {
-    id: "tb-9",
-    rank: 9,
-    title: "Seeking the Hook",
-    author: "Lou Lipsitz",
-    authorSlug: "lou-lipsitz",
-    authorAvatar: "/media/avatars/lou-lipsitz.jpg",
-    slug: "seeking-the-hook",
-    genre: "Magazine",
-    viewCount: 1340,
-    coverUrl: "/media/covers/maga1.jpg",
-    fallbackCover: "/media/covers/maga1.jpg",
-    rating: 4.9,
-    publisher: "LVN Magazine Editions",
-    year: 2026,
-    pages: 160,
-    genres: ["Magazine", "Poetry", "Literary Arts"],
-    description: "New and selected poems exploring love, aging, psychotherapy, and the quiet epiphanies of daily life.",
-    links: {
-      amazon: "https://www.amazon.com/dp/1439238251",
-      goodreads: "https://www.amazon.com/dp/1439238251",
-      spotify: SPOTIFY_URL,
-      audible: "https://www.amazon.com/dp/1439238251",
-      bookshop: "https://www.amazon.com/dp/1439238251",
-    },
-  },
+
 ];
 
 const GLOBAL_HUBS = [
@@ -1109,9 +1084,16 @@ export function LiveVideoStageSection() {
 /* -------------------------------------------------------------------------- */
 export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
   const [liveDbBooks, setLiveDbBooks] = useState<Book[]>(dbBooks);
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchLatest = async () => {
+      let dIds: string[] = [];
+      try {
+        dIds = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
+        setDeletedIds(dIds);
+      } catch {}
+
       try {
         const res = await fetch("/api/publishing?scope=public-books&pageSize=100", { cache: "no-store" });
         const data = await res.json();
@@ -1120,6 +1102,9 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
           const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
           if (stored.length > 0) {
             apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
+          }
+          if (dIds.length > 0) {
+            apiBooks = apiBooks.filter((ab) => !dIds.includes(ab.id) && !dIds.includes(ab.slug) && !dIds.includes((ab.title || "").toLowerCase()));
           }
         } catch {}
         if (apiBooks.length > 0) {
@@ -1139,10 +1124,21 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
 
     const handleCustomPub = () => fetchLatest();
     window.addEventListener("lvn-book-published", handleCustomPub);
-    return () => window.removeEventListener("lvn-book-published", handleCustomPub);
+    window.addEventListener("storage", handleCustomPub);
+    return () => {
+      window.removeEventListener("lvn-book-published", handleCustomPub);
+      window.removeEventListener("storage", handleCustomPub);
+    };
   }, []);
 
-  const currentDbBooks = liveDbBooks.length > 0 ? liveDbBooks : dbBooks;
+  const rawDbBooks = liveDbBooks.length > 0 ? liveDbBooks : dbBooks;
+  const currentDbBooks = rawDbBooks.filter(
+    (b) => !deletedIds.includes(b.id) && !(b.slug && deletedIds.includes(b.slug)) && !deletedIds.includes((b.title || "").toLowerCase())
+  );
+  const filteredTrendingPool = TRENDING_BOOKS_POOL.filter(
+    (b) => !deletedIds.includes(b.id) && !(b.slug && deletedIds.includes(b.slug)) && !deletedIds.includes((b.title || "").toLowerCase())
+  );
+
   const mergedPool: TrendingNetworkBook[] = [
     ...currentDbBooks.map((b, idx) => ({
       id: b.id,
@@ -1170,7 +1166,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
         bookshop: b.retailer_links?.bookshop || ("https://bookshop.org/search?keywords=" + encodeURIComponent(b.title)),
       },
     })),
-    ...TRENDING_BOOKS_POOL,
+    ...filteredTrendingPool,
   ].filter((v, i, a) => a.findIndex((t) => t.title.toLowerCase() === v.title.toLowerCase()) === i).map((b, i) => ({ ...b, rank: i + 1 }));
 
   const [books, setBooks] = useState<TrendingNetworkBook[]>(
@@ -1497,9 +1493,16 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [query, setQuery] = useState("");
   const [liveBooks, setLiveBooks] = useState<Book[]>(books);
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchLatest = async () => {
+      let dIds: string[] = [];
+      try {
+        dIds = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
+        setDeletedIds(dIds);
+      } catch {}
+
       try {
         const res = await fetch("/api/publishing?scope=public-books&pageSize=100", { cache: "no-store" });
         const data = await res.json();
@@ -1510,15 +1513,20 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
             apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
           }
         } catch {}
+        if (dIds.length > 0) {
+          apiBooks = apiBooks.filter((b) => !dIds.includes(b.id) && !dIds.includes(b.slug) && !dIds.includes((b.title || "").toLowerCase()));
+        }
         if (apiBooks.length > 0) {
           setLiveBooks(apiBooks);
         }
       } catch {
         try {
           const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          if (stored.length > 0) {
-            setLiveBooks([...stored, ...books]);
+          let combined = stored.length > 0 ? [...stored, ...books] : [...books];
+          if (dIds.length > 0) {
+            combined = combined.filter((b) => !dIds.includes(b.id) && !dIds.includes(b.slug) && !dIds.includes((b.title || "").toLowerCase()));
           }
+          setLiveBooks(combined);
         } catch {}
       }
     };
@@ -1527,15 +1535,21 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
 
     const handleCustomPub = () => fetchLatest();
     window.addEventListener("lvn-book-published", handleCustomPub);
-    return () => window.removeEventListener("lvn-book-published", handleCustomPub);
+    window.addEventListener("storage", handleCustomPub);
+    return () => {
+      window.removeEventListener("lvn-book-published", handleCustomPub);
+      window.removeEventListener("storage", handleCustomPub);
+    };
   }, [books]);
 
-  const activeBooks = liveBooks.length > 0 ? liveBooks : books;
+  const rawBooks = liveBooks.length > 0 ? liveBooks : books;
+  const activeBooks = rawBooks.filter((b) => !deletedIds.includes(b.id) && !deletedIds.includes(b.slug) && !deletedIds.includes((b.title || "").toLowerCase()));
 
   const filtered = activeBooks.filter((b) => {
     const matchesGenre =
       selectedGenre === "All" ||
-      b.genre.toLowerCase().includes(selectedGenre.toLowerCase());
+      b.genre.toLowerCase().includes(selectedGenre.toLowerCase()) ||
+      (Array.isArray(b.secondary_genres) && b.secondary_genres.some((g) => g.toLowerCase().includes(selectedGenre.toLowerCase())));
     const matchesQuery =
       !query.trim() ||
       b.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -1543,7 +1557,7 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
     return matchesGenre && matchesQuery;
   });
 
-  const displayBooks = (filtered.length > 0 ? filtered : activeBooks).slice(0, 5);
+  const displayBooks = (filtered.length > 0 ? filtered : (query.trim() ? [] : activeBooks)).slice(0, 5);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

@@ -407,12 +407,23 @@ export default function AdminDashboardPage() {
         let bks: Book[] = modData.books || [];
         try {
           const stored: Book[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+          const deletedBookIds: string[] = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
           if (stored.length > 0) {
             bks = [...stored, ...bks.filter(b => !stored.some(s => s.id === b.id || s.title === b.title))];
           }
+          if (deletedBookIds.length > 0) {
+            bks = bks.filter(b => !deletedBookIds.includes(b.id) && !deletedBookIds.includes(b.slug) && !deletedBookIds.includes(b.title.toLowerCase()));
+          }
         } catch {}
         setAllBooks(bks);
-        setAllArticles(modData.articles || []);
+        let arts: Article[] = modData.articles || [];
+        try {
+          const deletedArtIds: string[] = JSON.parse(localStorage.getItem("lvn_deleted_article_ids") || "[]");
+          if (deletedArtIds.length > 0) {
+            arts = arts.filter(a => !deletedArtIds.includes(a.id) && !deletedArtIds.includes(a.title.toLowerCase()));
+          }
+        } catch {}
+        setAllArticles(arts);
       }
 
       const admData = await admRes.json();
@@ -421,8 +432,12 @@ export default function AdminDashboardPage() {
         let enqs: Enquiry[] = admData.enquiries || [];
         try {
           const storedEnqs: Enquiry[] = JSON.parse(localStorage.getItem("lvn_custom_enquiries") || "[]");
+          const deletedEnqIds: string[] = JSON.parse(localStorage.getItem("lvn_deleted_enquiry_ids") || "[]");
           if (storedEnqs.length > 0) {
             enqs = [...storedEnqs, ...enqs.filter(e => !storedEnqs.some(s => s.id === e.id))];
+          }
+          if (deletedEnqIds.length > 0) {
+            enqs = enqs.filter(e => !deletedEnqIds.includes(e.id));
           }
         } catch {}
         setEnquiries(enqs);
@@ -450,6 +465,17 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadData();
+    const handleSync = () => void loadData(true);
+    window.addEventListener("lvn-new-enquiry", handleSync);
+    window.addEventListener("lvn-book-published", handleSync);
+    window.addEventListener("lvn-article-deleted", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("lvn-new-enquiry", handleSync);
+      window.removeEventListener("lvn-book-published", handleSync);
+      window.removeEventListener("lvn-article-deleted", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
   }, []);
 
   // Admin Login
@@ -658,6 +684,11 @@ export default function AdminDashboardPage() {
           (b: any) => b.id !== book.id && b.slug !== book.slug && b.title !== book.title
         );
         localStorage.setItem("lvn_custom_published_books", JSON.stringify(filtered));
+
+        const deletedIds: string[] = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
+        deletedIds.push(book.id, book.slug, book.title.toLowerCase());
+        localStorage.setItem("lvn_deleted_book_ids", JSON.stringify(deletedIds));
+
         window.dispatchEvent(new CustomEvent("lvn-book-published"));
       } catch {}
 
@@ -858,6 +889,12 @@ export default function AdminDashboardPage() {
         return;
       }
       setAllArticles((prev) => prev.filter((a) => a.id !== articleId));
+      try {
+        const deletedArtIds = JSON.parse(localStorage.getItem("lvn_deleted_article_ids") || "[]");
+        deletedArtIds.push(articleId, articleTitle.toLowerCase());
+        localStorage.setItem("lvn_deleted_article_ids", JSON.stringify(deletedArtIds));
+        window.dispatchEvent(new CustomEvent("lvn-article-deleted", { detail: { articleId, articleTitle } }));
+      } catch {}
       setBanner({
         type: "success",
         text: `Article "${articleTitle}" has been permanently deleted.`,

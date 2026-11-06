@@ -1,10 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Award, BookOpen, Calendar, Clock, ExternalLink, Eye, Feather, Newspaper, Search } from "lucide-react";
-import { ArticleCard } from "@/components/ui/Cards";
 import { listCategories, listEditorialIssues } from "@/lib/services/platform";
 import { listPublicArticles, listPublicBooks } from "@/lib/services/publishing";
 import { MagazineBookGrid } from "@/components/books/MagazineBookGrid";
+import { MagazineArticlesSection } from "@/components/magazine/MagazineArticlesSection";
 import type { ArticleType } from "@/lib/db/types";
 
 export const dynamic = "force-dynamic";
@@ -163,104 +163,14 @@ export default async function MagazinePage({ searchParams }: MagazinePageProps) 
           <MagazineBookGrid initialBooks={magazineBooks} />
         )}
 
-        {/* Featured Cover Story Spotlight when browsing unfiltered */}
-        {coverStory && !search && articleType === "all" && !issueId && (
-          <div className="rounded-3xl bg-[#080808] text-[#FAF8F3] border border-[#D4AF37]/35 overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12">
-            <div className="lg:col-span-5 relative min-h-[280px] bg-[#141414]">
-              <img
-                src={coverStory.cover_url || "/media/banners/editorial-desk.svg"}
-                alt={coverStory.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-4 left-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#D4AF37] text-[#080808]">
-                  <Award className="w-3.5 h-3.5" />
-                  Featured Cover Story
-                </span>
-              </div>
-            </div>
-            <div className="lg:col-span-7 p-8 sm:p-10 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3 text-xs text-[#F7DF8B]">
-                  {coverStory.issue_number && (
-                    <span className="font-bold uppercase tracking-wider">
-                      Issue No. {coverStory.issue_number} · {coverStory.issue_title}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1 text-[#FAF8F3]/70">
-                    <Clock className="w-3.5 h-3.5" />
-                    {coverStory.reading_time_minutes} min read
-                  </span>
-                </div>
-                <Link href={`/magazine/${coverStory.slug}`}>
-                  <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white hover:text-[#F7DF8B] transition-colors leading-tight">
-                    {coverStory.title}
-                  </h2>
-                </Link>
-                {coverStory.subtitle && (
-                  <p className="font-serif text-lg text-[#F7DF8B] italic">
-                    {coverStory.subtitle}
-                  </p>
-                )}
-                <p className="text-sm text-[#FAF8F3]/80 leading-relaxed">
-                  {coverStory.excerpt}
-                </p>
-              </div>
-
-              <div className="mt-8 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
-                <Link
-                  href={`/authors/${coverStory.author_slug || "eleanor-vance"}`}
-                  className="flex items-center gap-3 group"
-                >
-                  <img
-                    src={coverStory.author_avatar || "/media/avatars/eleanor-vance.svg"}
-                    alt={coverStory.author_name || "Author"}
-                    className="w-10 h-10 rounded-full object-cover border border-[#D4AF37]"
-                  />
-                  <div>
-                    <span className="text-xs text-[#FAF8F3]/60 block">By</span>
-                    <span className="text-sm font-bold text-white group-hover:text-[#F7DF8B]">
-                      {coverStory.author_name}
-                    </span>
-                  </div>
-                </Link>
-
-                <Link
-                  href={`/magazine/${coverStory.slug}`}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-xs hover:bg-[#F7DF8B] transition-colors"
-                >
-                  Read Cover Essay
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Articles Grid */}
-        {remainingArticles.length === 0 ? (
-          <div className="rounded-2xl bg-white border border-[#080808]/10 p-12 text-center space-y-3">
-            <Newspaper className="w-10 h-10 text-[#D4AF37] mx-auto" />
-            <h2 className="font-serif text-2xl font-bold text-[#080808]">
-              No matching articles found
-            </h2>
-            <p className="text-sm text-[#080808]/70">
-              Try resetting your search filters or exploring all editorial categories.
-            </p>
-            <Link
-              href="/magazine"
-              className="inline-flex items-center px-4 py-2 rounded-xl bg-[#080808] text-white text-xs font-semibold"
-            >
-              View All Magazine Pieces
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {remainingArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        )}
+        {/* Articles & Cover Story Section */}
+        <MagazineArticlesSection
+          initialArticles={remainingArticles}
+          initialCoverStory={coverStory}
+          search={search}
+          articleType={articleType}
+          issueId={issueId}
+        />
       </div>
     </div>
   );

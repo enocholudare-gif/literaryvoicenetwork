@@ -10,6 +10,11 @@ export function MagazineBookGrid({ initialBooks }: { initialBooks: Book[] }) {
 
   useEffect(() => {
     const syncBooks = async () => {
+      let dIds: string[] = [];
+      try {
+        dIds = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
+      } catch {}
+
       let merged = [...initialBooks];
       try {
         const res = await fetch("/api/publishing?scope=public-books&genre=Magazine&pageSize=100", {
@@ -46,6 +51,15 @@ export function MagazineBookGrid({ initialBooks }: { initialBooks: Book[] }) {
           ];
         }
       } catch {}
+
+      if (dIds.length > 0) {
+        merged = merged.filter(
+          (b) =>
+            !dIds.includes(b.id) &&
+            !dIds.includes(b.slug) &&
+            !dIds.includes((b.title || "").toLowerCase())
+        );
+      }
 
       setBooks(merged);
     };

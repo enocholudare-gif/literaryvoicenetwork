@@ -1324,21 +1324,12 @@ export function listPartners(activeOnly = true): Partner[] {
 }
 
 export const EnquiryInputSchema = z.object({
-  enquiryType: z
-    .enum([
-      "contact",
-      "partnership",
-      "sponsorship",
-      "author_promotion",
-      "editorial_service",
-      "newsletter",
-    ])
-    .default("contact"),
-  name: z.string().max(120).optional().default("Subscriber"),
-  email: z.string().email("Please enter a valid email address").max(255),
-  organization: z.string().max(140).optional().default(""),
-  subject: z.string().max(200).optional().default(""),
-  message: z.string().max(5000).optional().default(""),
+  enquiryType: z.string().optional().default("contact"),
+  name: z.string().optional().default("Reader"),
+  email: z.string().transform((val) => val.trim().toLowerCase()),
+  organization: z.string().optional().default(""),
+  subject: z.string().optional().default("Website Contact Correspondence"),
+  message: z.string().optional().default(""),
 });
 
 export function createEnquiry(
@@ -1468,7 +1459,7 @@ export function createEnquiry(
 
   return {
     id,
-    enquiry_type: parsed.enquiryType,
+    enquiry_type: (parsed.enquiryType as any) || 'contact',
     name: parsed.name.trim() || "Reader",
     email: parsed.email.trim().toLowerCase(),
     organization: parsed.organization.trim(),

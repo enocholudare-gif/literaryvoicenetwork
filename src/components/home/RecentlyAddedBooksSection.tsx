@@ -18,6 +18,11 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
 
   useEffect(() => {
     const fetchLatest = async () => {
+      let dIds: string[] = [];
+      try {
+        dIds = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
+      } catch {}
+
       try {
         const res = await fetch("/api/publishing?scope=public-books&pageSize=20", { cache: "no-store" });
         const data = await res.json();
@@ -28,15 +33,23 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
             apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
           }
         } catch {}
+        if (dIds.length > 0) {
+          apiBooks = apiBooks.filter((ab) => !dIds.includes(ab.id) && !dIds.includes(ab.slug) && !dIds.includes((ab.title || "").toLowerCase()));
+        }
         if (apiBooks.length > 0) {
           setDisplayList(apiBooks.slice(0, 4));
+        } else {
+          const filteredInitial = books.filter((b) => !dIds.includes(b.id) && !dIds.includes(b.slug) && !dIds.includes((b.title || "").toLowerCase()));
+          setDisplayList(filteredInitial.slice(0, 4));
         }
       } catch {
         try {
           const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          if (stored.length > 0) {
-            setDisplayList([...stored, ...books].slice(0, 4));
+          let combined = stored.length > 0 ? [...stored, ...books] : [...books];
+          if (dIds.length > 0) {
+            combined = combined.filter((b) => !dIds.includes(b.id) && !dIds.includes(b.slug) && !dIds.includes((b.title || "").toLowerCase()));
           }
+          setDisplayList(combined.slice(0, 4));
         } catch {}
       }
     };
@@ -45,7 +58,11 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
 
     const handleCustomPub = () => fetchLatest();
     window.addEventListener("lvn-book-published", handleCustomPub);
-    return () => window.removeEventListener("lvn-book-published", handleCustomPub);
+    window.addEventListener("storage", handleCustomPub);
+    return () => {
+      window.removeEventListener("lvn-book-published", handleCustomPub);
+      window.removeEventListener("storage", handleCustomPub);
+    };
   }, [books]);
 
   useEffect(() => {
