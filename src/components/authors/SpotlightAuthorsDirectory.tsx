@@ -119,15 +119,21 @@ export function SpotlightAuthorsDirectory({
             Curated Author Spotlight
           </h2>
           <p className="text-sm text-neutral-600 max-w-xl mx-auto leading-relaxed">
-            Featured spotlights for celebrated writers, poets, and debut authors are curated by the LVN editorial desk. Authors published through the Admin Console will appear here.
+            Featured spotlights for celebrated writers, poets, and debut authors are curated weekly by the LVN editorial desk. Discover newly syndicated authors and published works across the network.
           </p>
         </div>
-        <div className="pt-3">
+        <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/admin"
+            href="/books"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-sm"
           >
-            Add Author in Admin Console
+            Explore Published Works
+          </Link>
+          <Link
+            href="/for-authors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#D4AF37]/40 text-xs font-semibold text-[#080808] hover:bg-[#080808] hover:text-[#F7DF8B] transition-all"
+          >
+            Author Broadcast Enquiries
           </Link>
         </div>
       </section>
@@ -204,4 +210,3 @@ export function SpotlightAuthorsDirectory({
     </section>
   );
 }
-

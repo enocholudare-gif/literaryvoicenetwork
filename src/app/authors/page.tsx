@@ -61,11 +61,11 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
               </p>
             </div>
             <Link
-              href="/admin"
+              href="/for-authors"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-xs hover:bg-[#F7DF8B] transition-colors"
             >
               <Award className="w-4 h-4" />
-              Manage Author Spotlight
+              Join the Network
             </Link>
           </div>
 
@@ -121,4 +121,3 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
     </div>
   );
 }
-

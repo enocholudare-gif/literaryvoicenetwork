@@ -2,7 +2,6 @@ import React from "react";
 import { HeroVideoSection } from "@/components/home/HeroVideoSection";
 import {
   AuthorPromoBanner,
-  DigitalMagazineShowcaseSection,
   GenreAndFounderSpotlightSection,
   MeetOurHostsSection,
   MembershipNewsletterPartnersCtaSection,
@@ -16,7 +15,7 @@ import {
 } from "@/components/home/HomepageInteractiveSections";
 import { RecentlyAddedBooksSection } from "@/components/home/RecentlyAddedBooksSection";
 import { getSiteSettings, listBroadcasts } from "@/lib/services/platform";
-import { listPublicArticles, listPublicBooks } from "@/lib/services/publishing";
+import { listPublicBooks } from "@/lib/services/publishing";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,7 +24,6 @@ export const fetchCache = "force-no-store";
 export default function HomePage() {
   const settings = getSiteSettings();
   const { items: allBooks } = listPublicBooks({ pageSize: 100 });
-  const { items: allArticles } = listPublicArticles({ pageSize: 50 });
   const broadcasts = listBroadcasts();
 
   return (
@@ -60,16 +58,13 @@ export default function HomePage() {
       {/* 10. Podcast feed & In the Hot Seat */}
       <PodcastAndHotSeatSection episodes={broadcasts} />
 
-      {/* 12. Digital magazine */}
-      <DigitalMagazineShowcaseSection articles={allArticles} />
-
-      {/* 13. Genres & founder spotlight */}
+      {/* 11. Genres & founder spotlight */}
       <GenreAndFounderSpotlightSection />
 
-      {/* 14. Worldwide signal map */}
+      {/* 12. Worldwide signal map */}
       <WorldwideSignalMapSection />
 
-      {/* 15. Membership, newsletter, partners, bottom CTA */}
+      {/* 13. Membership, newsletter, partners, bottom CTA */}
       <MembershipNewsletterPartnersCtaSection />
     </div>
   );

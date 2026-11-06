@@ -52,32 +52,7 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
   }, [initialBooks]);
 
   if (books.length === 0) {
-    return (
-      <section className="rounded-3xl bg-white border border-[#D4AF37]/35 p-8 sm:p-12 shadow-sm text-center space-y-4">
-        <div className="w-14 h-14 rounded-2xl bg-[#080808] border border-[#D4AF37]/40 flex items-center justify-center mx-auto shadow-sm">
-          <Award className="size-7 text-[#D4AF37]" />
-        </div>
-        <div className="space-y-1.5">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-gradient text-[#050505]">
-            Curated Network Spotlight
-          </span>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#080808]">
-            Author Spotlight &amp; Featured Works
-          </h2>
-          <p className="text-sm text-neutral-600 max-w-xl mx-auto leading-relaxed">
-            The Literary Voices Network spotlight features distinguished authors, debut novelists, and official volumes curated by our editorial desk.
-          </p>
-        </div>
-        <div className="pt-3">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-sm"
-          >
-            Curate Spotlight in Admin Console
-          </Link>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (
@@ -100,87 +75,83 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {books.map((mb) => {
-          const amazonUrl =
-            mb.retailer_links?.amazon ||
-            "https://www.amazon.com/s?k=" + encodeURIComponent(mb.title);
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {books.map((book) => {
+          const cover = book.cover_url || (book as any).cover_image_url || "/media/books/default-cover.svg";
+          const rating = (book as any).rating_avg ? Number((book as any).rating_avg).toFixed(1) : "5.0";
+          const ratingCount = (book as any).rating_count || 12;
+          const buyUrl = book.retailer_links?.amazon || book.retailer_links?.bookshop || book.retailer_links?.barnesAndNoble || (book as any).buy_url;
 
           return (
             <div
-              key={mb.id}
-              className="group rounded-2xl bg-[#FAF8F3] border border-[#D4AF37]/30 p-5 flex flex-col justify-between hover:border-[#AA7C11] hover:shadow-md transition-all"
+              key={book.id}
+              className="group rounded-2xl bg-[#080808] border border-[#D4AF37]/30 p-4 text-[#FAF8F3] flex flex-col justify-between hover:border-[#D4AF37] hover:shadow-xl transition-all"
             >
               <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="rounded-full bg-gold-gradient px-2.5 py-0.5 text-[10px] font-bold text-[#050505]">
-                    Spotlight
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-neutral-700 border border-neutral-200">
-                    <Eye className="size-3 text-[#AA7C11]" />
-                    {(mb.view_count || 1420).toLocaleString()} Views
-                  </span>
-                </div>
-
-                <div className="aspect-[2/3] max-w-[180px] mx-auto rounded-xl overflow-hidden bg-[#080808] border border-[#D4AF37]/40 shadow-sm mb-4">
+                <div className="aspect-[3/4] w-full rounded-xl overflow-hidden mb-3 relative bg-neutral-900 border border-white/10">
                   <img
-                    src={mb.cover_url || "/media/covers/the-first.jpg"}
-                    alt={mb.title}
+                    src={cover}
+                    alt={book.title}
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "/media/covers/the-first.jpg";
+                      (e.currentTarget as HTMLImageElement).src = "/media/books/default-cover.svg";
                     }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                  {book.format && (
+                    <span className="absolute top-2 left-2 rounded-full bg-[#080808]/90 border border-[#D4AF37]/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#D4AF37]">
+                      {book.format}
+                    </span>
+                  )}
                 </div>
 
-                <h3 className="font-serif text-lg font-bold text-[#080808] text-center line-clamp-1" title={mb.title}>
-                  {mb.title}
+                <div className="flex items-center gap-1 text-[#D4AF37] text-xs font-bold mb-1">
+                  <Star className="size-3 fill-[#D4AF37]" />
+                  <span>{rating}</span>
+                  <span className="text-white/40 text-[10px]">
+                    ({ratingCount})
+                  </span>
+                </div>
+
+                <h3 className="font-serif font-bold text-sm text-white line-clamp-2 group-hover:text-[#D4AF37] transition-colors">
+                  {book.title}
                 </h3>
-                {mb.subtitle && (
-                  <p className="text-xs text-neutral-500 text-center italic mt-0.5 truncate">
-                    {mb.subtitle}
+                <p className="text-xs text-white/70 line-clamp-1 mt-0.5">
+                  by {book.author_name || "Author"}
+                </p>
+
+                {book.description && (
+                  <p className="text-[11px] text-white/60 line-clamp-2 mt-2 leading-relaxed">
+                    {book.description}
                   </p>
                 )}
-
-                <div className="mt-2.5 text-center">
-                  <Link
-                    href={mb.author_slug ? `/authors/${mb.author_slug}` : "/authors"}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#D4AF37]/35 px-3 py-1 text-xs hover:bg-[#D4AF37]/15 transition-colors"
-                  >
-                    <img
-                      src={mb.author_avatar || "/media/avatars/default-portrait.svg"}
-                      alt={mb.author_name || "Author"}
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = "/media/avatars/default-portrait.svg";
-                      }}
-                      className="size-4 rounded-full object-cover"
-                    />
-                    <span className="font-semibold text-xs text-[#080808]">By {mb.author_name}</span>
-                  </Link>
-                </div>
-
-                <p className="text-xs text-neutral-600 mt-3 line-clamp-3 leading-relaxed">
-                  {mb.description}
-                </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-neutral-200 space-y-2">
-                <a
-                  href={amazonUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs transition-all"
-                >
-                  <span>Purchase Book</span>
-                  <ExternalLink className="size-3 text-[#050505]" />
-                </a>
+              <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs">
                 <Link
-                  href={mb.author_slug ? `/authors/${mb.author_slug}` : "/authors"}
-                  className="w-full flex items-center justify-center gap-1 px-4 py-2 rounded-xl bg-white border border-[#D4AF37]/40 text-xs font-semibold text-[#080808] hover:bg-neutral-50 transition-colors"
+                  href={`/books/${book.slug || book.id}`}
+                  className="inline-flex items-center gap-1 text-[#D4AF37] hover:text-[#F7DF8B] font-semibold text-[11px]"
                 >
-                  <span>Author Overview Profile</span>
-                  <Star className="size-3 text-[#AA7C11]" />
+                  <Eye className="size-3" />
+                  View Book
                 </Link>
+
+                {buyUrl ? (
+                  <a
+                    href={buyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gold-gradient text-[10px] font-bold text-[#050505] hover:brightness-110 transition-all"
+                  >
+                    Buy <ExternalLink className="size-2.5" />
+                  </a>
+                ) : (
+                  <Link
+                    href={`/books/${book.slug || book.id}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gold-gradient text-[10px] font-bold text-[#050505] hover:brightness-110 transition-all"
+                  >
+                    Details
+                  </Link>
+                )}
               </div>
             </div>
           );
