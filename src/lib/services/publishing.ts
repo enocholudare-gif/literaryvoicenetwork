@@ -452,6 +452,18 @@ export function createBookDraft(
   const editorialRec = parsed.editorialRecommendation ? 1 : 0;
   const initialViews = parsed.viewCount || Math.floor(Math.random() * 800) + 1150;
 
+  const secGenres = Array.from(
+    new Set([
+      ...(parsed.secondaryGenres || []),
+      parsed.genre,
+      parsed.section,
+      parsed.section?.toLowerCase().includes("podcast") ? "Podcast" : null,
+      parsed.section?.toLowerCase().includes("magazine") ? "Magazine" : null,
+      parsed.section?.toLowerCase().includes("editorial") ? "Editorial" : null,
+      parsed.section?.toLowerCase().includes("spotlight") ? "Spotlight" : null,
+    ].filter((g) => Boolean(g && typeof g === "string" && g.trim())))
+  );
+
   db.prepare(`
     INSERT INTO books (
       id, slug, author_profile_id, submitted_by_user_id, title, subtitle,
@@ -474,7 +486,7 @@ export function createBookDraft(
     parsed.excerpt.trim(),
     parsed.coverUrl.trim() || "/media/covers/the-first.jpg",
     parsed.genre.trim() || "Editorial",
-    JSON.stringify(parsed.secondaryGenres),
+    JSON.stringify(secGenres),
     parsed.format,
     parsed.publisher.trim() || "Literary Voices Network",
     parsed.publicationDate.trim(),

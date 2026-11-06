@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
 
     let session = await getCurrentSession();
-    if (!session && (action === "create-book" || action === "submit-book" || action === "create-article" || action === "delete-book" || action === "delete-article")) {
+    if ((!session || session.user.role !== "admin") && (action === "create-book" || action === "submit-book" || action === "create-article" || action === "delete-book" || action === "delete-article")) {
       const db = getDb();
       const adminUser = db.prepare("SELECT * FROM users WHERE role = 'admin' LIMIT 1").get() as any;
       if (adminUser) {

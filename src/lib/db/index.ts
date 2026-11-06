@@ -17,25 +17,37 @@ function resolveDbPath(): string {
     return ":memory:";
   }
   if (configured) {
-    const absPath = path.isAbsolute(configured)
-      ? configured
-      : path.join(process.cwd(), configured);
-    const dir = path.dirname(absPath);
+    try {
+      const absPath = path.isAbsolute(configured)
+        ? configured
+        : path.join(process.cwd(), configured);
+      const dir = path.dirname(absPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      return absPath;
+    } catch {
+      return ":memory:";
+    }
+  }
+  // On Vercel serverless environments, only /tmp is writable
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY) {
+    return path.join("/tmp", "lvn.sqlite");
+  }
+  try {
+    const defaultPath = path.join(process.cwd(), "data", "lvn.sqlite");
+    const dir = path.dirname(defaultPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    return absPath;
+    return defaultPath;
+  } catch {
+    try {
+      return path.join("/tmp", "lvn.sqlite");
+    } catch {
+      return ":memory:";
+    }
   }
-  // On Vercel serverless environments, only /tmp is writable
-  if (process.env.VERCEL) {
-    return path.join("/tmp", "lvn.sqlite");
-  }
-  const defaultPath = path.join(process.cwd(), "data", "lvn.sqlite");
-  const dir = path.dirname(defaultPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return defaultPath;
 }
 
 export function initializeSchema(db: DatabaseSync): void {
@@ -50,6 +62,11 @@ export function initializeSchema(db: DatabaseSync): void {
   db.exec(INITIAL_SCHEMA_SQL);
   try {
     db.exec("ALTER TABLE books ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0;");
+  } catch {
+    // column already exists
+  }
+  try {
+    db.exec("ALTER TABLE books ADD COLUMN section TEXT NOT NULL DEFAULT 'Editorial Desk';");
   } catch {
     // column already exists
   }

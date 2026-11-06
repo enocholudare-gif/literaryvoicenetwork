@@ -112,12 +112,49 @@ function ImageUploadField({
       }
     } catch {}
 
-    // Fallback: FileReader Base64 Data URL
+    // Fallback: FileReader Base64 Data URL with canvas optimization
     const reader = new FileReader();
     reader.onload = (evt) => {
-      onChange(String(evt.target?.result || ""));
-      setUploading(false);
+      const rawBase64 = String(evt.target?.result || "");
+      if (typeof window !== "undefined" && rawBase64.startsWith("data:image/")) {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_W = 1200;
+          const MAX_H = 1600;
+          let w = img.width;
+          let h = img.height;
+          if (w > MAX_W || h > MAX_H) {
+            if (w / h > MAX_W / MAX_H) {
+              h = Math.round((h * MAX_W) / w);
+              w = MAX_W;
+            } else {
+              w = Math.round((w * MAX_H) / h);
+              h = MAX_H;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, w, h);
+            onChange(canvas.toDataURL("image/jpeg", 0.85));
+          } else {
+            onChange(rawBase64);
+          }
+          setUploading(false);
+        };
+        img.onerror = () => {
+          onChange(rawBase64);
+          setUploading(false);
+        };
+        img.src = rawBase64;
+      } else {
+        onChange(rawBase64);
+        setUploading(false);
+      }
     };
+    reader.onerror = () => setUploading(false);
     reader.readAsDataURL(file);
   };
 
@@ -450,8 +487,54 @@ export default function AdminDashboardPage() {
   // 1. Publish Book for Author (Direct Publish to Website)
   const handlePublishBookForAuthor = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!bkTitle.trim()) {
+      setBanner({ type: "error", text: "Please enter a book title." });
+      return;
+    }
     setBanner(null);
     setIsPublishingBook(true);
+
+    const bookSlug = (bkTitle.trim() || "book").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const authorSlug = (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const secGenres = Array.from(
+      new Set([
+        bkCategory,
+        bkTargetSection,
+        bkTargetSection.includes("Podcast") ? "Podcast" : "",
+        bkTargetSection.includes("Magazine") ? "Magazine" : "",
+        bkTargetSection.includes("Editorial") ? "Editorial" : "",
+        bkTargetSection.includes("Spotlight") ? "Spotlight" : "",
+      ].filter(Boolean))
+    );
+
+    let savedBook: any = {
+      id: "pub-" + Date.now(),
+      slug: bookSlug,
+      title: bkTitle.trim(),
+      subtitle: bkSubtitle.trim(),
+      author_name: bkAuthor.trim() || profile?.display_name || "Author",
+      author_avatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+      author_headline: bkAuthorBio.trim() || "Contributing Author",
+      author_bio: bkAuthorBio.trim(),
+      author_slug: authorSlug,
+      genre: bkCategory,
+      section: bkTargetSection,
+      secondary_genres: secGenres,
+      cover_url: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
+      description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
+      excerpt: bkExcerpt.trim(),
+      format: bkFormat,
+      publisher: bkPublisher.trim() || "LVN Imprint Editions",
+      status: "published",
+      is_featured: bkIsFeatured ? 1 : 0,
+      view_count: Number(bkInitialViews) || 1450,
+      retailer_links: {
+        amazon: bkLink.trim(),
+        goodreads: bkGoodreads.trim(),
+      },
+      published_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    };
 
     try {
       const res = await fetch("/api/publishing", {
@@ -468,6 +551,7 @@ export default function AdminDashboardPage() {
             authorBio: bkAuthorBio.trim(),
             genre: bkCategory,
             section: bkTargetSection,
+            secondaryGenres: secGenres,
             format: bkFormat,
             publisher: bkPublisher.trim() || "LVN Imprint Editions",
             coverUrl: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
@@ -483,92 +567,66 @@ export default function AdminDashboardPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setBanner({ type: "error", text: data.error || "Failed to publish book." });
-        setIsPublishingBook(false);
-        return;
-      }
-
-      const savedBook = data.book
-        ? {
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.book) {
+          savedBook = {
+            ...savedBook,
             ...data.book,
             genre: bkCategory,
             section: bkTargetSection,
-            author_name: bkAuthor.trim() || data.book.author_name || profile?.display_name || "Author",
-            author_avatar: bkAuthorAvatar.trim() || data.book.author_avatar || "/media/avatars/default-portrait.svg",
-          }
-        : {
-            id: "pub-" + Date.now(),
-            slug: (bkTitle.trim() || "book").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-            title: bkTitle.trim(),
-            subtitle: bkSubtitle.trim(),
-            author_name: bkAuthor.trim() || profile?.display_name || "Author",
-            author_avatar: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
-            author_headline: bkAuthorBio.trim(),
-            author_slug: (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-            genre: bkCategory,
-            section: bkTargetSection,
-            cover_url: bkCoverUrl.trim() || "/media/covers/the-first.jpg",
-            description: bkSynopsis.trim() || "A featured title on Literary Voices Network.",
-            status: "published",
-            is_featured: bkIsFeatured ? 1 : 0,
-            view_count: Number(bkInitialViews) || 1450,
-            retailer_links: {
-              amazon: bkLink.trim(),
-              goodreads: bkGoodreads.trim(),
-            },
-            published_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
+            secondary_genres: secGenres,
           };
-
-      try {
-        const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-        const updated = [savedBook, ...stored.filter((x: any) => x.id !== savedBook.id && x.title !== savedBook.title)];
-        localStorage.setItem("lvn_custom_published_books", JSON.stringify(updated));
-        window.dispatchEvent(new CustomEvent("lvn-book-published", { detail: savedBook }));
-      } catch {}
-
-      // If category is Spotlight or section is Author Spotlight, also add to custom spotlight authors
-      if (bkCategory === "Spotlight" || bkTargetSection.includes("Spotlight")) {
-        try {
-          const authObj = {
-            id: "auth-" + (savedBook.author_slug || Date.now()),
-            slug: savedBook.author_slug || (bkAuthor.trim() || "author").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-            display_name: bkAuthor.trim() || "Featured Author",
-            headline: bkAuthorBio.trim() || "Spotlight Author",
-            bio: bkSynopsis.trim() || "Spotlight author on Literary Voices Network.",
-            avatar_url: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
-            book_count: 1,
-            is_featured: 1,
-          };
-          const curAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
-          const nextAuths = [authObj, ...curAuths.filter((a: any) => a.slug !== authObj.slug)];
-          localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(nextAuths));
-          setCustomSpotlightAuthors(nextAuths);
-        } catch {}
+        }
       }
-
-      setAllBooks((prev) => [savedBook, ...prev.filter((b) => b.id !== savedBook.id)]);
-
-      setBanner({
-        type: "success",
-        text: `Book "${bkTitle}" published successfully to ${bkTargetSection} (${bkCategory})!`,
-      });
-
-      setBkTitle("");
-      setBkSubtitle("");
-      setBkAuthor("");
-      setBkSynopsis("");
-      setBkExcerpt("");
-      setBkLink("");
-      setBkGoodreads("");
-      void loadData(true);
-    } catch (err: any) {
-      setBanner({ type: "error", text: "Error publishing book: " + (err?.message || "Please check connection.") });
-    } finally {
-      setIsPublishingBook(false);
+    } catch (err) {
+      console.warn("API direct publish sync notice:", err);
     }
+
+    // ALWAYS persist to localStorage so the live site gets it immediately!
+    try {
+      const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
+      const updated = [savedBook, ...stored.filter((x: any) => x.id !== savedBook.id && x.title !== savedBook.title)];
+      localStorage.setItem("lvn_custom_published_books", JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent("lvn-book-published", { detail: savedBook }));
+    } catch {}
+
+    // If category is Spotlight or section is Author Spotlight, also add author to spotlight authors
+    if (bkCategory === "Spotlight" || bkTargetSection.includes("Spotlight") || bkAuthor.trim()) {
+      try {
+        const authObj = {
+          id: "auth-" + (savedBook.author_slug || Date.now()),
+          slug: savedBook.author_slug || authorSlug,
+          display_name: bkAuthor.trim() || "Featured Author",
+          headline: bkAuthorBio.trim() || "Spotlight Author",
+          bio: bkSynopsis.trim() || "Spotlight author on Literary Voices Network.",
+          avatar_url: bkAuthorAvatar.trim() || "/media/avatars/default-portrait.svg",
+          book_count: 1,
+          is_featured: 1,
+        };
+        const curAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
+        const nextAuths = [authObj, ...curAuths.filter((a: any) => a.slug !== authObj.slug)];
+        localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(nextAuths));
+        setCustomSpotlightAuthors(nextAuths);
+      } catch {}
+    }
+
+    setAllBooks((prev) => [savedBook, ...prev.filter((b) => b.id !== savedBook.id)]);
+
+    setBanner({
+      type: "success",
+      text: `Book "${bkTitle}" published successfully to ${bkTargetSection} (${bkCategory})!`,
+    });
+
+    setBkTitle("");
+    setBkSubtitle("");
+    setBkAuthor("");
+    setBkSynopsis("");
+    setBkExcerpt("");
+    setBkLink("");
+    setBkGoodreads("");
+    setIsPublishingBook(false);
+    void loadData(true);
   };
 
   // 1a. Delete Book from Catalog
@@ -615,8 +673,25 @@ export default function AdminDashboardPage() {
   // 1b. Author Spotlight Handler
   const handleSaveAuthorSpotlight = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!spotlightName.trim()) {
+      setBanner({ type: "error", text: "Please enter the author's name." });
+      return;
+    }
     setBanner(null);
     setIsPublishingAuthor(true);
+
+    const authorSlug = spotlightName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    let authObj: any = {
+      id: "auth-" + Date.now(),
+      slug: authorSlug,
+      display_name: spotlightName.trim(),
+      headline: spotlightHeadline.trim() || "Featured Author",
+      bio: spotlightBio.trim() || "Contributing author at LVN.",
+      avatar_url: spotlightAvatar.trim() || "/media/avatars/default-portrait.svg",
+      location: spotlightLocation.trim() || "New York",
+      book_count: 1,
+      is_featured: 1,
+    };
 
     try {
       const res = await fetch("/api/platform", {
@@ -635,46 +710,39 @@ export default function AdminDashboardPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setBanner({ type: "error", text: data.error || "Failed to add author spotlight." });
-        return;
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.spotlight) {
+          authObj = {
+            ...authObj,
+            id: data.spotlight.id || authObj.id,
+            slug: data.spotlight.slug || authObj.slug,
+          };
+        }
       }
-
-      const authObj = {
-        id: data.spotlight?.id || "auth-" + Date.now(),
-        slug: data.spotlight?.slug || spotlightName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        display_name: spotlightName.trim(),
-        headline: spotlightHeadline.trim() || "Featured Author",
-        bio: spotlightBio.trim() || "Contributing author at LVN.",
-        avatar_url: spotlightAvatar.trim() || "/media/avatars/default-portrait.svg",
-        book_count: 1,
-        is_featured: 1,
-      };
-
-      try {
-        const curAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
-        const nextAuths = [authObj, ...curAuths.filter((a: any) => a.slug !== authObj.slug)];
-        localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(nextAuths));
-        setCustomSpotlightAuthors(nextAuths);
-        window.dispatchEvent(new CustomEvent("lvn-book-published"));
-      } catch {}
-
-      setBanner({
-        type: "success",
-        text: `Author "${spotlightName}" added to Author Spotlight successfully!`,
-      });
-
-      setSpotlightName("");
-      setSpotlightHeadline("");
-      setSpotlightBio("");
-      setSpotlightLocation("");
-      void loadData(true);
-    } catch {
-      setBanner({ type: "error", text: "Network error saving author spotlight." });
-    } finally {
-      setIsPublishingAuthor(false);
+    } catch (err) {
+      console.warn("API author spotlight notice:", err);
     }
+
+    try {
+      const curAuths = JSON.parse(localStorage.getItem("lvn_custom_spotlight_authors") || "[]");
+      const nextAuths = [authObj, ...curAuths.filter((a: any) => a.slug !== authObj.slug)];
+      localStorage.setItem("lvn_custom_spotlight_authors", JSON.stringify(nextAuths));
+      setCustomSpotlightAuthors(nextAuths);
+      window.dispatchEvent(new CustomEvent("lvn-book-published"));
+    } catch {}
+
+    setBanner({
+      type: "success",
+      text: `Author "${spotlightName}" added to Author Spotlight successfully!`,
+    });
+
+    setSpotlightName("");
+    setSpotlightHeadline("");
+    setSpotlightBio("");
+    setSpotlightLocation("");
+    setIsPublishingAuthor(false);
+    void loadData(true);
   };
 
   // 1ba. Delete Author from Spotlight

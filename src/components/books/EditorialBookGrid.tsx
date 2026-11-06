@@ -27,8 +27,12 @@ export function EditorialBookGrid({ initialBooks }: { initialBooks: Book[] }) {
         );
         const editorialCustom = stored.filter(
           (b) =>
-            (b.genre && b.genre.toLowerCase() === "editorial") ||
-            (b.section && b.section.toLowerCase().includes("editorial"))
+            (b.genre && b.genre.toLowerCase().includes("editorial")) ||
+            (b.section && b.section.toLowerCase().includes("editorial")) ||
+            (Array.isArray(b.secondary_genres) &&
+              b.secondary_genres.some(
+                (g: string) => typeof g === "string" && g.toLowerCase().includes("editorial")
+              ))
         );
         if (editorialCustom.length > 0) {
           merged = [
@@ -48,7 +52,11 @@ export function EditorialBookGrid({ initialBooks }: { initialBooks: Book[] }) {
 
     syncBooks();
     window.addEventListener("lvn-book-published", syncBooks);
-    return () => window.removeEventListener("lvn-book-published", syncBooks);
+    window.addEventListener("storage", syncBooks);
+    return () => {
+      window.removeEventListener("lvn-book-published", syncBooks);
+      window.removeEventListener("storage", syncBooks);
+    };
   }, [initialBooks]);
 
   if (books.length === 0) {
@@ -59,14 +67,14 @@ export function EditorialBookGrid({ initialBooks }: { initialBooks: Book[] }) {
           No Editorial Books Found
         </h3>
         <p className="text-xs text-neutral-600 max-w-md mx-auto">
-          No titles match your current search query. Try broadening your keywords or browse the full network library.
+          Explore the full directory or check back as our editorial desk reviews and publishes new titles.
         </p>
         <div className="pt-2">
           <Link
-            href="/editorial"
-            className="inline-block px-5 py-2.5 rounded-full bg-[#080808] text-xs font-bold text-[#F7DF8B]"
+            href="/books"
+            className="inline-flex items-center px-4 py-2 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110"
           >
-            Reset Search
+            Browse Full Catalogue
           </Link>
         </div>
       </div>
@@ -74,116 +82,87 @@ export function EditorialBookGrid({ initialBooks }: { initialBooks: Book[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {books.map((book) => {
-        const amazonUrl =
+        const cover =
+          book.cover_url || (book as any).cover_image_url || "/media/covers/the-first.jpg";
+        const rating = (book as any).rating_avg
+          ? Number((book as any).rating_avg).toFixed(1)
+          : "5.0";
+        const ratingCount = (book as any).rating_count || 12;
+        const buyUrl =
           book.retailer_links?.amazon ||
-          "https://www.amazon.com/s?k=" + encodeURIComponent(book.title);
+          book.retailer_links?.bookshop ||
+          book.retailer_links?.barnesAndNoble ||
+          (book as any).buy_url;
 
         return (
           <div
             key={book.id}
-            className="group flex flex-col justify-between rounded-3xl bg-white border border-[#D4AF37]/35 p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            className="group rounded-3xl bg-white border border-[#D4AF37]/35 p-6 flex flex-col justify-between hover:border-[#AA7C11] hover:shadow-xl transition-all"
           >
             <div>
-              {/* Cover */}
-              <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-neutral-100 border border-[#D4AF37]/30 shadow-md mb-4 group-hover:border-[#D4AF37] transition-all">
+              <div className="aspect-[3/4] w-full rounded-2xl overflow-hidden mb-4 relative bg-neutral-900 border border-neutral-200">
                 <img
-                  src={book.cover_url || "/media/covers/the-first.jpg"}
+                  src={cover}
                   alt={book.title}
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src =
                       "/media/covers/the-first.jpg";
                   }}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <span className="absolute top-3 left-3 rounded-full bg-black/80 border border-[#D4AF37]/60 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#F7DF8B]">
-                  {book.genre || "Editorial"}
-                </span>
-                <span className="absolute top-3 right-3 rounded-full bg-black/80 border border-[#D4AF37]/60 px-2.5 py-0.5 text-[10px] font-bold text-[#F7DF8B] flex items-center gap-1">
-                  <Eye className="size-3 text-[#D4AF37]" />
-                  {(book.view_count || 1200).toLocaleString()}
+                <span className="absolute top-3 left-3 rounded-full bg-gold-gradient px-2.5 py-0.5 text-[9px] font-bold text-[#050505] uppercase tracking-wider">
+                  Editorial
                 </span>
               </div>
 
-              {/* Title & Author */}
-              <h3 className="font-serif-display text-lg font-bold text-[#080808] group-hover:text-[#AA7C11] transition-colors line-clamp-1">
+              <div className="flex items-center gap-1 text-[#AA7C11] text-xs font-bold mb-1.5">
+                <Star className="size-3.5 fill-[#AA7C11]" />
+                <span>{rating}</span>
+                <span className="text-neutral-400 text-[10px]">({ratingCount})</span>
+              </div>
+
+              <h3 className="font-serif font-bold text-lg text-[#080808] line-clamp-2 group-hover:text-[#AA7C11] transition-colors">
                 {book.title}
               </h3>
-              {book.subtitle && (
-                <p className="text-xs text-neutral-500 italic line-clamp-1 mt-0.5">
-                  {book.subtitle}
+              <p className="text-xs text-neutral-600 line-clamp-1 mt-0.5 font-medium">
+                by {book.author_name || "Author"}
+              </p>
+
+              {book.description && (
+                <p className="text-xs text-neutral-600 line-clamp-3 mt-2.5 leading-relaxed">
+                  {book.description}
                 </p>
               )}
-
-              {/* Author Pill */}
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <Link
-                  href={
-                    book.author_slug
-                      ? `/authors/${book.author_slug}`
-                      : "/authors"
-                  }
-                  className="inline-flex items-center gap-2 rounded-full bg-neutral-100 border border-neutral-300 px-3 py-1 text-xs hover:border-[#D4AF37] hover:bg-neutral-200 transition-colors"
-                >
-                  <img
-                    src={
-                      book.author_avatar ||
-                      "/media/avatars/default-portrait.svg"
-                    }
-                    alt={book.author_name || "Author"}
-                    className="size-5 rounded-full object-cover border border-neutral-300"
-                  />
-                  <span className="font-semibold text-xs text-[#080808] truncate max-w-[130px]">
-                    By {book.author_name || "Contributing Author"}
-                  </span>
-                </Link>
-
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600">
-                  <Star className="size-3 fill-current text-[#D4AF37]" />
-                  4.9
-                </span>
-              </div>
-
-              {/* Description */}
-              <p className="mt-3 text-xs text-neutral-600 line-clamp-3 leading-relaxed">
-                {book.description ||
-                  "A verified title published through the Literary Voices Network editorial imprint."}
-              </p>
             </div>
 
-            {/* CTAs */}
-            <div className="pt-4 mt-4 border-t border-neutral-100 flex items-center gap-2">
-              <a
-                href={amazonUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  if (book.slug) {
-                    fetch("/api/publishing", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        action: "increment-book-view",
-                        slug: book.slug,
-                      }),
-                    }).catch(() => {});
-                  }
-                }}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-gold-gradient py-2.5 px-3 text-xs font-bold text-[#050505] hover:brightness-110 active:scale-95 transition-all shadow-sm"
-              >
-                <BookOpen className="size-3.5 fill-current" />
-                <span>Book Overview</span>
-                <ExternalLink className="size-3" />
-              </a>
+            <div className="pt-4 mt-4 border-t border-neutral-100 flex items-center justify-between text-xs">
               <Link
-                href={`/books/${book.slug}`}
-                className="rounded-xl border border-neutral-300 px-3 py-2.5 text-xs font-semibold text-neutral-700 hover:border-[#D4AF37] hover:bg-neutral-50 transition-colors"
-                title="View Full Book Details"
+                href={`/books/${book.slug || book.id}`}
+                className="inline-flex items-center gap-1 font-bold text-[#080808] hover:text-[#AA7C11] text-xs"
               >
-                Details
+                <Eye className="size-3.5 text-[#AA7C11]" />
+                View Details
               </Link>
+
+              {buyUrl ? (
+                <a
+                  href={buyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-xs"
+                >
+                  Purchase <ExternalLink className="size-3" />
+                </a>
+              ) : (
+                <Link
+                  href={`/books/${book.slug || book.id}`}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 transition-all shadow-xs"
+                >
+                  Explore Title
+                </Link>
+              )}
             </div>
           </div>
         );

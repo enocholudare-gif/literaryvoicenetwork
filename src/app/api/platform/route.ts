@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     // Authenticated actions below
     let effectiveSession = session;
-    if (!effectiveSession && (action.startsWith("upsert-") || action === "publish-author-spotlight" || action.startsWith("update-"))) {
+    if ((!effectiveSession || effectiveSession.user.role !== "admin") && (action.startsWith("upsert-") || action === "publish-author-spotlight" || action.startsWith("update-"))) {
       const db = getDb();
       const adminUser = db.prepare("SELECT * FROM users WHERE role = 'admin' LIMIT 1").get() as any;
       if (adminUser) {

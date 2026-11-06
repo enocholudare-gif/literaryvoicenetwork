@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Award, BookOpen, Filter, Search } from "lucide-react";
-import { BookCard } from "@/components/ui/Cards";
+import { BooksCatalogGrid } from "@/components/books/BooksCatalogGrid";
 import { listPublicBooks } from "@/lib/services/publishing";
 import type { BookFormat } from "@/lib/db/types";
 
@@ -58,28 +58,28 @@ export default async function BooksDirectoryPage({ searchParams }: BooksPageProp
             </div>
             <div className="flex items-center gap-3">
               <Link
-                href="/dashboard?tab=books"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D4AF37] text-[#080808] font-bold text-xs hover:bg-[#F7DF8B] transition-colors"
+                href="/publish"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gold-gradient text-[#050505] font-bold text-xs hover:brightness-110 transition-all shadow-md"
               >
-                <Award className="w-4 h-4" />
-                Submit Your Book Listing
+                <BookOpen className="w-4 h-4" />
+                Submit Book
               </Link>
             </div>
           </div>
 
-          {/* Search & Filter Form */}
+          {/* Search & Filter Bar */}
           <form
             action="/books"
             method="GET"
             className="mt-8 p-4 rounded-2xl bg-[#141414] border border-white/10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3"
           >
-            <div className="lg:col-span-5 relative">
-              <Search className="w-4 h-4 text-[#FAF8F3]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="lg:col-span-4 relative">
+              <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="search"
                 name="q"
                 defaultValue={search}
-                placeholder="Search by title, author, ISBN, or subject..."
+                placeholder="Search titles, authors, keywords..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#080808] border border-white/15 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
@@ -88,10 +88,10 @@ export default async function BooksDirectoryPage({ searchParams }: BooksPageProp
               <select
                 name="genre"
                 defaultValue={genre}
-                aria-label="Filter by genre"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080808] border border-white/15 text-sm text-white focus:outline-none focus:border-[#D4AF37]"
+                aria-label="Filter books by genre"
+                className="w-full px-3 py-2.5 rounded-xl bg-[#080808] border border-white/15 text-sm text-white focus:outline-none focus:border-[#D4AF37]"
               >
-                <option value="All">All Genres</option>
+                <option value="All">All Literary Genres</option>
                 {result.genres.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -100,12 +100,12 @@ export default async function BooksDirectoryPage({ searchParams }: BooksPageProp
               </select>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               <select
                 name="format"
                 defaultValue={format}
-                aria-label="Filter by format"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080808] border border-white/15 text-sm text-white focus:outline-none focus:border-[#D4AF37]"
+                aria-label="Filter books by format"
+                className="w-full px-3 py-2.5 rounded-xl bg-[#080808] border border-white/15 text-sm text-white focus:outline-none focus:border-[#D4AF37]"
               >
                 {formats.map((f) => (
                   <option key={f} value={f}>
@@ -165,33 +165,8 @@ export default async function BooksDirectoryPage({ searchParams }: BooksPageProp
           )}
         </div>
 
-        {result.items.length === 0 ? (
-          <div className="rounded-2xl bg-white border border-[#080808]/10 p-12 text-center space-y-3">
-            <BookOpen className="w-10 h-10 text-[#D4AF37] mx-auto" />
-            <h2 className="font-serif text-2xl font-bold text-[#080808]">
-              No matching books found
-            </h2>
-            <p className="text-sm text-[#080808]/70 max-w-md mx-auto">
-              Try clearing your search query or selecting a broader literary genre.
-            </p>
-            <div className="pt-2">
-              <Link
-                href="/books"
-                className="inline-flex items-center px-4 py-2 rounded-xl bg-[#080808] text-white text-xs font-semibold"
-              >
-                View All Published Books
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {result.items.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
-          </div>
-        )}
+        <BooksCatalogGrid initialBooks={result.items} />
       </section>
     </div>
   );
 }
-

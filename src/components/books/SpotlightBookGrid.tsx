@@ -28,7 +28,11 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
         const spotlightCustom = stored.filter(
           (b) =>
             (b.genre && b.genre.toLowerCase().includes("spotlight")) ||
-            (b.section && b.section.toLowerCase().includes("spotlight"))
+            (b.section && b.section.toLowerCase().includes("spotlight")) ||
+            (Array.isArray(b.secondary_genres) &&
+              b.secondary_genres.some(
+                (g: string) => typeof g === "string" && g.toLowerCase().includes("spotlight")
+              ))
         );
         if (spotlightCustom.length > 0) {
           merged = [
@@ -48,7 +52,11 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
 
     syncBooks();
     window.addEventListener("lvn-book-published", syncBooks);
-    return () => window.removeEventListener("lvn-book-published", syncBooks);
+    window.addEventListener("storage", syncBooks);
+    return () => {
+      window.removeEventListener("lvn-book-published", syncBooks);
+      window.removeEventListener("storage", syncBooks);
+    };
   }, [initialBooks]);
 
   if (books.length === 0) {
@@ -77,10 +85,17 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {books.map((book) => {
-          const cover = book.cover_url || (book as any).cover_image_url || "/media/books/default-cover.svg";
-          const rating = (book as any).rating_avg ? Number((book as any).rating_avg).toFixed(1) : "5.0";
+          const cover =
+            book.cover_url || (book as any).cover_image_url || "/media/books/default-cover.svg";
+          const rating = (book as any).rating_avg
+            ? Number((book as any).rating_avg).toFixed(1)
+            : "5.0";
           const ratingCount = (book as any).rating_count || 12;
-          const buyUrl = book.retailer_links?.amazon || book.retailer_links?.bookshop || book.retailer_links?.barnesAndNoble || (book as any).buy_url;
+          const buyUrl =
+            book.retailer_links?.amazon ||
+            book.retailer_links?.bookshop ||
+            book.retailer_links?.barnesAndNoble ||
+            (book as any).buy_url;
 
           return (
             <div
@@ -93,7 +108,8 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
                     src={cover}
                     alt={book.title}
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "/media/books/default-cover.svg";
+                      (e.currentTarget as HTMLImageElement).src =
+                        "/media/books/default-cover.svg";
                     }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -107,9 +123,7 @@ export function SpotlightBookGrid({ initialBooks = [] }: { initialBooks?: Book[]
                 <div className="flex items-center gap-1 text-[#D4AF37] text-xs font-bold mb-1">
                   <Star className="size-3 fill-[#D4AF37]" />
                   <span>{rating}</span>
-                  <span className="text-white/40 text-[10px]">
-                    ({ratingCount})
-                  </span>
+                  <span className="text-white/40 text-[10px]">({ratingCount})</span>
                 </div>
 
                 <h3 className="font-serif font-bold text-sm text-white line-clamp-2 group-hover:text-[#D4AF37] transition-colors">
