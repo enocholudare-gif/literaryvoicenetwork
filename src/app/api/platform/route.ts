@@ -42,6 +42,7 @@ import {
   getSmtpConfig,
   saveSmtpSettings,
   sendTestSmtpEmail,
+  sendDirectEmail,
 } from "@/lib/services/notifications";
 import { listMediaAssets } from "@/lib/services/media";
 import { generateId } from "@/lib/auth/crypto";
@@ -360,6 +361,38 @@ export async function POST(request: NextRequest) {
       const targetEmail = String(body.targetEmail || "").trim();
       const testRes = await sendTestSmtpEmail(targetEmail);
       return NextResponse.json(testRes);
+    }
+
+    if (action === "reply-enquiry") {
+      const targetEmail = String(body.recipientEmail || body.targetEmail || "").trim();
+      const subject = String(body.subject || "Re: Literary Voices Network Correspondence").trim();
+      const message = String(body.message || "").trim();
+      const enquiryId = String(body.enquiryId || "");
+
+      if (!targetEmail) {
+        return NextResponse.json({ ok: false, error: "Missing recipient email address." }, { status: 400 });
+      }
+      if (!message) {
+        return NextResponse.json({ ok: false, error: "Please enter your message text." }, { status: 400 });
+      }
+
+      const res = await sendDirectEmail({
+        to: targetEmail,
+        subject,
+        text: message,
+      });
+
+      if (enquiryId) {
+        try {
+          const db = getDb();
+          db.prepare("UPDATE enquiries SET status = 'in_review', updated_at = ? WHERE id = ?").run(
+            new Date().toISOString(),
+            enquiryId
+          );
+        } catch {}
+      }
+
+      return NextResponse.json(res);
     }
 
     return NextResponse.json(

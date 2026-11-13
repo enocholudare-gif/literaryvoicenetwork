@@ -1666,21 +1666,22 @@ export function getBookBySlugForViewer(
   viewer: AuthenticatedContext | null
 ): Book | null {
   const db = getDb();
+  const cleanSlug = String(slug || "").trim();
   const row = db
     .prepare(`
       SELECT b.*,
-        p.display_name as author_name,
-        p.slug as author_slug,
-        p.avatar_url as author_avatar,
-        p.headline as author_headline,
+        COALESCE(p.display_name, 'Contributing Author') as author_name,
+        COALESCE(p.slug, 'author') as author_slug,
+        COALESCE(p.avatar_url, '/media/avatars/default-portrait.svg') as author_avatar,
+        COALESCE(p.headline, 'Contributing Author') as author_headline,
         p.bio as author_bio,
-        u.role as author_role
+        COALESCE(u.role, 'author') as author_role
       FROM books b
-      JOIN profiles p ON b.author_profile_id = p.id
-      JOIN users u ON p.user_id = u.id
-      WHERE b.slug = ?
+      LEFT JOIN profiles p ON b.author_profile_id = p.id
+      LEFT JOIN users u ON p.user_id = u.id
+      WHERE LOWER(b.slug) = LOWER(?) OR b.id = ? OR LOWER(b.title) = LOWER(?)
     `)
-    .get(slug) as Record<string, unknown> | undefined;
+    .get(cleanSlug, cleanSlug, cleanSlug) as Record<string, unknown> | undefined;
 
   if (!row) return null;
   const book = mapBookRow(row);

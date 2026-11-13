@@ -36,6 +36,7 @@ import {
   User,
   Users,
   Video,
+  X,
 } from "lucide-react";
 import type {
   Article,
@@ -372,6 +373,63 @@ export default function AdminDashboardPage() {
   const [copiedEmailId, setCopiedEmailId] = useState<string | null>(null);
   const [inboxFilter, setInboxFilter] = useState<string>("all");
   const [inboxSearch, setInboxSearch] = useState<string>("");
+  const [replyModalEnquiry, setReplyModalEnquiry] = useState<Enquiry | null>(null);
+  const [replySubject, setReplySubject] = useState<string>("");
+  const [replyMessage, setReplyMessage] = useState<string>("");
+  const [isSendingReply, setIsSendingReply] = useState<boolean>(false);
+  const [replyFeedback, setReplyFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleOpenReplyModal = (enq: Enquiry) => {
+    setReplyModalEnquiry(enq);
+    setReplySubject(`Re: ${enq.subject || "Literary Voices Network Correspondence"}`);
+    setReplyMessage(
+      `Dear ${enq.name || "Author"},\n\nThank you for reaching out to Literary Voices Network regarding "${enq.subject || "your message"}".\n\n\n\nWarm regards,\nEditorial & Operations Desk\nLiterary Voices Network\nwww.literaryvoicenetwork.org`
+    );
+    setReplyFeedback(null);
+  };
+
+  const handleSendDirectReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyModalEnquiry) return;
+    if (!replyMessage.trim()) {
+      setReplyFeedback({ type: "error", text: "Please enter your reply message." });
+      return;
+    }
+    setIsSendingReply(true);
+    setReplyFeedback(null);
+    try {
+      const res = await fetch("/api/platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reply-enquiry",
+          enquiryId: replyModalEnquiry.id,
+          recipientEmail: replyModalEnquiry.email,
+          subject: replySubject,
+          message: replyMessage,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setReplyFeedback({
+          type: "error",
+          text: data.error || "Failed to dispatch email reply via gateway.",
+        });
+      } else {
+        setReplyFeedback({
+          type: "success",
+          text: `Reply successfully delivered to ${replyModalEnquiry.email}!`,
+        });
+      }
+    } catch {
+      setReplyFeedback({
+        type: "error",
+        text: "Network error while sending reply.",
+      });
+    } finally {
+      setIsSendingReply(false);
+    }
+  };
 
   // 6. Settings Form State
   const [newPassword, setNewPassword] = useState("");
@@ -2313,8 +2371,9 @@ export default function AdminDashboardPage() {
                           <span className="font-serif text-base font-bold text-[#080808]">
                             {enq.name}
                           </span>
-                          <span className="text-xs text-[#AA7C11] font-mono">
-                            &lt;{enq.email}&gt;
+                          <span className="inline-flex items-center gap-1 text-xs text-[#AA7C11] font-mono font-bold bg-amber-50 border border-amber-300/80 px-2 py-0.5 rounded-md shadow-2xs">
+                            <Mail className="size-3 text-[#D4AF37]" />
+                            Author Email: {enq.email}
                           </span>
                           {enq.organization && (
                             <span className="text-[11px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">
@@ -2371,13 +2430,26 @@ export default function AdminDashboardPage() {
                           </button>
                         </div>
 
-                        <a
-                          href={`mailto:${enq.email}?subject=Re: ${encodeURIComponent(enq.subject || "Literary Voices Network Correspondence")}&body=Dear ${encodeURIComponent(enq.name)},%0D%0A%0D%0AThank you for contacting Literary Voices Network.%0D%0A%0D%0A`}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer"
-                        >
-                          <Mail className="size-3.5" />
-                          <span>Reply via Email</span>
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReplyModal(enq)}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer"
+                          >
+                            <Mail className="size-3.5" />
+                            <span>Reply to Author</span>
+                          </button>
+                          <a
+                            href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(enq.email)}&su=Re:%20${encodeURIComponent(enq.subject || "Literary Voices Network Correspondence")}&body=Dear%20${encodeURIComponent(enq.name)},%0D%0A%0D%0AThank%20you%20for%20contacting%20Literary%20Voices%20Network.%0D%0A%0D%0A`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 transition-colors"
+                            title="Compose directly in Gmail Webmail"
+                          >
+                            <ExternalLink className="size-3.5" />
+                            <span>Open in Gmail</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -2685,6 +2757,167 @@ export default function AdminDashboardPage() {
                   Save Live Stream Settings
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {/* Reply to Author / Correspondent Modal */}
+        {replyModalEnquiry && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+            <div className="relative w-full max-w-2xl rounded-3xl bg-white border border-[#D4AF37]/50 shadow-2xl p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto">
+              <div className="flex items-start justify-between gap-4 border-b border-neutral-100 pb-4">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-gradient text-[#050505]">
+                    <Mail className="size-3" />
+                    Direct Correspondent Reply
+                  </span>
+                  <h3 className="font-serif text-2xl font-bold text-[#080808] mt-1">
+                    Reply to {replyModalEnquiry.name || "Author"}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReplyModalEnquiry(null);
+                    setReplyFeedback(null);
+                  }}
+                  className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              {/* Author Email Highlight Card */}
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-300/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 block">
+                    Author / Sender Email Address
+                  </span>
+                  <span className="font-mono text-base font-bold text-[#AA7C11] select-all">
+                    {replyModalEnquiry.email}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyEmail(replyModalEnquiry.email, "modal")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 bg-white text-xs font-semibold text-neutral-800 hover:bg-amber-100 transition-colors"
+                  >
+                    {copiedEmailId === "modal" ? (
+                      <>
+                        <Check className="size-3.5 text-emerald-600" />
+                        <span className="text-emerald-700 font-bold">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-3.5 text-neutral-600" />
+                        <span>Copy Email</span>
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(replyModalEnquiry.email)}&su=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs"
+                    title="Open directly in Gmail webmail with recipient pre-filled"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    <span>Open in Gmail</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Original Message Reference */}
+              <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-700 space-y-1">
+                <span className="font-bold text-neutral-900 block">
+                  Original Subject: {replyModalEnquiry.subject || "No Subject"}
+                </span>
+                <p className="line-clamp-3 text-neutral-600 italic">
+                  &ldquo;{replyModalEnquiry.message}&rdquo;
+                </p>
+              </div>
+
+              {replyFeedback && (
+                <div
+                  className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                    replyFeedback.type === "success"
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
+                  {replyFeedback.type === "success" ? (
+                    <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <AlertCircle className="size-4 shrink-0 text-red-600" />
+                  )}
+                  <span>{replyFeedback.text}</span>
+                </div>
+              )}
+
+              {/* Reply Form */}
+              <form onSubmit={handleSendDirectReply} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-700">Subject Line</label>
+                  <input
+                    type="text"
+                    value={replySubject}
+                    onChange={(e) => setReplySubject(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-700">Reply Message Content</label>
+                  <textarea
+                    rows={7}
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs text-[#080808] focus:border-[#D4AF37] focus:outline-none font-sans leading-relaxed"
+                    required
+                  />
+                </div>
+
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100">
+                  <a
+                    href={`mailto:${encodeURIComponent(replyModalEnquiry.email)}?subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyMessage)}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors"
+                  >
+                    <Mail className="size-3.5" />
+                    <span>Open in Default Mail App</span>
+                  </a>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyModalEnquiry(null);
+                        setReplyFeedback(null);
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSendingReply}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gold-gradient text-xs font-bold text-[#050505] hover:brightness-110 shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                      {isSendingReply ? (
+                        <>
+                          <Clock className="size-3.5 animate-spin" />
+                          <span>Dispatching...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="size-3.5" />
+                          <span>Send Reply via LVN Mailer</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         )}
