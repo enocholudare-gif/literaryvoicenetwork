@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
+import { appendCustomBook, appendCustomArticle } from "@/lib/db/custom-store";
 import {
   authorizeManuscriptDistribution,
   createArticleDraft,
@@ -145,6 +146,11 @@ export async function POST(request: NextRequest) {
         publishImmediately: Boolean(body.publishImmediately),
         scheduledFor: body.scheduledFor || null,
       });
+      if (book.status === "published") {
+        try {
+          appendCustomBook(book);
+        } catch {}
+      }
       if (body.submitForReview && book.status === "draft") {
         const res = await submitBookForReview(
           session,
@@ -197,6 +203,11 @@ export async function POST(request: NextRequest) {
         isFeatured: Boolean(body.isFeatured),
         isCoverStory: Boolean(body.isCoverStory),
       });
+      if (article.status === "published") {
+        try {
+          appendCustomArticle(article);
+        } catch {}
+      }
       if (body.submitForReview && article.status === "draft") {
         const res = await submitArticleForReview(
           session,

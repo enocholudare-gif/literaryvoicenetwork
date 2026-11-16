@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { INITIAL_MIGRATION_VERSION, INITIAL_SCHEMA_SQL } from "./schema-sql";
 import { seedDatabase } from "./seed";
+import { syncCustomContentToDb } from "./custom-store";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -117,6 +118,9 @@ export function getDb(): DatabaseSync {
 
   if (process.env.LVN_SKIP_AUTO_SEED !== "true") {
     seedDatabase(db);
+    try {
+      syncCustomContentToDb(db);
+    } catch {}
   }
 
   // Re-ensure Admin email and enquiry email after seeding

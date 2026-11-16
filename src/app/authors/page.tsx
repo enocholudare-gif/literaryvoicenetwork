@@ -22,13 +22,8 @@ export default async function AuthorsDirectoryPage({ searchParams }: AuthorsPage
   const search = params.q || "";
   const genre = params.genre || "All";
 
-  // Filter out seed mock profiles so only real authors added or published appear
-  const allAuthors = listPublicAuthors({ search, genre });
-  const realAuthors = allAuthors.filter(
-    (a) =>
-      !a.id.startsWith("profile-") &&
-      !["claire-moreau", "amara-osei", "ayn-cates-sullivan", "caro-claire-burke", "charlotte-mcconaghy", "david-sheldon", "stacey-horn", "erica-elliott", "graham-wilson", "jane-austen", "julian-thorne", "kathryn-stockett", "kenneth-bliss", "lou-lipsitz", "lynn-slaughter", "marie-benedict", "soren-lindqvist", "tayari-jones", "tony-rebeiro", "marcus-sterling", "eleanor-vance"].includes(a.slug)
-  );
+  // Public authors directory
+  const realAuthors = listPublicAuthors({ search, genre });
 
   const { items: spotlightBooks } = listPublicBooks({ genre: "Spotlight", pageSize: 50 });
 

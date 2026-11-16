@@ -236,6 +236,7 @@ export function seedDatabase(db: DatabaseSync): void {
     insertUser.run("user-author-lynn", "lynn.slaughter@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
     insertUser.run("user-author-graham", "graham.wilson@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
     insertUser.run("user-author-lou", "lou.lipsitz@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
+    insertUser.run("user-author-manikarnika", "manikarnika.lagu@literaryvoicesnetwork.org", defaultPasswordHash, "author", prefs, now, now, now);
 
     // Registered Member / Reader
     insertUser.run(
@@ -516,6 +517,26 @@ export function seedDatabase(db: DatabaseSync): void {
 
     
     // 9 New Author Profiles
+    insertProfile.run(
+      "profile-author-manikarnika",
+      "user-author-manikarnika",
+      "manikarnika-lagu",
+      "Manikarnika Lagu",
+      null,
+      "Author of The Silicon Mind",
+      "Manikarnika Lagu is the author of The Silicon Mind, a high-stakes sci-fi thriller exploring neural chip implants, advanced robotics, artificial intelligence, and medical ethics.",
+      "/media/avatars/manikarnika-lagu.jpg",
+      "/media/banners/editorial-desk.svg",
+      "Mumbai, India",
+      "https://a.co/d/0aYLInHE",
+      JSON.stringify(["Editorial", "Science Fiction", "Thriller"]),
+      JSON.stringify({ amazon: "https://a.co/d/0aYLInHE" }),
+      1,
+      1,
+      now,
+      now
+    );
+
     insertProfile.run(
       "profile-author-tony",
       "user-author-tony",
@@ -864,6 +885,81 @@ export function seedDatabase(db: DatabaseSync): void {
     // =========================================================================
     // FEATURED EDITORIAL & MAGAZINE BOOKS (Requested by LVN Network Board)
     // =========================================================================
+
+    // Featured Editorial: The Silicon Mind by Manikarnika Lagu
+    insertBook.run(
+      "book-the-silicon-mind",
+      "the-silicon-mind",
+      "profile-author-manikarnika",
+      "user-admin-eleanor",
+      "The Silicon Mind",
+      "Editorial Feature & Sci-Fi Thriller",
+      "978-B08SILICON",
+      "The Silicon mind is a racy sci-fi thriller involving a very sophisticated neural chip implant by a robot on a human brain. It revolves around the intertwined lives of Ray, a leading neurosurgeon, sharp and flamboyant proprietor and driving force of Chetna, India's foremost coma clinic and Dr Aman Kapoor, reputed physician and accident victim who falls into a coma. Aman becomes Ray's unsuspecting guinea pig- Ray and his American collaborators successfully implant a silicon chip inside Aman's brain- true to the book's sci-fi genre, a robot does the operation! Aman wakes up- rejuvenated and changed forever. As Ray and his team expected, his brain has been enhanced to superlative degrees but his body suffers strange illnesses, a result of the conflict between the material chip and the corporeal brain. The story is about how Aman manages to trace his bizarre bodily symptoms and sudden miraculous healing powers to his brain operation at Chetna with help from Manasi, his psychiatrist, and her journalist friend, Ishan. Ray finally buckles to emotional pressure from Manasi and his own daughter, the irrepressible Sakshi and has to undo the wrong he had done by trying to play God.",
+      "In the quiet, sterile glow of Chetna clinic's advanced surgical theatre, the robotic arm moved with microscopic precision. A silicon chip, cold and humming with synthetic logic, met human neural pathways—and medical science crossed a threshold from which there was no returning.",
+      "/media/covers/the-silicon-mind.jpg",
+      "Editorial",
+      JSON.stringify(["Editorial", "Editorial Desk", "Science Fiction", "Thriller"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-11-16",
+      320,
+      "English",
+      JSON.stringify({
+        amazon: "https://a.co/d/0aYLInHE",
+        goodreads: "https://www.goodreads.com/search?q=The+Silicon+Mind+Manikarnika+Lagu",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-11-16T17:39:05.652Z",
+      "The Silicon Mind by Manikarnika Lagu | Literary Voices Network",
+      "Read The Silicon Mind by Manikarnika Lagu on Literary Voices Network.",
+      now,
+      now,
+      2150
+    );
+
+    // Alias for the-silicon-mind-2 to support existing links
+    insertBook.run(
+      "93bc9c27-f229-4aca-b9cf-9855733d62e5",
+      "the-silicon-mind-2",
+      "profile-author-manikarnika",
+      "user-admin-eleanor",
+      "The Silicon Mind",
+      "Editorial Feature & Sci-Fi Thriller",
+      "978-B08SILICON",
+      "The Silicon mind is a racy sci-fi thriller involving a very sophisticated neural chip implant by a robot on a human brain. It revolves around the intertwined lives of Ray, a leading neurosurgeon, sharp and flamboyant proprietor and driving force of Chetna, India's foremost coma clinic and Dr Aman Kapoor, reputed physician and accident victim who falls into a coma.",
+      "In the quiet, sterile glow of Chetna clinic's advanced surgical theatre, the robotic arm moved with microscopic precision.",
+      "/media/covers/the-silicon-mind.jpg",
+      "Editorial",
+      JSON.stringify(["Editorial", "Editorial Desk", "Science Fiction", "Thriller"]),
+      "Hardcover",
+      "LVN Imprint Editions",
+      "2026-11-16",
+      320,
+      "English",
+      JSON.stringify({
+        amazon: "https://a.co/d/0aYLInHE",
+      }),
+      1,
+      "/media/excerpts/the-glass-meridian-sample.pdf",
+      1,
+      1,
+      1,
+      "published",
+      null,
+      "2026-11-16T17:39:05.652Z",
+      "The Silicon Mind by Manikarnika Lagu | Literary Voices Network",
+      "Read The Silicon Mind by Manikarnika Lagu on Literary Voices Network.",
+      now,
+      now,
+      2150
+    );
 
     // Editorial Book 1: AI: An Unlikely War by Tony Rebeiro
     insertBook.run(

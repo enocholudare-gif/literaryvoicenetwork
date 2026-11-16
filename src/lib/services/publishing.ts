@@ -1666,7 +1666,10 @@ export function getBookBySlugForViewer(
   viewer: AuthenticatedContext | null
 ): Book | null {
   const db = getDb();
-  const cleanSlug = String(slug || "").trim();
+  const cleanSlug = String(slug || "").trim().toLowerCase();
+  const cleanBase = cleanSlug.replace(/-2$/, "");
+  const titleSearch = cleanSlug.replace(/-/g, " ");
+
   const row = db
     .prepare(`
       SELECT b.*,
@@ -1679,9 +1682,16 @@ export function getBookBySlugForViewer(
       FROM books b
       LEFT JOIN profiles p ON b.author_profile_id = p.id
       LEFT JOIN users u ON p.user_id = u.id
-      WHERE LOWER(b.slug) = LOWER(?) OR b.id = ? OR LOWER(b.title) = LOWER(?)
+      WHERE LOWER(b.slug) = ?
+         OR LOWER(b.slug) = ?
+         OR LOWER(REPLACE(b.slug, '-2', '')) = ?
+         OR b.id = ?
+         OR LOWER(b.title) = ?
+         OR LOWER(b.title) = ?
+         OR LOWER(b.slug) LIKE ?
+      LIMIT 1
     `)
-    .get(cleanSlug, cleanSlug, cleanSlug) as Record<string, unknown> | undefined;
+    .get(cleanSlug, cleanBase, cleanBase, slug, cleanSlug, titleSearch, `${cleanBase}-%`) as Record<string, unknown> | undefined;
 
   if (!row) return null;
   const book = mapBookRow(row);
@@ -1877,27 +1887,38 @@ export function getArticleBySlugForViewer(
   viewer: AuthenticatedContext | null
 ): Article | null {
   const db = getDb();
+  const cleanSlug = String(slug || "").trim().toLowerCase();
+  const cleanBase = cleanSlug.replace(/-2$/, "");
+  const titleSearch = cleanSlug.replace(/-/g, " ");
+
   const row = db
     .prepare(`
       SELECT a.*,
-        p.display_name as author_name,
-        p.slug as author_slug,
-        p.avatar_url as author_avatar,
-        p.headline as author_headline,
+        COALESCE(p.display_name, 'LVN Editorial') as author_name,
+        COALESCE(p.slug, 'editorial') as author_slug,
+        COALESCE(p.avatar_url, '/media/avatars/default-portrait.svg') as author_avatar,
+        COALESCE(p.headline, 'Contributing Writer') as author_headline,
         p.bio as author_bio,
-        u.role as author_role,
+        COALESCE(u.role, 'author') as author_role,
         c.name as category_name,
         c.slug as category_slug,
         i.title as issue_title,
         i.issue_number as issue_number
       FROM articles a
-      JOIN profiles p ON a.author_profile_id = p.id
-      JOIN users u ON p.user_id = u.id
+      LEFT JOIN profiles p ON a.author_profile_id = p.id
+      LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN categories c ON a.category_id = c.id
       LEFT JOIN editorial_issues i ON a.issue_id = i.id
-      WHERE a.slug = ?
+      WHERE LOWER(a.slug) = ?
+         OR LOWER(a.slug) = ?
+         OR LOWER(REPLACE(a.slug, '-2', '')) = ?
+         OR a.id = ?
+         OR LOWER(a.title) = ?
+         OR LOWER(a.title) = ?
+         OR LOWER(a.slug) LIKE ?
+      LIMIT 1
     `)
-    .get(slug) as Record<string, unknown> | undefined;
+    .get(cleanSlug, cleanBase, cleanBase, slug, cleanSlug, titleSearch, `${cleanBase}-%`) as Record<string, unknown> | undefined;
 
   if (!row) return null;
   const article = mapArticleRow(row);

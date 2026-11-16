@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
+import { appendCustomAuthor } from "@/lib/db/custom-store";
 import {
   createEnquiry,
   deleteAuthorProfile,
@@ -323,6 +324,11 @@ export async function POST(request: NextRequest) {
 
     if (action === "publish-author-spotlight") {
       const spotlight = upsertAuthorSpotlight(authSession, body.spotlightData);
+      try {
+        if (spotlight) {
+          appendCustomAuthor(spotlight);
+        }
+      } catch {}
       return NextResponse.json({ ok: true, spotlight });
     }
 

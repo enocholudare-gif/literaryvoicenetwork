@@ -48,12 +48,14 @@ export function BookDetailClientWrapper({
       return;
     }
 
-    // Attempt client-side retrieval from localStorage for newly published custom books
+    // Attempt client-side retrieval from localStorage or server API for newly published books
+    let didFind = false;
     try {
       const stored: any[] = JSON.parse(
         localStorage.getItem("lvn_custom_published_books") || "[]"
       );
       const cleanSlug = slug.toLowerCase().trim();
+      const cleanBase = cleanSlug.replace(/-2$/, "");
       const found = stored.find((b: any) => {
         const bSlug = (b.slug || "").toLowerCase().trim();
         const bId = (b.id || "").toLowerCase().trim();
@@ -61,10 +63,17 @@ export function BookDetailClientWrapper({
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .trim();
-        return bSlug === cleanSlug || bId === cleanSlug || bTitleSlug === cleanSlug;
+        return (
+          bSlug === cleanSlug ||
+          bSlug === cleanBase ||
+          bId === cleanSlug ||
+          bTitleSlug === cleanSlug ||
+          bTitleSlug === cleanBase
+        );
       });
 
       if (found) {
+        didFind = true;
         const normalizedBook: Book = {
           id: found.id || "book-" + Date.now(),
           slug: found.slug || slug,
@@ -105,38 +114,40 @@ export function BookDetailClientWrapper({
           author_role: "author",
         };
         setBook(normalizedBook);
-
-        // Background sync to server so future loads hit SQLite directly
-        fetch("/api/publishing", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "create-book",
-            publishImmediately: true,
-            bookData: {
-              title: normalizedBook.title,
-              subtitle: normalizedBook.subtitle,
-              authorName: normalizedBook.author_name,
-              authorAvatar: normalizedBook.author_avatar,
-              authorBio: normalizedBook.author_bio,
-              genre: normalizedBook.genre,
-              section: found.section || normalizedBook.genre,
-              secondaryGenres: normalizedBook.secondary_genres,
-              format: normalizedBook.format,
-              publisher: normalizedBook.publisher,
-              coverUrl: normalizedBook.cover_url,
-              description: normalizedBook.description,
-              excerpt: normalizedBook.excerpt,
-              isFeatured: normalizedBook.is_featured,
-              viewCount: normalizedBook.view_count,
-              retailerLinks: normalizedBook.retailer_links,
-            },
-          }),
-        }).catch(() => {});
       }
     } catch {}
 
-    setHasCheckedLocal(true);
+    if (!didFind) {
+      // Async server lookup for mobile/cross-browser visits
+      const sClean = slug.toLowerCase().trim();
+      const sBase = sClean.replace(/-2$/, "");
+      fetch(`/api/publishing?scope=public-books&pageSize=100`, { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.items)) {
+            const match = data.items.find((b: any) => {
+              const bSlug = (b.slug || "").toLowerCase().trim();
+              const bId = (b.id || "").toLowerCase().trim();
+              const bTitle = (b.title || "").toLowerCase().trim();
+              return (
+                bSlug === sClean ||
+                bSlug === sBase ||
+                bSlug.startsWith(sBase) ||
+                bId === sClean ||
+                bTitle === sClean.replace(/-/g, " ") ||
+                bTitle === sBase.replace(/-/g, " ")
+              );
+            });
+            if (match) {
+              setBook(match);
+            }
+          }
+        })
+        .catch(() => {})
+        .finally(() => setHasCheckedLocal(true));
+    } else {
+      setHasCheckedLocal(true);
+    }
   }, [initialBook, slug]);
 
   const retailerEntries = Object.entries(book?.retailer_links || {}).filter(
