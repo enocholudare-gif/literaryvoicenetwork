@@ -28,30 +28,6 @@
         "goodreads": "https://www.goodreads.com/search?q=The+Silicon+Mind+Manikarnika+Lagu"
       },
       "published_at": "2026-11-16T17:39:05.652Z"
-    },
-    {
-      "id": "93bc9c27-f229-4aca-b9cf-9855733d62e5",
-      "slug": "the-silicon-mind-2",
-      "title": "The Silicon Mind",
-      "subtitle": "Editorial Feature & Sci-Fi Thriller",
-      "author_name": "Manikarnika Lagu",
-      "author_slug": "manikarnika-lagu",
-      "author_avatar": "/media/avatars/manikarnika-lagu.jpg",
-      "author_headline": "Author of The Silicon Mind",
-      "genre": "Editorial",
-      "section": "Editorial Desk",
-      "secondary_genres": ["Editorial", "Editorial Desk", "Science Fiction", "Thriller"],
-      "format": "Hardcover",
-      "publisher": "LVN Imprint Editions",
-      "cover_url": "/media/covers/the-silicon-mind.jpg",
-      "description": "The Silicon mind is a racy sci-fi thriller involving a very sophisticated neural chip implant by a robot on a human brain.",
-      "is_featured": true,
-      "status": "published",
-      "view_count": 2150,
-      "retailer_links": {
-        "amazon": "https://a.co/d/0aYLInHE"
-      },
-      "published_at": "2026-11-16T17:39:05.652Z"
     }
   ],
   "articles": [],

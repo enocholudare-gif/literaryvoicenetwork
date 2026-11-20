@@ -924,43 +924,6 @@ export function seedDatabase(db: DatabaseSync): void {
       2150
     );
 
-    // Alias for the-silicon-mind-2 to support existing links
-    insertBook.run(
-      "93bc9c27-f229-4aca-b9cf-9855733d62e5",
-      "the-silicon-mind-2",
-      "profile-author-manikarnika",
-      "user-admin-eleanor",
-      "The Silicon Mind",
-      "Editorial Feature & Sci-Fi Thriller",
-      "978-B08SILICON",
-      "The Silicon mind is a racy sci-fi thriller involving a very sophisticated neural chip implant by a robot on a human brain. It revolves around the intertwined lives of Ray, a leading neurosurgeon, sharp and flamboyant proprietor and driving force of Chetna, India's foremost coma clinic and Dr Aman Kapoor, reputed physician and accident victim who falls into a coma.",
-      "In the quiet, sterile glow of Chetna clinic's advanced surgical theatre, the robotic arm moved with microscopic precision.",
-      "/media/covers/the-silicon-mind.jpg",
-      "Editorial",
-      JSON.stringify(["Editorial", "Editorial Desk", "Science Fiction", "Thriller"]),
-      "Hardcover",
-      "LVN Imprint Editions",
-      "2026-11-16",
-      320,
-      "English",
-      JSON.stringify({
-        amazon: "https://a.co/d/0aYLInHE",
-      }),
-      1,
-      "/media/excerpts/the-glass-meridian-sample.pdf",
-      1,
-      1,
-      1,
-      "published",
-      null,
-      "2026-11-16T17:39:05.652Z",
-      "The Silicon Mind by Manikarnika Lagu | Literary Voices Network",
-      "Read The Silicon Mind by Manikarnika Lagu on Literary Voices Network.",
-      now,
-      now,
-      2150
-    );
-
     // Editorial Book 1: AI: An Unlikely War by Tony Rebeiro
     insertBook.run(
       "book-ai-an-unlikely-war",

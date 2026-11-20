@@ -472,8 +472,8 @@ export function createBookDraft(
       retailer_links_json, manuscript_distribution_authorized, full_manuscript_url,
       is_featured, editorial_recommendation, is_community_member_book,
       status, scheduled_for, published_at, seo_title, seo_description,
-      created_at, updated_at, view_count
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '', ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
+      created_at, updated_at, view_count, section
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '', ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     slug,
@@ -502,7 +502,8 @@ export function createBookDraft(
     parsed.seoDescription.trim() || description.slice(0, 160),
     now,
     now,
-    initialViews
+    initialViews,
+    parsed.section?.trim() || "Editorial Desk"
   );
 
   recordRevisionSnapshot(
@@ -1286,7 +1287,9 @@ export async function moderateOrTransitionContent(
 
     const publishedAt =
       input.nextStatus === "published"
-        ? book.published_at || now
+        ? book.status === "published"
+          ? book.published_at || now
+          : now
         : book.published_at;
     const scheduledFor =
       input.nextStatus === "scheduled"

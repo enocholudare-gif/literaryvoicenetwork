@@ -72,6 +72,16 @@ export function appendCustomBook(book: any): void {
   saveCustomContent({ books: [book, ...filtered] });
 }
 
+export function removeCustomBook(bookId: string): void {
+  const current = getCustomContent();
+  const filtered = current.books.filter(
+    (b) => b.id !== bookId && b.slug !== bookId
+  );
+  if (filtered.length !== current.books.length) {
+    saveCustomContent({ books: filtered });
+  }
+}
+
 export function appendCustomAuthor(author: any): void {
   const current = getCustomContent();
   const filtered = current.authors.filter(

@@ -36,6 +36,13 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
         if (dIds.length > 0) {
           apiBooks = apiBooks.filter((ab) => !dIds.includes(ab.id) && !dIds.includes(ab.slug) && !dIds.includes((ab.title || "").toLowerCase()));
         }
+        const seen = new Set<string>();
+        apiBooks = apiBooks.filter((ab) => {
+          const key = (ab.title || ab.slug || ab.id).trim().toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
         if (apiBooks.length > 0) {
           setDisplayList(apiBooks.slice(0, 4));
         } else {

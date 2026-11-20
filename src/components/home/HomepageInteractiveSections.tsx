@@ -329,8 +329,8 @@ const GLOBAL_HUBS = [
 const HOSTS_DATA = [
   {
     id: "host-1",
-    name: "Executive Founder & CEO",
-    role: "Founder, Chief Executive Officer & Lead Anchor",
+    name: "Perry Creativity",
+    role: "Executive Founder & CEO",
     show: "The Meridian Conversation",
     slug: "eleanor-vance",
     photo: "/media/team/ceo.jpg",
@@ -340,25 +340,47 @@ const HOSTS_DATA = [
   },
   {
     id: "host-2",
-    name: "Director of Events & Partnerships",
-    role: "Director of Events, Tours & Global Partnerships",
+    name: "Joshua Josh",
+    role: "Director of Events & Partnerships",
     show: "First Editions Live",
     slug: "marcus-sterling",
     photo: "/media/team/director-events.jpg",
     avatar: "/media/avatars/marcus-sterling.svg",
-    delay: "250ms",
+    delay: "200ms",
     bio: "Architects international literary salons, publisher alliances, and live author tours across eight broadcast hubs.",
   },
   {
     id: "host-3",
-    name: "Literary Programming Coordinator",
-    role: "Literary Programming Coordinator & Studio Host",
+    name: "Rebecca Jum",
+    role: "Literary Programming Coordinator",
     show: "Atlantic Archives & Voices",
     slug: "amara-osei",
     photo: "/media/team/literary-coordinator.jpg",
     avatar: "/media/avatars/amara-osei.svg",
-    delay: "500ms",
+    delay: "400ms",
     bio: "Curates weekly author interviews, reading room serializations, and emerging voice spotlights across the network.",
+  },
+  {
+    id: "host-4",
+    name: "Joel Friday",
+    role: "Social Media Manager",
+    show: "Signal & Community",
+    slug: "",
+    photo: "/media/team/socialman.jpeg",
+    avatar: "/media/team/social.jpg",
+    delay: "600ms",
+    bio: "Leads social campaigns, live broadcast community engagement, and author spotlight amplification across global channels.",
+  },
+  {
+    id: "host-5",
+    name: "Source Lee",
+    role: "Digital Media & Technology",
+    show: "Broadcast Systems & Digital",
+    slug: "",
+    photo: "/media/team/digital.jpg",
+    avatar: "/media/team/digital-director.svg",
+    delay: "800ms",
+    bio: "Directs digital media production, streaming infrastructure, and interactive publishing technology across Literary Voices Network.",
   },
 ];
 
@@ -1543,7 +1565,16 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
   }, [books]);
 
   const rawBooks = liveBooks.length > 0 ? liveBooks : books;
-  const activeBooks = rawBooks.filter((b) => !deletedIds.includes(b.id) && !deletedIds.includes(b.slug) && !deletedIds.includes((b.title || "").toLowerCase()));
+  const seenShelfKeys = new Set<string>();
+  const activeBooks = rawBooks.filter((b) => {
+    if (deletedIds.includes(b.id) || deletedIds.includes(b.slug) || deletedIds.includes((b.title || "").toLowerCase())) {
+      return false;
+    }
+    const key = (b.title || b.slug || b.id).trim().toLowerCase();
+    if (seenShelfKeys.has(key)) return false;
+    seenShelfKeys.add(key);
+    return true;
+  });
 
   const filtered = activeBooks.filter((b) => {
     const matchesGenre =

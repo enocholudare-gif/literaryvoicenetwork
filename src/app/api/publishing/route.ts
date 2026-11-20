@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
-import { appendCustomBook, appendCustomArticle } from "@/lib/db/custom-store";
+import { appendCustomBook, appendCustomArticle, removeCustomBook } from "@/lib/db/custom-store";
 import {
   authorizeManuscriptDistribution,
   createArticleDraft,
@@ -43,7 +43,10 @@ export async function GET(request: NextRequest) {
         page: Number(searchParams.get("page") || 1),
         pageSize: Number(searchParams.get("pageSize") || 100),
       });
-      return NextResponse.json({ ok: true, ...data });
+      return NextResponse.json(
+        { ok: true, ...data },
+        { headers: { "Cache-Control": "no-store, max-age=0" } }
+      );
     }
 
     if (scope === "public-articles") {
@@ -54,7 +57,10 @@ export async function GET(request: NextRequest) {
         page: Number(searchParams.get("page") || 1),
         pageSize: Number(searchParams.get("pageSize") || 100),
       });
-      return NextResponse.json({ ok: true, ...data });
+      return NextResponse.json(
+        { ok: true, ...data },
+        { headers: { "Cache-Control": "no-store, max-age=0" } }
+      );
     }
 
     if (!session) {
@@ -264,6 +270,16 @@ export async function POST(request: NextRequest) {
         isFeatured: body.isFeatured,
         editorialRecommendation: body.editorialRecommendation,
       });
+      if (res.book && res.book.status === "published") {
+        try {
+          appendCustomBook(res.book);
+        } catch {}
+      }
+      if (res.article && res.article.status === "published") {
+        try {
+          appendCustomArticle(res.article);
+        } catch {}
+      }
       return NextResponse.json({ ok: true, ...res });
     }
 
@@ -298,6 +314,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: false, error: "Missing bookId" }, { status: 400 });
       }
       deleteBook(session, bookId);
+      try {
+        removeCustomBook(bookId);
+      } catch {}
       return NextResponse.json({ ok: true, deletedBookId: bookId });
     }
 

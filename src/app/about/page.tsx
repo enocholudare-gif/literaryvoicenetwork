@@ -17,21 +17,33 @@ const SPOTIFY_URL =
 const LEADERSHIP = [
   {
     photo: "/media/team/ceo.jpg",
-    title: "Founder & Chief Executive Officer",
+    title: "Perry Creativity — Executive Founder & CEO",
     focus: "Vision, Strategy & Global Broadcast",
     bio: "Founded Literary Voices Network to give authors a live global stage. Leads the network's editorial vision, broadcast syndication across eight hubs, and long-term strategy.",
   },
   {
     photo: "/media/team/director-events.jpg",
-    title: "Director of Events & Partnerships",
+    title: "Joshua Josh — Director of Events & Partnerships",
     focus: "Live Salons, Tours & Publisher Alliances",
     bio: "Builds the network's relationships with publishers, retailers, and festivals, and produces our live author events, reading salons, and international tours.",
   },
   {
     photo: "/media/team/literary-coordinator.jpg",
-    title: "Literary Programming Coordinator",
+    title: "Rebecca Jum — Literary Programming Coordinator",
     focus: "Author Interviews & Weekly Programming",
     bio: "Curates the weekly broadcast lineup, books author interviews and readings, and spotlights emerging voices across every show on the network.",
+  },
+  {
+    photo: "/media/team/socialman.jpeg",
+    title: "Joel Friday — Social Media Manager",
+    focus: "Community Engagement & Amplification",
+    bio: "Leads social campaigns, live broadcast community engagement, and author spotlight amplification across global channels.",
+  },
+  {
+    photo: "/media/team/digital.jpg",
+    title: "Source Lee — Digital Media & Technology",
+    focus: "Broadcast Systems & Digital Experience",
+    bio: "Directs digital media production, streaming infrastructure, and interactive publishing technology across Literary Voices Network.",
   },
 ];
 

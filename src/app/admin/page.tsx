@@ -651,20 +651,33 @@ export default function AdminDashboardPage() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ok && data.book) {
-          savedBook = {
-            ...savedBook,
-            ...data.book,
-            genre: bkCategory,
-            section: bkTargetSection,
-            secondary_genres: secGenres,
-          };
-        }
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setBanner({
+          type: "error",
+          text: data.error || "Failed to publish book to the server. Please try again.",
+        });
+        setIsPublishingBook(false);
+        return;
+      }
+
+      if (data.book) {
+        savedBook = {
+          ...savedBook,
+          ...data.book,
+          genre: bkCategory,
+          section: bkTargetSection,
+          secondary_genres: secGenres,
+        };
       }
     } catch (err) {
-      console.warn("API direct publish sync notice:", err);
+      console.error("API direct publish error:", err);
+      setBanner({
+        type: "error",
+        text: "Network error while publishing book. Please check your connection and try again.",
+      });
+      setIsPublishingBook(false);
+      return;
     }
 
     // ALWAYS persist to localStorage so the live site gets it immediately!
