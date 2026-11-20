@@ -22,8 +22,13 @@ export function getCustomContent(): CustomContentData {
     enquiries: [],
   };
 
+  const isServerless = Boolean(
+    process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY
+  );
+  const paths = isServerless ? [TMP_STORE_PATH, STORE_PATH] : [STORE_PATH, TMP_STORE_PATH];
+
   // Try file paths
-  for (const p of [STORE_PATH, TMP_STORE_PATH]) {
+  for (const p of paths) {
     try {
       if (fs.existsSync(p)) {
         const raw = fs.readFileSync(p, "utf-8");
