@@ -1117,7 +1117,7 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
       } catch {}
 
       try {
-        const res = await fetch("/api/publishing?scope=public-books&pageSize=100", { cache: "no-store" });
+        const res = await fetch(`/api/publishing?scope=public-books&pageSize=100&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         let apiBooks: Book[] = data.items || [];
         try {
@@ -1535,7 +1535,7 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
       } catch {}
 
       try {
-        const res = await fetch("/api/publishing?scope=public-books&pageSize=100", { cache: "no-store" });
+        const res = await fetch(`/api/publishing?scope=public-books&pageSize=100&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         let apiBooks: Book[] = data.items || [];
         try {

@@ -27,8 +27,19 @@ function getPool(): Pool | null {
 
   if (!globalThis.__lvnPgPool) {
     const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
+    // Strip sslmode from query string so pg respects ssl: { rejectUnauthorized: false }
+    // on Supabase / Vercel Postgres pooler URLs without self-signed cert errors.
+    let cleanUrl = url;
+    try {
+      const parsed = new URL(url);
+      parsed.searchParams.delete("sslmode");
+      cleanUrl = parsed.toString();
+    } catch {
+      cleanUrl = url.replace(/([?&])sslmode=[^&]+(&|$)/i, "$1").replace(/[?&]$/, "");
+    }
+
     globalThis.__lvnPgPool = new Pool({
-      connectionString: url,
+      connectionString: cleanUrl,
       max: 5,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 8000,
@@ -205,7 +216,7 @@ export async function syncCloudBooksToLocalDb(force = false): Promise<void> {
         const submitterId = submitterExists?.id || "user-admin-eleanor";
 
         db.prepare(`
-          INSERT OR REPLACE INTO books (
+          INSERT INTO books (
             id, slug, author_profile_id, submitted_by_user_id, title, subtitle,
             isbn, description, excerpt, cover_url, genre, secondary_genres_json,
             format, publisher, publication_date, page_count, language,
@@ -214,6 +225,33 @@ export async function syncCloudBooksToLocalDb(force = false): Promise<void> {
             status, scheduled_for, published_at, seo_title, seo_description,
             created_at, updated_at, view_count, section
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            slug = excluded.slug,
+            author_profile_id = excluded.author_profile_id,
+            title = excluded.title,
+            subtitle = excluded.subtitle,
+            isbn = excluded.isbn,
+            description = excluded.description,
+            excerpt = excluded.excerpt,
+            cover_url = excluded.cover_url,
+            genre = excluded.genre,
+            secondary_genres_json = excluded.secondary_genres_json,
+            format = excluded.format,
+            publisher = excluded.publisher,
+            publication_date = excluded.publication_date,
+            page_count = excluded.page_count,
+            language = excluded.language,
+            retailer_links_json = excluded.retailer_links_json,
+            is_featured = excluded.is_featured,
+            editorial_recommendation = excluded.editorial_recommendation,
+            status = excluded.status,
+            scheduled_for = excluded.scheduled_for,
+            published_at = excluded.published_at,
+            seo_title = excluded.seo_title,
+            seo_description = excluded.seo_description,
+            updated_at = excluded.updated_at,
+            view_count = MAX(books.view_count, excluded.view_count),
+            section = excluded.section
         `).run(
           b.id,
           b.slug,

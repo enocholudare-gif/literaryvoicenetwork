@@ -24,7 +24,7 @@ export function RecentlyAddedBooksSection({ books }: { books: Book[] }) {
       } catch {}
 
       try {
-        const res = await fetch("/api/publishing?scope=public-books&pageSize=20", { cache: "no-store" });
+        const res = await fetch(`/api/publishing?scope=public-books&pageSize=20&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         let apiBooks: Book[] = data.items || [];
         try {
