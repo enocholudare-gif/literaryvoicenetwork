@@ -462,16 +462,10 @@ export default function AdminDashboardPage() {
       const modData = await modRes.json();
       if (modData.ok) {
         setSubmissions(modData.submissions || []);
-        let bks: Book[] = modData.books || [];
+        const bks: Book[] = modData.books || [];
         try {
-          const stored: Book[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          const deletedBookIds: string[] = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
-          if (stored.length > 0) {
-            bks = [...stored, ...bks.filter(b => !stored.some(s => s.id === b.id || s.title === b.title))];
-          }
-          if (deletedBookIds.length > 0) {
-            bks = bks.filter(b => !deletedBookIds.includes(b.id) && !deletedBookIds.includes(b.slug) && !deletedBookIds.includes(b.title.toLowerCase()));
-          }
+          localStorage.removeItem("lvn_custom_published_books");
+          localStorage.removeItem("lvn_deleted_book_ids");
         } catch {}
         setAllBooks(bks);
         let arts: Article[] = modData.articles || [];
@@ -680,11 +674,7 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    // ALWAYS persist to localStorage so the live site gets it immediately!
     try {
-      const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-      const updated = [savedBook, ...stored.filter((x: any) => x.id !== savedBook.id && x.title !== savedBook.title)];
-      localStorage.setItem("lvn_custom_published_books", JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent("lvn-book-published", { detail: savedBook }));
     } catch {}
 
@@ -750,16 +740,6 @@ export default function AdminDashboardPage() {
       setAllBooks((prev) => prev.filter((b) => b.id !== book.id));
 
       try {
-        const stored = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-        const filtered = stored.filter(
-          (b: any) => b.id !== book.id && b.slug !== book.slug && b.title !== book.title
-        );
-        localStorage.setItem("lvn_custom_published_books", JSON.stringify(filtered));
-
-        const deletedIds: string[] = JSON.parse(localStorage.getItem("lvn_deleted_book_ids") || "[]");
-        deletedIds.push(book.id, book.slug, book.title.toLowerCase());
-        localStorage.setItem("lvn_deleted_book_ids", JSON.stringify(deletedIds));
-
         window.dispatchEvent(new CustomEvent("lvn-book-published"));
       } catch {}
 
