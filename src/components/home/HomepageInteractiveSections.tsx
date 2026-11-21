@@ -1145,11 +1145,20 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
     fetchLatest();
 
     const handleCustomPub = () => fetchLatest();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") fetchLatest();
+    };
+    const intervalId = window.setInterval(fetchLatest, 20000);
     window.addEventListener("lvn-book-published", handleCustomPub);
     window.addEventListener("storage", handleCustomPub);
+    window.addEventListener("focus", handleCustomPub);
+    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
+      window.clearInterval(intervalId);
       window.removeEventListener("lvn-book-published", handleCustomPub);
       window.removeEventListener("storage", handleCustomPub);
+      window.removeEventListener("focus", handleCustomPub);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 
@@ -1556,11 +1565,20 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
     fetchLatest();
 
     const handleCustomPub = () => fetchLatest();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") fetchLatest();
+    };
+    const intervalId = window.setInterval(fetchLatest, 20000);
     window.addEventListener("lvn-book-published", handleCustomPub);
     window.addEventListener("storage", handleCustomPub);
+    window.addEventListener("focus", handleCustomPub);
+    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
+      window.clearInterval(intervalId);
       window.removeEventListener("lvn-book-published", handleCustomPub);
       window.removeEventListener("storage", handleCustomPub);
+      window.removeEventListener("focus", handleCustomPub);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [books]);
 
