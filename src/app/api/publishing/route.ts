@@ -6,6 +6,7 @@ import {
   saveBookToCloud,
   deleteBookFromCloud,
   syncCloudBooksToLocalDb,
+  getCloudSyncStatus,
 } from "@/lib/db/pg-sync";
 import {
   authorizeManuscriptDistribution,
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
         pageSize: Number(searchParams.get("pageSize") || 100),
       });
       return NextResponse.json(
-        { ok: true, ...data },
+        { ok: true, ...data, cloudStatus: getCloudSyncStatus() },
         {
           headers: {
             "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
         pageSize: Number(searchParams.get("pageSize") || 100),
       });
       return NextResponse.json(
-        { ok: true, ...data },
+        { ok: true, ...data, cloudStatus: getCloudSyncStatus() },
         {
           headers: {
             "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",

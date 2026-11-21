@@ -9,6 +9,10 @@ declare global {
   var __lvnPgSchemaReady: boolean | undefined;
   // eslint-disable-next-line no-var
   var __lvnLastCloudSyncAt: number | undefined;
+  // eslint-disable-next-line no-var
+  var __lvnLastCloudError: string | null | undefined;
+  // eslint-disable-next-line no-var
+  var __lvnCloudBooksCount: number | undefined;
 }
 
 function getPostgresUrl(): string | null {
@@ -19,6 +23,22 @@ function getPostgresUrl(): string | null {
     process.env.DATABASE_URL ||
     "";
   return url.trim() || null;
+}
+
+function getSupabaseRestConfig(): { url: string; key: string } | null {
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/$/, "");
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "").trim();
+  if (!url || !key) return null;
+  return { url, key };
+}
+
+export function getCloudSyncStatus() {
+  return {
+    hasPostgresUrl: Boolean(getPostgresUrl()),
+    hasSupabaseRest: Boolean(getSupabaseRestConfig()),
+    lastError: globalThis.__lvnLastCloudError || null,
+    cloudBooksCount: globalThis.__lvnCloudBooksCount ?? 0,
+  };
 }
 
 function getPool(): Pool | null {
@@ -91,7 +111,9 @@ export async function saveBookToCloud(book: Book): Promise<void> {
     );
     await pool.query(`DELETE FROM lvn_cloud_deleted_books WHERE id = $1`, [book.id]);
     globalThis.__lvnLastCloudSyncAt = 0;
+    globalThis.__lvnLastCloudError = null;
   } catch (err) {
+    globalThis.__lvnLastCloudError = err instanceof Error ? err.message : String(err);
     console.error("[pg-sync] Failed to save book to cloud:", err);
   }
 }
@@ -119,7 +141,9 @@ export async function deleteBookFromCloud(bookId: string, slug = ""): Promise<vo
       [bookId, slug]
     );
     globalThis.__lvnLastCloudSyncAt = 0;
+    globalThis.__lvnLastCloudError = null;
   } catch (err) {
+    globalThis.__lvnLastCloudError = err instanceof Error ? err.message : String(err);
     console.error("[pg-sync] Failed to delete book from cloud:", err);
   }
 }
@@ -147,6 +171,8 @@ export async function syncCloudBooksToLocalDb(force = false): Promise<void> {
         `SELECT id, slug FROM lvn_cloud_deleted_books`
       ),
     ]);
+    globalThis.__lvnCloudBooksCount = booksRes.rows.length;
+    globalThis.__lvnLastCloudError = null;
 
     const db = getDb();
     const nowIso = new Date().toISOString();
@@ -293,6 +319,7 @@ export async function syncCloudBooksToLocalDb(force = false): Promise<void> {
 
     globalThis.__lvnLastCloudSyncAt = Date.now();
   } catch (err) {
+    globalThis.__lvnLastCloudError = err instanceof Error ? err.message : String(err);
     console.error("[pg-sync] Failed to sync books from cloud:", err);
   }
 }
