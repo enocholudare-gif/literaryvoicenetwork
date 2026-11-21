@@ -22,7 +22,7 @@ interface BooksPageProps {
 }
 
 export default async function BooksDirectoryPage({ searchParams }: BooksPageProps) {
-  await syncCloudBooksToLocalDb();
+  await syncCloudBooksToLocalDb(true);
   const params = await searchParams;
   const search = params.q || "";
   const genre = params.genre || "All";

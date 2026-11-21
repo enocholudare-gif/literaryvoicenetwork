@@ -1120,26 +1120,13 @@ export function TrendingBooksSection({ dbBooks = [] }: { dbBooks?: Book[] }) {
         const res = await fetch(`/api/publishing?scope=public-books&pageSize=100&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         let apiBooks: Book[] = data.items || [];
-        try {
-          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          if (stored.length > 0) {
-            apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
-          }
-          if (dIds.length > 0) {
-            apiBooks = apiBooks.filter((ab) => !dIds.includes(ab.id) && !dIds.includes(ab.slug) && !dIds.includes((ab.title || "").toLowerCase()));
-          }
-        } catch {}
+        if (dIds.length > 0) {
+          apiBooks = apiBooks.filter((ab) => !dIds.includes(ab.id) && !dIds.includes(ab.slug) && !dIds.includes((ab.title || "").toLowerCase()));
+        }
         if (apiBooks.length > 0) {
           setLiveDbBooks(apiBooks);
         }
-      } catch {
-        try {
-          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          if (stored.length > 0) {
-            setLiveDbBooks((prev) => [...stored, ...prev.filter((p) => !stored.some((s) => s.id === p.id))]);
-          }
-        } catch {}
-      }
+      } catch {}
     };
 
     fetchLatest();
@@ -1538,28 +1525,13 @@ export function OnTheShelfDirectorySection({ books }: { books: Book[] }) {
         const res = await fetch(`/api/publishing?scope=public-books&pageSize=100&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         let apiBooks: Book[] = data.items || [];
-        try {
-          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          if (stored.length > 0) {
-            apiBooks = [...stored, ...apiBooks.filter((ab) => !stored.some((sb) => sb.id === ab.id || sb.title === ab.title))];
-          }
-        } catch {}
         if (dIds.length > 0) {
           apiBooks = apiBooks.filter((b) => !dIds.includes(b.id) && !dIds.includes(b.slug) && !dIds.includes((b.title || "").toLowerCase()));
         }
         if (apiBooks.length > 0) {
           setLiveBooks(apiBooks);
         }
-      } catch {
-        try {
-          const stored: any[] = JSON.parse(localStorage.getItem("lvn_custom_published_books") || "[]");
-          let combined = stored.length > 0 ? [...stored, ...books] : [...books];
-          if (dIds.length > 0) {
-            combined = combined.filter((b) => !dIds.includes(b.id) && !dIds.includes(b.slug) && !dIds.includes((b.title || "").toLowerCase()));
-          }
-          setLiveBooks(combined);
-        } catch {}
-      }
+      } catch {}
     };
 
     fetchLatest();

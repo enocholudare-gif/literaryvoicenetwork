@@ -179,7 +179,13 @@ export async function POST(request: NextRequest) {
         try {
           appendCustomBook(book);
         } catch {}
-        await saveBookToCloud(book);
+        const cloudRes = await saveBookToCloud(book);
+        if (!cloudRes.ok) {
+          return NextResponse.json(
+            { ok: false, error: `Cloud database save failed: ${cloudRes.error}` },
+            { status: 500 }
+          );
+        }
       }
       if (body.submitForReview && book.status === "draft") {
         const res = await submitBookForReview(
@@ -201,7 +207,13 @@ export async function POST(request: NextRequest) {
     if (action === "update-book") {
       const book = updateBook(session, String(body.bookId || ""), body.bookData);
       if (book.status === "published") {
-        await saveBookToCloud(book);
+        const cloudRes = await saveBookToCloud(book);
+        if (!cloudRes.ok) {
+          return NextResponse.json(
+            { ok: false, error: `Cloud database save failed: ${cloudRes.error}` },
+            { status: 500 }
+          );
+        }
       }
       if (body.submitForReview && (book.status === "draft" || book.status === "revision_requested")) {
         const res = await submitBookForReview(
@@ -301,7 +313,13 @@ export async function POST(request: NextRequest) {
         try {
           appendCustomBook(res.book);
         } catch {}
-        await saveBookToCloud(res.book);
+        const cloudRes = await saveBookToCloud(res.book);
+        if (!cloudRes.ok) {
+          return NextResponse.json(
+            { ok: false, error: `Cloud database save failed: ${cloudRes.error}` },
+            { status: 500 }
+          );
+        }
       }
       if (res.article && res.article.status === "published") {
         try {

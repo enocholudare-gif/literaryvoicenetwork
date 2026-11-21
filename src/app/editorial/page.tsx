@@ -17,7 +17,7 @@ interface EditorialPageProps {
 }
 
 export default async function EditorialPage({ searchParams }: EditorialPageProps) {
-  await syncCloudBooksToLocalDb();
+  await syncCloudBooksToLocalDb(true);
   const params = await searchParams;
   const search = params.q || "";
   const sortBy = (params.sort as "newest" | "title" | "editorial") || "editorial";

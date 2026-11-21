@@ -91,9 +91,9 @@ async function ensureCloudTables(pool: Pool): Promise<void> {
  * Persists a published/updated book to Supabase/PostgreSQL so every
  * serverless instance, phone, and laptop immediately sees it.
  */
-export async function saveBookToCloud(book: Book): Promise<void> {
+export async function saveBookToCloud(book: Book): Promise<{ ok: boolean; error?: string }> {
   const pool = getPool();
-  if (!pool) return;
+  if (!pool) return { ok: true };
 
   try {
     await ensureCloudTables(pool);
@@ -112,9 +112,12 @@ export async function saveBookToCloud(book: Book): Promise<void> {
     await pool.query(`DELETE FROM lvn_cloud_deleted_books WHERE id = $1`, [book.id]);
     globalThis.__lvnLastCloudSyncAt = 0;
     globalThis.__lvnLastCloudError = null;
+    return { ok: true };
   } catch (err) {
-    globalThis.__lvnLastCloudError = err instanceof Error ? err.message : String(err);
+    const message = err instanceof Error ? err.message : String(err);
+    globalThis.__lvnLastCloudError = message;
     console.error("[pg-sync] Failed to save book to cloud:", err);
+    return { ok: false, error: message };
   }
 }
 
@@ -122,9 +125,9 @@ export async function saveBookToCloud(book: Book): Promise<void> {
  * Records a book deletion in Supabase/PostgreSQL so deleted books
  * stay deleted across all serverless instances and devices.
  */
-export async function deleteBookFromCloud(bookId: string, slug = ""): Promise<void> {
+export async function deleteBookFromCloud(bookId: string, slug = ""): Promise<{ ok: boolean; error?: string }> {
   const pool = getPool();
-  if (!pool) return;
+  if (!pool) return { ok: true };
 
   try {
     await ensureCloudTables(pool);
@@ -142,9 +145,12 @@ export async function deleteBookFromCloud(bookId: string, slug = ""): Promise<vo
     );
     globalThis.__lvnLastCloudSyncAt = 0;
     globalThis.__lvnLastCloudError = null;
+    return { ok: true };
   } catch (err) {
-    globalThis.__lvnLastCloudError = err instanceof Error ? err.message : String(err);
+    const message = err instanceof Error ? err.message : String(err);
+    globalThis.__lvnLastCloudError = message;
     console.error("[pg-sync] Failed to delete book from cloud:", err);
+    return { ok: false, error: message };
   }
 }
 
