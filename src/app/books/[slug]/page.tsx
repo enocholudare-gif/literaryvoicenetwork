@@ -1,5 +1,6 @@
 import React from "react";
 import { getCurrentSession } from "@/lib/auth/session";
+import { syncCloudBooksToLocalDb } from "@/lib/db/pg-sync";
 import {
   getBookBySlugForViewer,
   incrementBookView,
@@ -16,6 +17,7 @@ interface BookDetailPageProps {
 }
 
 export default async function BookDetailPage({ params }: BookDetailPageProps) {
+  await syncCloudBooksToLocalDb(true);
   const { slug } = await params;
   const viewer = await getCurrentSession();
   const book = getBookBySlugForViewer(slug, viewer);

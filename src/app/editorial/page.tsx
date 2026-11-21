@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { BookOpen, ExternalLink, Eye, Feather, Search, Star } from "lucide-react";
 import { listPublicBooks } from "@/lib/services/publishing";
+import { syncCloudBooksToLocalDb } from "@/lib/db/pg-sync";
 import { EditorialBookGrid } from "@/components/books/EditorialBookGrid";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ interface EditorialPageProps {
 }
 
 export default async function EditorialPage({ searchParams }: EditorialPageProps) {
+  await syncCloudBooksToLocalDb();
   const params = await searchParams;
   const search = params.q || "";
   const sortBy = (params.sort as "newest" | "title" | "editorial") || "editorial";

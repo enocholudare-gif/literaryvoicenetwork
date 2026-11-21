@@ -3,12 +3,14 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { BookCard } from "@/components/ui/Cards";
 import { listPublicBooks } from "@/lib/services/publishing";
+import { syncCloudBooksToLocalDb } from "@/lib/db/pg-sync";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-export default function CommunityBooksPage() {
+export default async function CommunityBooksPage() {
+  await syncCloudBooksToLocalDb();
   const { items: books } = listPublicBooks({ pageSize: 100 });
 
   return (

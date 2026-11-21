@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Award, BookOpen, Filter, Search } from "lucide-react";
 import { BooksCatalogGrid } from "@/components/books/BooksCatalogGrid";
 import { listPublicBooks } from "@/lib/services/publishing";
+import { syncCloudBooksToLocalDb } from "@/lib/db/pg-sync";
 import type { BookFormat } from "@/lib/db/types";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ interface BooksPageProps {
 }
 
 export default async function BooksDirectoryPage({ searchParams }: BooksPageProps) {
+  await syncCloudBooksToLocalDb();
   const params = await searchParams;
   const search = params.q || "";
   const genre = params.genre || "All";

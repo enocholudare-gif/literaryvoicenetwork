@@ -3,6 +3,11 @@ import { getCurrentSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { appendCustomBook, appendCustomArticle, removeCustomBook } from "@/lib/db/custom-store";
 import {
+  saveBookToCloud,
+  deleteBookFromCloud,
+  syncCloudBooksToLocalDb,
+} from "@/lib/db/pg-sync";
+import {
   authorizeManuscriptDistribution,
   createArticleDraft,
   createBookDraft,
@@ -33,6 +38,7 @@ export async function GET(request: NextRequest) {
     const session = await getCurrentSession();
 
     if (scope === "public-books") {
+      await syncCloudBooksToLocalDb(true);
       const data = listPublicBooks({
         search: searchParams.get("search") || undefined,
         genre: searchParams.get("genre") || undefined,
@@ -88,6 +94,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (scope === "staff-moderation") {
+      await syncCloudBooksToLocalDb(true);
       return NextResponse.json({
         ok: true,
         submissions: listModerationQueue(session),
@@ -156,6 +163,7 @@ export async function POST(request: NextRequest) {
         try {
           appendCustomBook(book);
         } catch {}
+        await saveBookToCloud(book);
       }
       if (body.submitForReview && book.status === "draft") {
         const res = await submitBookForReview(
@@ -176,6 +184,9 @@ export async function POST(request: NextRequest) {
 
     if (action === "update-book") {
       const book = updateBook(session, String(body.bookId || ""), body.bookData);
+      if (book.status === "published") {
+        await saveBookToCloud(book);
+      }
       if (body.submitForReview && (book.status === "draft" || book.status === "revision_requested")) {
         const res = await submitBookForReview(
           session,
@@ -274,6 +285,7 @@ export async function POST(request: NextRequest) {
         try {
           appendCustomBook(res.book);
         } catch {}
+        await saveBookToCloud(res.book);
       }
       if (res.article && res.article.status === "published") {
         try {
@@ -317,6 +329,7 @@ export async function POST(request: NextRequest) {
       try {
         removeCustomBook(bookId);
       } catch {}
+      await deleteBookFromCloud(bookId);
       return NextResponse.json({ ok: true, deletedBookId: bookId });
     }
 

@@ -16,12 +16,14 @@ import {
 import { RecentlyAddedBooksSection } from "@/components/home/RecentlyAddedBooksSection";
 import { getSiteSettings, listBroadcasts } from "@/lib/services/platform";
 import { listPublicBooks } from "@/lib/services/publishing";
+import { syncCloudBooksToLocalDb } from "@/lib/db/pg-sync";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-export default function HomePage() {
+export default async function HomePage() {
+  await syncCloudBooksToLocalDb(true);
   const settings = getSiteSettings();
   const { items: allBooks } = listPublicBooks({ pageSize: 100 });
   const broadcasts = listBroadcasts();
