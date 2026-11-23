@@ -45,6 +45,12 @@ const LEADERSHIP = [
     focus: "Broadcast Systems & Digital Experience",
     bio: "Directs digital media production, streaming infrastructure, and interactive publishing technology across Literary Voices Network.",
   },
+  {
+    photo: "/media/team/woods.jpeg",
+    title: "Rachel Wood — Coordinator of Events & Partnerships",
+    focus: "Events & Strategic Partnerships",
+    bio: "Coordinates live literary events, author appearances, and strategic publisher and community partnerships across the network.",
+  },
 ];
 
 const PILLARS = [

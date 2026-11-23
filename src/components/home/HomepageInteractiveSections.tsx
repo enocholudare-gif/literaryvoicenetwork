@@ -382,6 +382,17 @@ const HOSTS_DATA = [
     delay: "800ms",
     bio: "Directs digital media production, streaming infrastructure, and interactive publishing technology across Literary Voices Network.",
   },
+  {
+    id: "host-6",
+    name: "Rachel Wood",
+    role: "Coordinator of Events & Partnerships",
+    show: "Events & Partnerships",
+    slug: "",
+    photo: "/media/team/woods.jpeg",
+    avatar: "/media/avatars/default-portrait.svg",
+    delay: "1000ms",
+    bio: "Coordinates live literary events, author appearances, and strategic publisher and community partnerships across the network.",
+  },
 ];
 
 const UPCOMING_BROADCASTS = [
@@ -647,7 +658,7 @@ export function MeetOurHostsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 pt-2">
           {HOSTS_DATA.map((host) => (
             <Link
               key={host.id}
