@@ -28,6 +28,12 @@ const LEADERSHIP = [
     bio: "Builds the network's relationships with publishers, retailers, and festivals, and produces our live author events, reading salons, and international tours.",
   },
   {
+    photo: "/media/team/woods.jpeg",
+    title: "Rachel Wood — Coordinator of Events & Partnerships",
+    focus: "Events & Strategic Partnerships",
+    bio: "Coordinates live literary events, author appearances, and strategic publisher and community partnerships across the network.",
+  },
+  {
     photo: "/media/team/literary-coordinator.jpg",
     title: "Rebecca Jum — Literary Programming Coordinator",
     focus: "Author Interviews & Weekly Programming",
@@ -44,12 +50,6 @@ const LEADERSHIP = [
     title: "Source Lee — Digital Media & Technology",
     focus: "Broadcast Systems & Digital Experience",
     bio: "Directs digital media production, streaming infrastructure, and interactive publishing technology across Literary Voices Network.",
-  },
-  {
-    photo: "/media/team/woods.jpeg",
-    title: "Rachel Wood — Coordinator of Events & Partnerships",
-    focus: "Events & Strategic Partnerships",
-    bio: "Coordinates live literary events, author appearances, and strategic publisher and community partnerships across the network.",
   },
 ];
 
