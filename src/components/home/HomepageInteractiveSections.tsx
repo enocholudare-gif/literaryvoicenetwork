@@ -350,17 +350,6 @@ const HOSTS_DATA = [
     bio: "Architects international literary salons, publisher alliances, and live author tours across eight broadcast hubs.",
   },
   {
-    id: "host-6",
-    name: "Rachel Wood",
-    role: "Coordinator of Events & Partnerships",
-    show: "Events & Partnerships",
-    slug: "",
-    photo: "/media/team/woods.jpeg",
-    avatar: "/media/avatars/default-portrait.svg",
-    delay: "400ms",
-    bio: "Coordinates live literary events, author appearances, and strategic publisher and community partnerships across the network.",
-  },
-  {
     id: "host-3",
     name: "Rebecca Jum",
     role: "Literary Programming Coordinator",
@@ -368,7 +357,7 @@ const HOSTS_DATA = [
     slug: "amara-osei",
     photo: "/media/team/literary-coordinator.jpg",
     avatar: "/media/avatars/amara-osei.svg",
-    delay: "600ms",
+    delay: "400ms",
     bio: "Curates weekly author interviews, reading room serializations, and emerging voice spotlights across the network.",
   },
   {
@@ -379,7 +368,7 @@ const HOSTS_DATA = [
     slug: "",
     photo: "/media/team/socialman.jpeg",
     avatar: "/media/team/social.jpg",
-    delay: "800ms",
+    delay: "600ms",
     bio: "Leads social campaigns, live broadcast community engagement, and author spotlight amplification across global channels.",
   },
   {
@@ -390,7 +379,7 @@ const HOSTS_DATA = [
     slug: "",
     photo: "/media/team/digital.jpg",
     avatar: "/media/team/digital-director.svg",
-    delay: "1000ms",
+    delay: "800ms",
     bio: "Directs digital media production, streaming infrastructure, and interactive publishing technology across Literary Voices Network.",
   },
 ];
@@ -658,7 +647,7 @@ export function MeetOurHostsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 pt-2">
           {HOSTS_DATA.map((host) => (
             <Link
               key={host.id}
